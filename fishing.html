@@ -379,7 +379,7 @@ body.reduced *{animation-duration:.001s!important;transition:none!important}
 <div id="tut" class="hidden"><div id="tutHole"></div><div id="tutBox" class="panel"></div></div>
 <div id="palette" class="panel hidden"><input id="palIn" class="inp" style="width:100%" placeholder="Type a command… (e.g. nextfish, weather, tp)" autocomplete="off"><div id="palList"></div></div>
 <div id="tooltip"></div>
-<div id="loading"><div class="logo">DEEP CAST</div><div id="serverBrowser"><h2>Choose a server</h2><p class="sub">Public islands use Playroom when opened via <span class="mono">http://</span>, or PeerJS when opened as a local HTML file. Private rooms always use PeerJS. No AI bots — only real anglers.<br><span id="openHint" class="mute" style="font-size:12px;display:block;margin-top:8px"></span></p><div class="sec" style="margin:0 0 4px">Public servers</div><div class="srvGrid" id="pubSrvGrid"></div><div class="sec" style="margin:12px 0 4px">Private server</div><div id="privRow"><button class="btn green" id="btnCreatePriv">Create private room</button><input class="inp" id="privCode" placeholder="Room code" maxlength="12"><button class="btn cyan" id="btnJoinPriv">Join</button></div><div id="netStatus"></div><button class="btn ghost sm" id="btnSolo" style="align-self:flex-start;margin-top:4px">Play offline (solo)</button></div><div class="lbar hidden" id="loadBar"><div id="lfill"></div></div><div id="ltext" class="mute h">Pick a server to cast off…</div></div>
+<div id="loading"><div class="logo">DEEP CAST</div><div id="serverBrowser"><h2>Choose a server</h2><p class="sub">Public islands use Playroom when opened via <span class="mono">http://</span>, or PeerJS when opened as a local HTML file. Private rooms always use PeerJS. No AI bots — only real anglers.<br><span id="openHint" class="mute" style="font-size:12px;display:block;margin-top:8px"></span></p><div class="sec" style="margin:0 0 4px">Public servers</div><div class="srvGrid" id="pubSrvGrid"></div><div class="sec" style="margin:12px 0 4px">Private server</div><div class="row" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="mute" style="font-size:12px">Username</span><input class="inp" id="joinName" placeholder="3–25 characters" maxlength="25" style="flex:1;min-width:160px"></div><div id="privRow"><button class="btn green" id="btnCreatePriv">Create private room</button><input class="inp" id="privCode" placeholder="Room code" maxlength="12"><button class="btn cyan" id="btnJoinPriv">Join</button></div><div id="netStatus"></div><button class="btn ghost sm" id="btnSolo" style="align-self:flex-start;margin-top:4px">Play offline (solo)</button></div><div class="lbar hidden" id="loadBar"><div id="lfill"></div></div><div id="ltext" class="mute h">Pick a server to cast off…</div></div>
 
 <script>
 (function () {
@@ -761,7 +761,7 @@ function sanitizeState(o) {
   const d = defaultState(); const out = { ...d };
   const num = (v, def, max = 1e15) => Number.isFinite(v) ? clamp(v, 0, max) : def;
   if (!o || typeof o !== 'object') return d;
-  out.name = String(o.name || d.name).replace(/[^\w\- ]/g, '').slice(0, 20) || d.name;
+  { const nv = validateUsername(String(o.name || d.name).replace(/[^\w\- ]/g, '')); out.name = nv.ok ? nv.val : d.name; }
   out.coins = num(o.coins, d.coins); out.pearls = num(o.pearls, 0, 1e7); out.xp = num(o.xp, 0); out.level = clamp(Math.floor(num(o.level, 1, 999)), 1, 999); out.perkPts = num(o.perkPts, 0, 999);
   out.perks = {}; for (const p of D.perks) if (o.perks?.[p.id]) out.perks[p.id] = clamp(Math.floor(o.perks[p.id]), 0, p.max);
   out.inv = Array.isArray(o.inv) ? o.inv.filter(validItem).filter(i => i.type !== 'admintool').map(i => ({ ...mkItem(i.type, i.id), ...i, qty: Math.floor(clamp(i.qty, 1, 1e6)), enh: clamp(Math.floor(i.enh || 0), 0, D.enhance.max) })) : d.inv;
@@ -942,6 +942,33 @@ const Auth = (() => {
 })();
 function hasAdminRole(id = 'me') { return Auth.rank(Auth.role(id)) >= Auth.rank('admin'); }
 const PLAYROOM_NEEDS_HTTP = location.protocol === 'file:' || !location.origin || location.origin === 'null';
+function validateUsername(raw) {
+  const val = String(raw || '').trim().replace(/[^\w\- ]/g, '');
+  if (val.length < 3) return { ok: false, msg: 'Username must be 3–25 characters (letters, numbers, spaces, _ -).' };
+  if (val.length > 25) return { ok: false, msg: 'Username must be 25 characters or fewer.' };
+  return { ok: true, val };
+}
+function applyUsername(raw, toastOk = true) {
+  const v = validateUsername(raw); if (!v.ok) { toast(v.msg, 'bad', 2.5); return false; }
+  S.name = v.val; const me = Auth.get('me'); if (me) { me.name = v.val; Auth.disconnect('me', 'account change'); if (me.baseRole !== 'player') me.baseRole = 'player'; }
+  if (RT.player?.ch) { RT.player.ch.group.remove(RT.player.tag); RT.player.tag = nameTag(v.val); RT.player.ch.group.add(RT.player.tag); }
+  if (toastOk) toast('Username updated.', 'good', 1.4);
+  renderProfile(); saveSoon(); return true;
+}
+function playerLookPayload() { const o = outfitColors(); return { shirt: o.shirt, hat: o.hat, pants: o.pants, accent: o.accent }; }
+function applyRemoteLook(r, look) {
+  if (!r?.ch?.mats || !look) return;
+  if (look.shirt) r.ch.mats.shirt.color.set(look.shirt);
+  if (look.pants) r.ch.mats.pants.color.set(look.pants);
+  if (look.hat) r.ch.mats.hat.color.set(look.hat);
+}
+function fmtFishChance(p) {
+  if (!p || p <= 0) return '—';
+  const pct = p * 100;
+  const pctStr = pct >= 1 ? pct.toFixed(2) + '%' : pct >= 0.01 ? pct.toFixed(3) + '%' : pct.toFixed(4) + '%';
+  return `${pctStr} <span class="mute">(1 in ${fmt(Math.max(1, Math.round(1 / p)))})</span>`;
+}
+function leaveToServerPicker() { if (!RT.noSave) saveGame(); Net.leaveSession(); Auth.disconnect('me', 'leave'); location.reload(); }
 
 /* Allowlisted admin commands. Each validates its own capability. */
 function findPlayerRef(ref) { if (!ref || ref === 'me' || ref === '@s') return Auth.get('me'); ref = ref.toLowerCase(); for (const p of Auth.players.values()) if (!p.kicked && (p.id === ref || p.name.toLowerCase() === ref)) return p; for (const p of Auth.players.values()) if (!p.kicked && p.name.toLowerCase().startsWith(ref)) return p; return null; }
@@ -1413,7 +1440,7 @@ function updatePlayer(dt) {
   if (RT.fishing.state !== 'idle' && RT.fishing.face != null) P.yaw = lerpAngle(P.yaw, RT.fishing.face, .2);
   P.ch.group.position.copy(P.pos); P.ch.group.rotation.y = P.yaw;
   const it = selItem(); let mode = 'idle'; if (P.swim) mode = 'swim'; else if (RT.fishing.state === 'charging') mode = 'charge'; else if (RT.fishing.state === 'reeling') mode = 'reel'; else if (RT.fishing.state === 'catch') mode = 'hold'; else if (it?.type === 'rod') mode = 'rod'; else if (it?.type === 'weapon') mode = 'aim';
-  P.ch.anim(dt, P.swim ? 3 : hs, mode);
+  P.ch.anim(dt, P.swim ? 3 : hs, mode); P.animMode = mode;
   // regen
   if (RT.t - P.lastHit > 6 && P.hp < 100) P.hp = Math.min(100, P.hp + dt * 3);
 }
@@ -1561,7 +1588,7 @@ function remotePlayer(id) { return id === 'me' ? RT.player : RT.remotes.find(r =
 function playerPalette(id) { const h = cyrb53(String(id), 7) % 360; return { shirt: `hsl(${h},72%,52%)`, hat: '#FFC93C', pants: '#26324a', accent: '#38E1FF' }; }
 function ensureRemoteVisual(r) {
   if (r.ch) return r;
-  const o = playerPalette(r.id); r.ch = makeCharacter(o); scene.add(r.ch.group);
+  const o = r.look ? { ...playerPalette(r.id), ...r.look } : playerPalette(r.id); r.ch = makeCharacter(o); scene.add(r.ch.group);
   r.pos = r.pos || V3(); r.yaw = r.yaw || 0; r.tag = nameTag(r.name || 'Angler', '#ffffff'); r.ch.group.add(r.tag);
   RT.remotes.push(r); return r;
 }
@@ -1617,11 +1644,11 @@ const Net = (() => {
     let m; try { m = JSON.parse(raw); } catch (e) { return; }
     if (m.t === 'hello') {
       if (mode === 'private-host') broadcast(m, fromConn);
-      upsertRemote({ id: m.id, name: m.name, x: m.x, z: m.z, y: m.y, yaw: m.yaw });
+      upsertRemote({ id: m.id, name: m.name, x: m.x, z: m.z, y: m.y, yaw: m.yaw, look: m.look, speed: 0, anim: 'idle' });
       if (!Auth.get(m.id)) Auth.addPlayer({ id: m.id, name: m.name, bot: false, baseRole: 'player' });
-      if (mode === 'private-host' || mode === 'private-join') {
-        const P = RT.player; const payload = { t: 'hello', id: myNetId, name: S.name, x: P.pos.x, y: P.pos.y, z: P.pos.z, yaw: P.yaw };
-        if (mode === 'private-host') broadcast(payload); else fromConn?.send(JSON.stringify(payload));
+      if (mode.startsWith('private')) {
+        const P = RT.player; const payload = { t: 'hello', id: myNetId, name: S.name, x: P.pos.x, y: P.pos.y, z: P.pos.z, yaw: P.yaw, look: playerLookPayload() };
+        if (mode === 'private-host') broadcast(payload, fromConn); else fromConn?.send(JSON.stringify(payload));
       }
       return;
     }
@@ -1636,17 +1663,37 @@ const Net = (() => {
     conn.on('data', d => handleNetMessage(d, conn));
     conn.on('close', () => conns.delete(conn.peer || conn.connectionId));
   }
-  function upsertRemote(m) {
-    let r = RT.remotes.find(x => x.id === m.id); if (!r) { r = ensureRemoteVisual({ id: m.id, name: m.name }); Auth.addPlayer({ id: m.id, name: m.name, bot: false, baseRole: 'player' }); scriptEvent('playerJoin', { playerId: m.id, name: m.name }); }
-    r.name = m.name || r.name; r.tgt = { x: m.x, z: m.z, y: m.y ?? groundAt(m.x, m.z, 50), yaw: m.yaw }; r.speed = m.speed || 0; r.anim = m.anim || 'idle';
-    if (!r.pos) r.pos = V3(m.x, r.tgt.y, m.z);
-    if (r.tag) { r.ch.group.remove(r.tag); r.tag = nameTag(r.name, '#ffffff'); r.ch.group.add(r.tag); }
+    function upsertRemote(m) {
+    if (!m?.id) return;
+    let r = RT.remotes.find(x => x.id === m.id); if (!r) { r = ensureRemoteVisual({ id: m.id, name: m.name, look: m.look }); Auth.addPlayer({ id: m.id, name: m.name, bot: false, baseRole: 'player' }); scriptEvent('playerJoin', { playerId: m.id, name: m.name }); }
+    r.name = m.name || r.name; r.tgt = { x: m.x, z: m.z, y: m.y ?? groundAt(m.x, m.z, 50), yaw: m.yaw ?? 0 }; r.speed = m.speed || 0; r.anim = m.anim || 'idle';
+    if (!r.pos) r.pos = V3(m.x ?? 0, r.tgt.y, m.z ?? 0);
+    if (m.look && JSON.stringify(m.look) !== JSON.stringify(r.look)) { r.look = m.look; applyRemoteLook(r, m.look); }
+    if (r.tag && r.name) { r.ch.group.remove(r.tag); r.tag = nameTag(r.name, '#ffffff'); r.ch.group.add(r.tag); }
   }
   function sendPose() {
     if (!RT.player || mode === 'solo') return;
-    const P = RT.player; const msg = { t: 'pose', id: myNetId, name: S.name, x: P.pos.x, y: P.pos.y, z: P.pos.z, yaw: P.yaw, speed: Math.hypot(P.vel.x, P.vel.z), anim: P.ch?.userData?.mode || 'idle' };
+    const P = RT.player; const msg = { t: 'pose', id: myNetId, name: S.name, x: P.pos.x, y: P.pos.y, z: P.pos.z, yaw: P.yaw, speed: Math.hypot(P.vel.x, P.vel.z), anim: P.animMode || 'idle', look: playerLookPayload() };
     if (mode.startsWith('private')) broadcast(msg);
-    else { const pr = PR(); const me = pr?.myPlayer?.(); if (me?.setState) me.setState('pose', msg); }
+    else { const pr = PR(); const me = pr?.myPlayer?.(); if (me?.setState) me.setState('pose', msg, true); }
+  }
+  function syncPlayroomPeers() {
+    const pr = PR(); if (mode !== 'playroom' || !pr?.getParticipants) return;
+    for (const player of Object.values(pr.getParticipants())) {
+      const id = player.id; if (id === myNetId) continue;
+      const pose = player.getState?.('pose');
+      if (pose?.x != null) upsertRemote(pose);
+      else if (!RT.remotes.some(x => x.id === id)) upsertRemote({ id, name: player.getProfile?.()?.name || 'Angler', x: 0, y: 0, z: 0, yaw: 0 });
+    }
+  }
+  function bindPlayroomPlayer(player) {
+    const id = player.id; if (id === myNetId) return;
+    Auth.addPlayer({ id, name: player.getProfile()?.name || 'Angler', bot: false, baseRole: 'player' });
+    trackPlayerState(player, 'pose', state => upsertRemote(state));
+    trackPlayerState(player, 'chat', m => { if (m?.text && !(Auth.get(m.id)?.muted > Date.now())) chatLine(`<b style="color:#38E1FF">${esc(m.name || 'Angler')}:</b> ${esc(m.text)}`, ''); });
+    const st = player.getState?.('pose'); if (st) upsertRemote(st);
+    scriptEvent('playerJoin', { playerId: id, name: player.getProfile()?.name });
+    player.onQuit?.(() => { removeRemoteVisual(id); scriptEvent('playerLeave', { playerId: id }); });
   }
   async function joinPublicPeerMesh(roomCode, label) {
     setStatus('Joining ' + (label || roomCode) + ' (peer relay)…');
@@ -1660,16 +1707,11 @@ const Net = (() => {
     setStatus('Connecting to Playroom…');
     await playroomInsert(pr, { gameId: PLAYROOM_GAME_ID, roomCode, skipLobby: true });
     mode = 'playroom'; myNetId = pr.myPlayer()?.id || pr.me?.()?.id || uid(); Auth.SESSION.serverId = label || roomCode;
-    const onJoin = pr.onPlayerJoin(player => {
-      const id = player.id; if (id === myNetId) return;
-      Auth.addPlayer({ id, name: player.getProfile()?.name || 'Angler', bot: false, baseRole: 'player' });
-      trackPlayerState(player, 'pose', state => upsertRemote(state));
-      trackPlayerState(player, 'chat', m => { if (m?.text && !(Auth.get(m.id)?.muted > Date.now())) chatLine(`<b style="color:#38E1FF">${esc(m.name || 'Angler')}:</b> ${esc(m.text)}`, ''); });
-      const st = player.getState?.('pose'); if (st) upsertRemote(st);
-      scriptEvent('playerJoin', { playerId: id, name: player.getProfile()?.name });
-      player.onQuit?.(() => { removeRemoteVisual(id); scriptEvent('playerLeave', { playerId: id }); });
-    });
+    const onJoin = pr.onPlayerJoin(player => bindPlayroomPlayer(player));
     if (typeof onJoin === 'function') playHandlers.push(onJoin);
+    const parts = pr.getParticipants?.() || pr.getSpectators?.() || {};
+    for (const player of Object.values(parts)) bindPlayroomPlayer(player);
+    sendPose();
     setStatus('Connected · ' + (label || roomCode));
   }
   async function hostPrivate(code) {
@@ -1679,7 +1721,7 @@ const Net = (() => {
       peer = new Peer(id, { debug: 0 }); peer.on('open', () => res()); peer.on('error', e => rej(e));
     });
     mode = 'private-host'; hostId = id; myNetId = id; Auth.SESSION.serverId = 'PRIVATE-' + code;
-    peer.on('connection', c => { wireConn(c); c.on('open', () => { const P = RT.player; c.send(JSON.stringify({ t: 'hello', id: myNetId, name: S.name, x: P?.pos.x || 0, y: P?.pos.y || 0, z: P?.pos.z || 0, yaw: P?.yaw || 0 })); }); });
+    peer.on('connection', c => { wireConn(c); c.on('open', () => { const P = RT.player; c.send(JSON.stringify({ t: 'hello', id: myNetId, name: S.name, x: P?.pos.x || 0, y: P?.pos.y || 0, z: P?.pos.z || 0, yaw: P?.yaw || 0, look: playerLookPayload() })); }); });
     Net.privateCode = code; setStatus('Hosting · code ' + code); return code;
   }
   async function joinPrivate(code) {
@@ -1690,7 +1732,7 @@ const Net = (() => {
     const conn = peer.connect(id, { reliable: true });
     await new Promise((res, rej) => { conn.on('open', res); conn.on('error', rej); setTimeout(() => rej(new Error('Host not found')), 12000); });
     wireConn(conn);
-    const P = RT.player; conn.send(JSON.stringify({ t: 'hello', id: myNetId, name: S.name, x: P?.pos.x || 0, y: P?.pos.y || 0, z: P?.pos.z || 0, yaw: P?.yaw || 0 }));
+    const P = RT.player; conn.send(JSON.stringify({ t: 'hello', id: myNetId, name: S.name, x: P?.pos.x || 0, y: P?.pos.y || 0, z: P?.pos.z || 0, yaw: P?.yaw || 0, look: playerLookPayload() }));
     setStatus('Joined private · ' + code);
   }
   async function connect(choice) {
@@ -1699,7 +1741,18 @@ const Net = (() => {
     if (choice.type === 'private-host') return hostPrivate(choice.code);
     if (choice.type === 'private-join') return joinPrivate(choice.code);
   }
-  function update(dt) { syncT += dt; if (syncT < .12 || !RT.ready) return; syncT = 0; sendPose(); }
+  function update(dt) {
+    syncT += dt; if (syncT < .12 || !RT.ready) return; syncT = 0; sendPose();
+    if (mode === 'playroom') syncPlayroomPeers();
+  }
+  function leaveSession() {
+    playHandlers.forEach(fn => { try { fn(); } catch (e) { } });
+    playHandlers = [];
+    if (mode === 'playroom') { try { PR()?.leaveRoom?.(); } catch (e) { } }
+    if (peer) { try { peer.destroy(); } catch (e) { } peer = null; }
+    conns.clear(); hostId = null; mode = 'solo'; myNetId = 'me'; Net.privateCode = null;
+    for (const r of [...RT.remotes]) removeRemoteVisual(r.id);
+  }
   function sendChat(text) {
     if (mode === 'solo') return;
     const msg = { t: 'chat', id: myNetId, name: S.name, text: text.slice(0, 240) };
@@ -1736,12 +1789,13 @@ const Net = (() => {
       startGame({ type: 'public', room: s.room, name: s.name }).finally(() => card.classList.remove('busy'));
     });
   }
-  return { connect, update, sendChat, announceCatch, removeRemote, teleportRemote, renderBrowser, get mode() { return mode; }, privateCode: null };
+  return { connect, update, sendChat, announceCatch, removeRemote, teleportRemote, renderBrowser, leaveSession, get mode() { return mode; }, privateCode: null };
 })();
 
 let booting = false;
 async function startGame(choice) {
   if (booting) { toast('Still connecting…', '', 1.4); return; }
+  const nameEl = $('#joinName'); if (nameEl?.value != null && !applyUsername(nameEl.value, false)) return;
   booting = true;
   $('#serverBrowser').classList.add('hidden'); $('#loadBar').classList.remove('hidden');
   try {
@@ -2279,7 +2333,9 @@ function rbadge(r) { const R = RAR[r]; return `<span class="rb ${r === 5 ? '' : 
 const RAIL = [['shop', 'Shop', '<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'], ['inventory', 'Inventory (I)', '<rect x="5" y="7" width="14" height="14" rx="3"/><path d="M9 7V5a3 3 0 0 1 6 0v2M5 13h14"/>'], ['index', 'Fish Index', '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6"/>'], ['quests', 'Quests & Events', '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 9l2 2 4-4M8 15h8"/>'], ['map', 'Map (M)', '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>'], ['settings', 'Settings', '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>'], ['help', 'Help', '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 .5c0 2-2.5 2-2.5 4M12 17h.01"/>']];
 function renderRail() {
   const qDone = [...S.quests, ...S.daily.list].some(q => q.done && !q.claimed); const chests = S.inv.some(i => i.type === 'chest');
-  $('#rail').innerHTML = RAIL.map(([p, t, svg]) => `<div class="rbtn" data-act="open" data-p="${p}" data-tip="${t}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg}</svg>${(p === 'quests' && qDone) || (p === 'inventory' && chests) || (p === 'settings' && S.perkPts) ? '<span class="dot"></span>' : ''}</div>`).join('') + (Auth.can('me', 'admin.open') ? `<div class="rbtn admin" data-act="admin" data-tip="Admin Menu (P)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>` : '');
+  $('#rail').innerHTML = RAIL.map(([p, t, svg]) => `<div class="rbtn" data-act="open" data-p="${p}" data-tip="${t}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg}</svg>${(p === 'quests' && qDone) || (p === 'inventory' && chests) || (p === 'settings' && S.perkPts) ? '<span class="dot"></span>' : ''}</div>`).join('')
+    + (RT.ready && Net.mode !== 'solo' ? `<div class="rbtn" data-act="leaveGame" data-tip="Leave server" style="color:#FF9A1F;border-color:rgba(255,154,31,.35)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></div>` : '')
+    + (Auth.can('me', 'admin.open') ? `<div class="rbtn admin" data-act="admin" data-tip="Admin Menu (P)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>` : '');
 }
 let shownCoins = 0, shownPearls = 0;
 function renderCurrency(bump) { if (bump) { $('#coinPill').classList.remove('bump'); void $('#coinPill').offsetWidth; $('#coinPill').classList.add('bump'); } }
@@ -2430,9 +2486,20 @@ PANELS.inventory = (tab) => {
 PANELS.index = (tab) => {
   const tabs = D.areas.map(a => [a.id, (S.areas[a.id] ? '' : '🔒 ') + a.name]); const area = D.areas[D.areaIdx[tab]] || D.areas[0]; const ctx = fishCtx(area.id, S.band); const odds = fishOdds(area.id, ctx);
   const fishes = D.fish.filter(f => f.area === area.id); const nonSecret = fishes.filter(f => f.rarity < 6); const caught = nonSecret.filter(f => S.dex[f.id]).length; const pct = Math.round(caught / nonSecret.length * 100); const claimed = S.areaRewards[area.id];
-  const html = `<div class="card" style="margin-bottom:14px"><div class="row" style="justify-content:space-between;flex-wrap:wrap"><div><div class="t" style="color:${area.color}">${area.name}</div><div class="mute" style="font-size:12px">${area.desc} · max ${fmt(area.maxDist)}m</div></div><div style="min-width:220px"><div class="row" style="justify-content:space-between"><span>Completion</span><b class="num">${caught}/${nonSecret.length} (${pct}%)</b></div><div class="pbar"><div style="width:${pct}%"></div></div></div>${pct >= 100 ? `<button class="btn gold sm" data-act="dexReward" data-a="${area.id}" ${claimed ? 'disabled' : ''}>${claimed ? 'Reward claimed' : 'Claim 100% reward'}</button>` : ''}</div>
-  <div class="sec">Rarity odds here (your current gear, ${D.bands[S.band].name} band, ${curWeather().name}${isNight() ? ', night' : ''}) · total luck +${ctx.luck.toFixed(2)}</div><div class="row" style="flex-wrap:wrap;gap:6px">${odds.rar.map((p, i) => p > 0 && i < 6 ? `<span class="rb" style="--rc:${RAR[i].color}">${RAR[i].icon} ${RAR[i].name} ${(p * 100).toFixed(p < .01 ? 3 : 1)}%</span>` : '').join('')}<span class="rb" style="--rc:#E8E8FF">✧ Secret ???</span></div></div>
-  <div class="grid">${fishes.map(f => { const dx = S.dex[f.id]; const hidden = f.rarity === 6 && !dx; const p = odds.fish[f.id] || 0; return `<div class="card rar" style="--rc:${hidden ? '#333' : RAR[f.rarity].color};text-align:center"><img src="${fishIcon(f.id, !dx)}" style="width:100%;max-width:150px;height:auto">${hidden ? '<div class="t">???</div><span class="rb" style="--rc:#E8E8FF">✧ ???</span><div class="st">Hidden until caught</div>' : `<div class="t">${dx ? esc(f.name) : '???'}</div>${rbadge(f.rarity)}<div class="st">Odds: <b>${p > 0 ? '1 in ' + fmt(Math.max(1, Math.round(1 / p))) : '—'}</b><br>${fmtW(f.minW)} – ${fmtW(f.maxW)}<br>${dx ? `Caught <b>${dx.n}</b> · Record <b>${fmtW(dx.best)}</b>` : 'Not caught yet'}<br><span class="pill">${f.beh}</span></div>`}</div>`; }).join('')}</div>`;
+  const areaTable = fishes.filter(f => f.rarity < 6).map(f => { const p = odds.fish[f.id] || 0; const dx = S.dex[f.id]; return `<tr><td>${dx ? esc(f.name) : '???'}</td><td>${rbadge(f.rarity)}</td><td class="num">${fmtFishChance(p)}</td><td class="num">${fmtW(f.minW)}–${fmtW(f.maxW)}</td></tr>`; }).join('');
+  const allAreas = D.areas.map(a => {
+    const o = fishOdds(a.id, fishCtx(a.id, S.band));
+    const rows = D.fish.filter(f => f.area === a.id && f.rarity < 6).sort((x, y) => (o.fish[y.id] || 0) - (o.fish[x.id] || 0)).map(f => {
+      const p = o.fish[f.id] || 0; const dx = S.dex[f.id];
+      return `<tr><td>${dx ? esc(f.name) : '???'}</td><td class="num">${fmtFishChance(p)}</td></tr>`;
+    }).join('');
+    return `<details class="card" style="margin-bottom:8px"${a.id === area.id ? ' open' : ''}><summary class="t" style="cursor:pointer;color:${a.color}">${S.areas[a.id] ? '' : '🔒 '}${a.name} — species rates (your gear)</summary><table class="tbl" style="margin-top:8px"><tr><th>Species</th><th>Chance per fish roll</th></tr>${rows || '<tr><td colspan="2" class="mute">No listed species</td></tr>'}</table></details>`;
+  }).join('');
+  const html = `<div class="card" style="margin-bottom:14px"><div class="row" style="justify-content:space-between;flex-wrap:wrap"><div><div class="t" style="color:${area.color}">${area.name}</div><div class="mute" style="font-size:12px">${area.desc} · max ${fmt(area.maxDist)}m${!S.areas[area.id] ? ' · <b>Locked</b> — odds still shown for planning' : ''}</div></div><div style="min-width:220px"><div class="row" style="justify-content:space-between"><span>Completion</span><b class="num">${caught}/${nonSecret.length} (${pct}%)</b></div><div class="pbar"><div style="width:${pct}%"></div></div></div>${pct >= 100 ? `<button class="btn gold sm" data-act="dexReward" data-a="${area.id}" ${claimed ? 'disabled' : ''}>${claimed ? 'Reward claimed' : 'Claim 100% reward'}</button>` : ''}</div>
+  <div class="sec">Rarity odds here (your current gear, ${D.bands[S.band].name} band, ${curWeather().name}${isNight() ? ', night' : ''}) · total luck +${ctx.luck.toFixed(2)} · fish encounter ${(odds.pFish * 100).toFixed(1)}%</div><div class="row" style="flex-wrap:wrap;gap:6px">${odds.rar.map((p, i) => p > 0 && i < 6 ? `<span class="rb" style="--rc:${RAR[i].color}">${RAR[i].icon} ${RAR[i].name} ${(p * 100).toFixed(p < .01 ? 3 : 1)}%</span>` : '').join('')}<span class="rb" style="--rc:#E8E8FF">✧ Secret ???</span></div></div>
+  <div class="sec">${area.name} — every species</div><table class="tbl" style="margin-bottom:14px"><tr><th>Species</th><th>Rarity</th><th>Chance (per fish roll)</th><th>Weight</th></tr>${areaTable}</table>
+  <div class="grid">${fishes.map(f => { const dx = S.dex[f.id]; const hidden = f.rarity === 6 && !dx; const p = odds.fish[f.id] || 0; return `<div class="card rar" style="--rc:${hidden ? '#333' : RAR[f.rarity].color};text-align:center"><img src="${fishIcon(f.id, !dx)}" style="width:100%;max-width:150px;height:auto">${hidden ? '<div class="t">???</div><span class="rb" style="--rc:#E8E8FF">✧ ???</span><div class="st">Hidden until caught</div>' : `<div class="t">${dx ? esc(f.name) : '???'}</div>${rbadge(f.rarity)}<div class="st">Chance: <b>${fmtFishChance(p)}</b><br>${fmtW(f.minW)} – ${fmtW(f.maxW)}<br>${dx ? `Caught <b>${dx.n}</b> · Record <b>${fmtW(dx.best)}</b>` : 'Not caught yet'}<br><span class="pill">${f.beh}</span></div>`}</div>`; }).join('')}</div>
+  <div class="sec">All areas — species chances</div>${allAreas}`;
   return { title: 'Fish Index', tabs, html };
 };
 PANELS.quests = (tab) => {
@@ -2463,8 +2530,8 @@ PANELS.settings = (tab) => {
   if (tab === 'building') html = sel('build.move', 'Default move snap (m)', [0, .1, .25, .5, 1, 2, 5]) + sel('build.rot', 'Default rotation snap (°)', [0, 1, 5, 15, 30, 45, 90]) + sel('build.scale', 'Default scale snap', [0, .05, .1, .25, .5, 1]) + sel('build.scaleMode', 'Scale snap mode', ['dim', 'ratio']) + sel('build.space', 'Transform space', ['world', 'local']) + rng('build.gizmo', 'Gizmo size', .5, 2, .1) + rng('build.gridOpacity', 'Grid opacity', 0, 1, .05) + tog('build.surfaceSnap', 'Surface snapping') + tog('build.vertexSnap', 'Vertex snapping (snap to nearest object corner)') + tog('build.confirmDelete', 'Confirm deletions') + tog('build.showCollision', 'Show collision boxes') + tog('build.showOwner', 'Show object ownership');
   if (tab === 'combat') html = tog('combat.hitmarkers', 'Hit markers') + tog('combat.dmgNumbers', 'Damage numbers') + sel('combat.crosshair', 'Crosshair', ['cross', 'dot']) + tog('combat.autoReload', 'Auto-reload') + tog('combat.reducedFlash', 'Reduced flashing') + tog('combat.nonGraphic', 'Non-graphic effects mode') + tog('combat.aimToggle', 'Toggle aim (vs hold)') + `<p class="mute" style="font-size:12px">Server rules (combat mode: <b>${Auth.settings.combat}</b>, friendly fire: <b>${Auth.settings.friendlyFire ? 'on' : 'off'}</b>) are enforced by the server and cannot be changed here.</p>`;
   if (tab === 'perks') html = `<p>Perk points: <b>${S.perkPts}</b></p><div class="grid">${D.perks.map(p => `<div class="card"><div class="t">${p.name} <span class="pill">${perk(p.id)}/${p.max}</span></div><div class="st">${p.desc}</div><button class="btn sm cyan" data-act="perkUp" data-id="${p.id}" ${!S.perkPts || perk(p.id) >= p.max ? 'disabled' : ''}>Upgrade</button></div>`).join('')}</div>`;
-  if (tab === 'account') html = `<div class="row" style="margin-bottom:12px"><span>Username</span><input class="inp" id="unameIn" value="${esc(S.name)}" maxlength="20"><button class="btn sm cyan" data-act="rename">Save</button></div><p class="mute" style="font-size:12px">Changing your name counts as an account change and clears any temporary command access.</p>
-  <div class="sec">Server session</div><div class="card"><div class="st">Server <b>${esc(Auth.SESSION.serverId)}</b> · Mode: <b>${Net.mode === 'solo' ? 'Offline solo' : Net.mode === 'playroom' ? 'Public (Playroom relay)' : Net.mode.startsWith('private') ? 'Private (PeerJS)' + (Net.privateCode ? ' · ' + Net.privateCode : '') : 'Online'}</b><br>Players online: <b>${[...Auth.players.values()].filter(p => !p.kicked).length}</b> · Your role: <b>${D.roles.find(r => r.id === Auth.role('me')).name}</b>${Auth.get('me').temp ? ' · temporary access active' : ''}</div><button class="btn sm ghost" data-act="rejoin">Leave &amp; pick another server</button></div>
+  if (tab === 'account') html = `<div class="row" style="margin-bottom:12px;flex-wrap:wrap;gap:8px"><span>Username</span><input class="inp" id="unameIn" value="${esc(S.name)}" minlength="3" maxlength="25" placeholder="3–25 characters"><button class="btn sm cyan" data-act="rename">Save</button></div><p class="mute" style="font-size:12px">3–25 characters (letters, numbers, spaces, underscore, hyphen). Changing your name clears temporary command access.</p>
+  <div class="sec">Server session</div><div class="card"><div class="st">Server <b>${esc(Auth.SESSION.serverId)}</b> · Mode: <b>${Net.mode === 'solo' ? 'Offline solo' : Net.mode === 'playroom' ? 'Public (Playroom relay)' : Net.mode.startsWith('private') ? 'Private (PeerJS)' + (Net.privateCode ? ' · ' + Net.privateCode : '') : 'Online'}</b><br>Players online: <b>${[...Auth.players.values()].filter(p => !p.kicked).length}</b> · Your role: <b>${D.roles.find(r => r.id === Auth.role('me')).name}</b>${Auth.get('me').temp ? ' · temporary access active' : ''}</div><button class="btn sm red" data-act="leaveGame">Leave game</button><button class="btn sm ghost" data-act="rejoin">Leave &amp; pick another server</button></div>
   <div class="sec">Save data</div><div class="row" style="flex-wrap:wrap"><button class="btn sm cyan" data-act="saveNow">Save now</button><button class="btn sm ghost" data-act="exportSave">Export save</button><button class="btn sm ghost" data-act="importSave">Import save</button><button class="btn sm red" data-act="resetSave">Reset save</button></div><p class="mute" style="font-size:12px">Auto-saves every 10s and after every action. Saves are checksummed; imported saves can never grant roles, admin items or unlimited currency.</p>`;
   if (tab === 'prestige') html = `<div class="card"><div class="t">✦ Retire &amp; Charter</div><div class="st">Legacy Points: <b>${S.legacy}</b> (prestiged ${S.prestiges}×)<br>Each point: +5% sell value, +0.02 luck. Every 5 points upgrades your starting rod.<br>Requires The Abyss. You would gain <b>${legacyGain()}</b> points now.</div><button class="btn purple" data-act="prestige" ${S.areas.abyss ? '' : 'disabled'}>Retire &amp; Charter</button></div>`;
   return { title: 'Settings', tabs, html, after() { $$('[data-set]').forEach(el => { el.oninput = el.onchange = () => { const p = el.dataset.set; let v = el.type === 'checkbox' ? el.checked : el.type === 'range' ? +el.value : el.value; if (el.tagName === 'SELECT' && !isNaN(+v) && v !== '') v = +v; setPath(CFG, p, v); const lab = document.getElementById('v-' + p); if (lab) lab.textContent = v; saveSettings(); SFX.apply(); document.body.classList.toggle('reduced', !!CFG.reducedMotion); if (BUILD.active) applyBuildSettings(); }; }); } };
@@ -2502,7 +2569,7 @@ const ACTS = {
   buyBoat: d => { const t = +d.t, b = D.boats[t - 1]; if (!spend(b.cost)) return; S.boats.push(t); S.boat = Math.max(S.boat, t); SFX.coin(); toast(`⛵ You bought a ${b.name}!`, 'good'); checkAchievements(); renderAll(); saveSoon(); }, setBoat: d => { S.boat = +d.t; if (RT.boat) despawnBoat(); renderAll(); saveSoon(); },
   buyLicense: () => { const n = D.licenses[S.licenses]; if (!n || S.level < n.level) return; if (!spend(n.cost)) return; S.licenses++; SFX.coin(); toast(`📜 License #${n.n} — now ${fmt(licensed())}m`, 'good'); tutorialCheck('license'); renderAll(); saveSoon(); },
   buyUpg: d => { const u = D.upgrades.find(x => x.id === d.id); const lv = S.upgrades[u.id] || 0; if (lv >= u.max) return; if (!spend(Math.round(u.cost * Math.pow(2.2, lv)))) return; S.upgrades[u.id] = lv + 1; SFX.coin(); toast(`${u.name} upgraded!`, 'good'); renderAll(); saveSoon(); },
-  buyCos: d => { const c = D.cosmetics.find(x => x.id === d.id); if (!spend(0, c.pearl)) return; S.cosmetics.owned.push(c.id); SFX.coin(); renderAll(); saveSoon(); }, eqCos: d => { const c = D.cosmetics.find(x => x.id === d.id); S.cosmetics.eq[c.type] = S.cosmetics.eq[c.type] === c.id ? null : c.id; refreshOutfit(); RT.player.heldUid = null; renderAll(); saveSoon(); },
+  buyCos: d => { const c = D.cosmetics.find(x => x.id === d.id); if (!spend(0, c.pearl)) return; S.cosmetics.owned.push(c.id); SFX.coin(); renderAll(); saveSoon(); }, eqCos: d => { const c = D.cosmetics.find(x => x.id === d.id); S.cosmetics.eq[c.type] = S.cosmetics.eq[c.type] === c.id ? null : c.id; refreshOutfit(); RT.player.heldUid = null; renderProfile(); renderAll(); saveSoon(); },
   buyWeapon: d => { const w = D.weapons.find(x => x.id === d.id); if (!spend(w.cost || 0, w.pearl || 0)) return; Auth.tx(uid(), () => addItem('weapon', w.id, 1, 'shop')); Auth.tx(uid(), () => addItem('ammo', w.ammo, D.ammo.find(a => a.id === w.ammo).per, 'shop')); toast(`${w.name} added to your hotbar`, 'good'); renderAll(); },
   buyAmmo: d => { const a = D.ammo.find(x => x.id === d.id); if (!spend(a.cost)) return; Auth.tx(uid(), () => addItem('ammo', a.id, a.per, 'shop')); renderAll(); }, buyFood: d => { const f = D.foods.find(x => x.id === d.id); if (!spend(f.cost)) return; Auth.tx(uid(), () => addItem('food', f.id, 1, 'shop')); renderAll(); },
   invSel: d => { RT.invSel = d.u; RT.keepScroll = true; renderModal(); }, toHotbar: d => assignHotbar(d.u, +d.i), useFood: d => { useFood(findItem(d.u)); renderModal(); },
@@ -2513,8 +2580,9 @@ const ACTS = {
   claimQ: d => claimQuest(d.id), tourney: () => startTourney(), travel: d => travelTo(d.a), unlockArea: d => { const a = D.areas[D.areaIdx[d.a]]; if (S.level < a.level) return; if (!spend(a.cost)) return; S.areas[a.id] = true; SFX.levelup(); confetti(a.color, 50); toast(`🗺 ${a.name} unlocked!`, 'gold'); checkAchievements(); renderAll(); saveSoon(); },
   rebind: (d, el) => { el.innerHTML = '<span class="key">Press a key…</span>'; const h = e => { e.preventDefault(); e.stopPropagation(); CFG.keys[d.k] = keyName(e); saveSettings(); removeEventListener('keydown', h, true); renderModal(); }; addEventListener('keydown', h, true); }, resetKeys: () => { CFG.keys = { ...D.keys }; saveSettings(); renderModal(); },
   perkUp: d => { if (!S.perkPts) return; S.perks[d.id] = perk(d.id) + 1; S.perkPts--; renderAll(); saveSoon(); },
-  rename: () => { const v = $('#unameIn').value.replace(/[^\w\- ]/g, '').slice(0, 20); if (!v) return; S.name = v; Auth.get('me').name = v; Auth.disconnect('me', 'account change'); if (Auth.get('me').baseRole !== 'player') { Auth.get('me').baseRole = 'player'; } RT.player.ch.group.remove(RT.player.tag); RT.player.tag = nameTag(v); RT.player.ch.group.add(RT.player.tag); toast('Name updated — session permissions reset.', 'good'); renderAll(); saveSoon(); },
-  rejoin: () => { Auth.disconnect('me', 'leave'); closeAdmin(); location.reload(); },
+  rename: () => { if (!applyUsername($('#unameIn').value, false)) return; toast('Name updated — session permissions reset.', 'good'); renderAll(); },
+  rejoin: () => { closeAdmin(); closeModal(); leaveToServerPicker(); },
+  leaveGame: async () => { if (Net.mode === 'solo') { toast('You are not on a multiplayer server.', '', 1.5); return; } if (!(await confirmDlg('Leave this server?', 'You will return to the server list. Your save is kept.', 'Leave', 'red'))) return; closeAdmin(); closeModal(); leaveToServerPicker(); },
   saveNow: () => { saveGame(); toast('Saved!', 'good', 1.2); }, exportSave: () => { const s = exportSave(); navigator.clipboard?.writeText(s).catch(() => { }); dialog(`<h2>Export save</h2><p class="mute">Copied to clipboard (if permitted). Keep it safe:</p><textarea class="inp mono" style="width:100%;height:160px;user-select:text">${s}</textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn cyan" data-act="closeDlg">Done</button></div>`); },
   importSave: async () => { const s = await askText('Import save', '', 'Paste your base64 save here', true); if (!s) return; try { importSave(s); toast('Save imported — reloading…', 'good'); setTimeout(() => location.reload(), 800); } catch (e) { toast('Import failed: ' + esc(e.message), 'bad', 4); } },
   resetSave: async () => { if (!(await confirmDlg('Reset save?', 'This permanently deletes ALL progress on this device.', 'Delete everything', 'red'))) return; localStorage.removeItem(SAVE_KEY); localStorage.removeItem(BAK_KEY); S = defaultState(); RT.noSave = true; location.reload(); },
@@ -3159,6 +3227,7 @@ async function init() {
 }
 requestAnimationFrame(loop);
 Net.renderBrowser();
+const joinNameEl = $('#joinName'); if (joinNameEl) joinNameEl.value = S.name || 'Angler';
 $('#btnCreatePriv').onclick = () => startGame({ type: 'private-host' });
 $('#btnJoinPriv').onclick = () => startGame({ type: 'private-join', code: $('#privCode').value });
 $('#btnSolo').onclick = () => startGame({ type: 'solo' });
