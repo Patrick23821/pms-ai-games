@@ -1,2 +1,2 @@
 # pms-ai-games
-everyone
+here sum entertainment 4 ur boring classes
