@@ -508,7 +508,7 @@ body.dark-side #felt{filter:invert(.92) hue-rotate(180deg)}
             <div id="publicRooms" class="publicRooms">
               <div class="publicRoomsEmpty"><div>🔎</div><div class="small muted" style="margin-top:3px">Searching for rooms…</div></div>
             </div>
-            <div class="roomBrowserFoot">Public rooms are found over PeerJS — no local server needed. Private rooms use an 8-letter code.</div>
+            <div class="roomBrowserFoot">Host in one tab/window; joiners open the main menu here and tap ↻. Private rooms use an 8-letter code.</div>
           </div>
         </div>
       </div>
@@ -578,37 +578,60 @@ const publicCodeForMode=id=>PUBLIC_MODE_CODES[id]||PUBLIC_EXTRA_CODES[0];
 const publicHostCodes=mode=>{const p=publicCodeForMode(mode);return[p,...PUBLIC_EXTRA_CODES.filter(c=>c!==p)];};
 const PUBLIC_SCAN_CODES=[...new Set([...Object.values(PUBLIC_MODE_CODES),...PUBLIC_EXTRA_CODES])];
 const PUB_LS='unoarena.publicRooms';
+const PUB_LIVE=(window.__unoPubLive||(window.__unoPubLive=new Map()));
 function parseNetMsg(raw){if(raw==null)return null;if(typeof raw==='object')return raw;if(typeof raw==='string'){try{return JSON.parse(raw);}catch(e){return null;}}return null;}
+function netSend(ch,msg){if(!ch||!ch.open)return;try{ch.send(typeof msg==='string'?msg:JSON.stringify(msg));}catch(e){}}
+function resolveEmote(e){
+  if(e==null||e==='')return null;
+  if(typeof e==='number'&&EMOTES[e])return EMOTES[e];
+  const s=String(e).trim();
+  if(/^\d+$/.test(s)){const i=+s;return EMOTES[i]||null;}
+  return EMOTES.includes(s)?s:null;
+}
+function prunePubLive(){
+  const now=Date.now();
+  for(const[k,v]of PUB_LIVE)if(!v||now-(v.updated||0)>65000)PUB_LIVE.delete(k);
+}
+function notePublicRoom(r){
+  if(!r||!r.code)return;
+  PUB_LIVE.set(r.code,Object.assign({},r,{updated:Date.now()}));
+  prunePubLive();
+}
 function readPublicRoomsLocal(){
+  prunePubLive();
+  const map=new Map();
+  for(const r of PUB_LIVE.values())if(r&&r.code)map.set(r.code,r);
   try{
-    const reg=JSON.parse(localStorage.getItem(PUB_LS)||'{}'),now=Date.now(),out=[];
+    const reg=JSON.parse(localStorage.getItem(PUB_LS)||'{}'),now=Date.now();
     for(const code in reg){
       const r=reg[code];
-      if(r&&now-(r.updated||0)<55000&&r.roomType==='public'&&r.phase==='lobby'&&!r.locked)out.push(r);
+      if(r&&now-(r.updated||0)<65000)map.set(code,r);
     }
-    return out;
-  }catch(e){return[];}
+  }catch(e){}
+  return [...map.values()].filter(r=>r.roomType==='public'&&r.phase==='lobby'&&!r.locked);
 }
 function publishPublicRoomLocal(){
   if(!isHost||offline||!H||!H.code||(H.roomType||'public')!=='public'||H.phase!=='lobby'||H.locked)return;
+  const row={code:H.code,roomType:'public',mode:H.settings.mode,maxPlayers:H.settings.maxPlayers,players:H.players.filter(p=>!p.spectator).length,locked:!!H.locked,phase:H.phase,hostName:Save.name||'Host',updated:Date.now()};
+  notePublicRoom(row);
   try{
-    const row={code:H.code,roomType:'public',mode:H.settings.mode,maxPlayers:H.settings.maxPlayers,players:H.players.filter(p=>!p.spectator).length,locked:!!H.locked,phase:H.phase,hostName:Save.name||'Host',updated:Date.now()};
     const reg=JSON.parse(localStorage.getItem(PUB_LS)||'{}');
     reg[H.code]=row;
     const now=Date.now();
-    for(const k in reg)if(now-(reg[k].updated||0)>55000)delete reg[k];
+    for(const k in reg)if(now-(reg[k].updated||0)>65000)delete reg[k];
     localStorage.setItem(PUB_LS,JSON.stringify(reg));
-    try{new BroadcastChannel('unoarena-public').postMessage({t:'pub',room:row});}catch(e){}
   }catch(e){}
+  try{new BroadcastChannel('unoarena-public').postMessage({t:'pub',room:row});}catch(e){}
 }
 function unpublishPublicRoomLocal(code){
   if(!code)return;
+  PUB_LIVE.delete(code);
   try{
     const reg=JSON.parse(localStorage.getItem(PUB_LS)||'{}');
     delete reg[code];
     localStorage.setItem(PUB_LS,JSON.stringify(reg));
-    try{new BroadcastChannel('unoarena-public').postMessage({t:'gone',code});}catch(e){}
   }catch(e){}
+  try{new BroadcastChannel('unoarena-public').postMessage({t:'gone',code});}catch(e){}
 }
 function mergePublicRooms(lists){
   const map=new Map();
@@ -881,7 +904,9 @@ function addBot(diff='medium',force){
   H.players.push(newPlayer({name:b[1],avatar:b[0],isBot:true,diff,ready:true,color:pick(PCOLORS)}));return true;
 }
 function startGame(){
-  const humans=H.players.filter(p=>!p.isBot&&!p.spectator).length;if(humans<2){toastHost('Need at least 2 human players to start');return false;}
+  const seated=H.players.filter(p=>!p.spectator);
+  if(seated.length<2){toastHost('Need at least 2 players — add a bot or wait for someone to join');return false;}
+  if(modeIs('team')&&seated.length<4){toastHost('Team mode needs at least 4 players (add bots if needed)');return false;}
   H.gameId++;H.round=0;H.result=null;H.lack={};H.turnCount=0;
   H.players.forEach((p,i)=>{p.score=0;p.out=false;p.spectator=false;p.team=i%2;p.hand=[];p.unoCalled=false;p.stats={played:0,plus4:0,caught:0,draws:0,catches:0};});
   startRound();return true;
@@ -1141,7 +1166,7 @@ function scheduleReactions(){
 function sendTo(p,msg){
   if(p.isBot)return;
   if(p.id===myId){setTimeout(()=>onMsg(msg),0);return;}
-  if(!p.connected)return;const c=CONNS[p.id];try{if(c&&c.open)c.send(msg);}catch(e){}
+  if(!p.connected)return;netSend(CONNS[p.id],msg);
 }
 const sendAll=msg=>{if(H)H.players.forEach(p=>sendTo(p,msg));};
 const hostLog=text=>sendAll({t:'LOG',text,ts:timeStr()});
@@ -1185,18 +1210,25 @@ function applySettingsPatch(pt){
   Save.lobby={mode:s.mode,maxPlayers:s.maxPlayers,rules:clone(s.rules)};Save.theme=s.theme;persist();broadcastLobby();
 }
 function hostRecv(pid,m){
-  if(!H||!m||typeof m!=='object')return;const p=byId(pid);if(!p)return;const isH=pid===H.hostId,lobby=H.phase==='lobby';
+  m=parseNetMsg(m);if(!H||!m)return;const p=byId(pid);if(!p)return;const isH=pid===H.hostId,lobby=H.phase==='lobby';
   switch(m.t){
     case'READY':p.ready=!!m.v;broadcastLobby();break;
     case'PROFILE':if(lobby){p.name=String(m.name||'Player').slice(0,14);p.avatar=String(m.avatar||'🦊').slice(0,4);p.color=String(m.color||'#888').slice(0,9);broadcastLobby();}break;
     case'CHAT':{const text=String(m.text||'').slice(0,200).trim();if(text)sendAll({t:'CHAT',from:p.name,avatar:p.avatar,pid:p.id,text,ts:timeStr()});break;}
-    case'EMOTE':if(EMOTES.includes(m.e))sendAll({t:'EMOTE',pid:p.id,e:m.e});break;
+    case'EMOTE':{const em=resolveEmote(m.e);if(em)sendAll({t:'EMOTE',pid:p.id,e:em});break;}
     case'SETTINGS':if(isH&&lobby&&m.patch)applySettingsPatch(m.patch);break;
     case'ADD_BOT':if(isH&&lobby){if(!addBot(['easy','medium','hard','chaos'].includes(m.diff)?m.diff:'medium'))toastHost('Room is full');broadcastLobby();}break;
     case'BOT_DIFF':{const b=byId(m.id);if(isH&&lobby&&b&&b.isBot&&['easy','medium','hard','chaos'].includes(m.diff)){b.diff=m.diff;broadcastLobby();}break;}
-    case'REMOVE':{const t=byId(m.id);if(!isH||!lobby||!t||t.id===H.hostId)break;
-      if(!t.isBot){const c=CONNS[t.id];try{c&&c.send({t:'KICK',msg:'You were removed from the room'});setTimeout(()=>{try{c.close();}catch(e){}},300);}catch(e){}delete CONNS[t.id];}
-      H.players.splice(H.players.indexOf(t),1);broadcastLobby();break;}
+    case'REMOVE':{const t=byId(m.id);if(!isH||!t||t.id===H.hostId)break;
+      if(!t.isBot){const c=CONNS[t.id];try{netSend(c,{t:'KICK',msg:'You were removed by the host'});setTimeout(()=>{try{c.close();}catch(e){}},300);}catch(e){}delete CONNS[t.id];}
+      const idx=H.players.indexOf(t),wasTurn=H.turn===idx&&H.phase!=='lobby';
+      H.players.splice(idx,1);
+      if(H.phase==='lobby'){broadcastLobby();break;}
+      if(H.players.length<2){toastHost('Not enough players left');backToLobby();break;}
+      if(wasTurn){H.turn=idx>=H.players.length?0:idx;while(!active(H.players[H.turn]))H.turn=(H.turn+1)%H.players.length;}
+      else if(H.turn>idx)H.turn--;
+      toastAll(`${t.name} was removed by the host`);
+      commit();broadcastLobby();break;}
     case'LOCK':if(isH){H.locked=!!m.v;broadcastLobby();}break;
     case'START':if(isH&&lobby&&!startGame())broadcastLobby();break;
     case'NEXT_ROUND':if(isH&&H.phase==='between')startRound();break;
@@ -1222,17 +1254,17 @@ function onHello(c,m){
   let p=H.players.find(q=>q.key&&q.key===key);
   if(p){
     const old=CONNS[p.id];if(old&&old!==c&&p.id!==H.hostId){try{old.close();}catch(e){}}
-    if(p.id===H.hostId){c.send({t:'KICK',msg:'You are the host of this room'});return;}
+    if(p.id===H.hostId){netSend(c,{t:'KICK',msg:'You are the host of this room'});return;}
     clearTimeout(GRACE[p.id]);p.connected=true;p.auto=false;if(p.takenOver){p.isBot=false;p.takenOver=false;}
     toastAll(`✅ ${p.name} is back!`);
   }else{
     const full=H.players.length>=(H.phase==='lobby'?H.settings.maxPlayers:10);
-    if(H.locked||full){try{c.send({t:'KICK',msg:H.locked?'Room is locked':'Room is full'});setTimeout(()=>c.close(),400);}catch(e){}return;}
+    if(H.locked||full){try{netSend(c,{t:'KICK',msg:H.locked?'Room is locked':'Room is full'});setTimeout(()=>c.close(),400);}catch(e){}return;}
     p=newPlayer(Object.assign({key,spectator:H.phase!=='lobby'},prof));H.players.push(p);
     toastAll(`${p.name} joined${p.spectator?' as a spectator':''}`);
   }
   c._pid=p.id;CONNS[p.id]=c;p.connected=true;p.lastSeen=Date.now();
-  c.send({t:'WELCOME',id:p.id,code:H.code,hostId:H.hostId});
+  netSend(c,{t:'WELCOME',id:p.id,code:H.code,hostId:H.hostId});
   broadcastLobby();if(H.phase!=='lobby')commit();
 }
 function wirePeerHost(pr){
@@ -1240,11 +1272,11 @@ function wirePeerHost(pr){
     c.on('data',raw=>{
       const m=parseNetMsg(raw);if(!m)return;
       if(m.t==='ROOM_QUERY'){if(!H)return;const info={code:H.code,roomType:H.roomType||'public',mode:H.settings.mode,maxPlayers:H.settings.maxPlayers,players:H.players.filter(p=>!p.spectator).length,locked:!!H.locked,phase:H.phase,hostName:Save.name||'Host'};
-        const reply=()=>{try{c.send({t:'ROOM_INFO',info});}catch(e){}};
+        const reply=()=>netSend(c,{t:'ROOM_INFO',info});
         reply();setTimeout(reply,120);setTimeout(()=>{try{c.close();}catch(e){}},650);return;}
       if(m.t==='HELLO')return onHello(c,m);
       const pid=c._pid;if(!pid||CONNS[pid]!==c||!H)return;const p=byId(pid);if(p)p.lastSeen=Date.now();
-      if(m.t==='PING'){if(p)p.ping=clamp(+m.rtt||0,0,9999);try{c.send({t:'PONG',ts:m.ts});}catch(e){}return;}
+      if(m.t==='PING'){if(p)p.ping=clamp(+m.rtt||0,0,9999);netSend(c,{t:'PONG',ts:m.ts});return;}
       hostRecv(pid,m);});
     c.on('close',()=>{if(c._pid&&CONNS[c._pid]===c)dropPlayer(c._pid);});
     c.on('error',()=>{});
@@ -1289,10 +1321,10 @@ function showRecon(txt){$('#recon').classList.remove('hidden');$('#reconTxt').te
 function hideRecon(){$('#recon').classList.add('hidden');}
 function send(m){
   if(isHost){setTimeout(()=>{if(H)hostRecv(myId,m);},0);return;}
-  try{if(conn&&conn.open)conn.send(m);}catch(e){}
+  netSend(conn,m);
 }
 function onMsg(m){
-  if(C.leaving||!m)return;
+  m=parseNetMsg(m);if(C.leaving||!m)return;
   switch(m.t){
     case'WELCOME':myId=m.id;C.code=m.code;C.hostId=m.hostId;break;
     case'LOBBY':C.lobby=m.lobby;applyTheme(effTheme(m.lobby.settings.theme));
@@ -1302,7 +1334,7 @@ function onMsg(m){
     case'EVENT':handleEvent(m.k,m.d||{});break;
     case'CHAT':C.chat.push(m);if(C.chat.length>150)C.chat.shift();renderChat();if(C.drawer!=='chat'){C.unread++;updateBadges();}if(m.pid!==myId)sfx('chat');break;
     case'LOG':C.log.push(m);if(C.log.length>150)C.log.shift();renderLog();break;
-    case'EMOTE':showEmote(m.pid,m.e);break;
+    case'EMOTE':{const em=resolveEmote(m.e);if(em)showEmote(m.pid,em);break;}
     case'TOAST':toast(m.msg);break;
     case'ERR':sfx('err');toast(m.msg||'Invalid move');break;
     case'KICK':toast(m.msg||'Removed from room');leaveToMenu();break;
@@ -1310,13 +1342,13 @@ function onMsg(m){
     case'SNAP':C.snap=m.data;break;
   }
 }
-function startPing(){clearInterval(C.pingT);C.pingT=setInterval(()=>{try{if(conn&&conn.open)conn.send({t:'PING',ts:Date.now(),rtt:C.rtt});}catch(e){}},3000);}
+function startPing(){clearInterval(C.pingT);C.pingT=setInterval(()=>netSend(conn,{t:'PING',ts:Date.now(),rtt:C.rtt}),3000);}
 function wireClient(c,onOpen){
   conn=c;
   const sendHello=()=>{
     if(conn!==c||!c.open)return;
     if(onOpen)onOpen();stopRecon();isHost=false;offline=false;hideRecon();
-    try{c.send({t:'HELLO',key:MYKEY,name:Save.name||'Player',avatar:Save.avatar,color:Save.color});startPing();}catch(e){}
+    netSend(c,{t:'HELLO',key:MYKEY,name:Save.name||'Player',avatar:Save.avatar,color:Save.color});startPing();
   };
   c.on('open',sendHello);
   if(c.open)sendHello();
@@ -1325,59 +1357,62 @@ function wireClient(c,onOpen){
   c.on('error',()=>{});
 }
 let publicScanBusy=false,publicScanGen=0;
-function queryPublicSlot(pr,code,ms){
+function queryPublicSlotStandalone(code){
   return new Promise(resolve=>{
-    let done=false;
-    const finish=v=>{if(done)return;done=true;try{c.close();}catch(e){}resolve(v);};
-    const c=pr.connect(PEER_PREFIX+code,{reliable:true});
-    const t=setTimeout(()=>finish(null),ms);
-    c.on('data',raw=>{
-      const m=parseNetMsg(raw);if(!m||m.t!=='ROOM_INFO'||!m.info)return;
-      clearTimeout(t);
-      const info=m.info;
-      if(info.roomType==='public'&&info.phase==='lobby'&&!info.locked)finish(Object.assign({code},info));
-      else finish(null);
+    if(typeof Peer==='undefined'){resolve(null);return;}
+    let settled=false;
+    const pr=new Peer(PEER_OPTS);
+    const done=v=>{if(settled)return;settled=true;try{pr.destroy();}catch(e){}resolve(v);};
+    const cap=setTimeout(()=>done(null),6500);
+    pr.on('error',()=>done(null));
+    pr.on('open',()=>{
+      const c=pr.connect(PEER_PREFIX+code,{reliable:true});
+      let answered=false;
+      const finish=v=>{if(answered)return;answered=true;clearTimeout(cap);try{c.close();}catch(e){}done(v);};
+      c.on('open',()=>{netSend(c,{t:'ROOM_QUERY'});});
+      c.on('data',raw=>{
+        const m=parseNetMsg(raw);if(!m||m.t!=='ROOM_INFO'||!m.info)return;
+        const info=m.info;
+        if(info.roomType==='public'&&info.phase==='lobby'&&!info.locked){const row=Object.assign({code},info);notePublicRoom(row);finish(row);}
+        else finish(null);
+      });
+      c.on('error',()=>finish(null));
+      setTimeout(()=>finish(null),5800);
     });
-    c.on('open',()=>{try{c.send({t:'ROOM_QUERY'});}catch(e){finish(null);}});
-    c.on('error',()=>{clearTimeout(t);finish(null);});
   });
 }
-function scanPublicRooms(codes){
-  return new Promise(resolve=>{
-    if(typeof Peer==='undefined'||!codes.length){resolve([]);return;}
-    const pr=new Peer(PEER_OPTS);
-    let settled=false;
-    const finish=list=>{if(settled)return;settled=true;try{pr.destroy();}catch(e){}resolve(list);};
-    const hardCap=setTimeout(()=>finish([]),12000);
-    pr.on('error',()=>{if(!pr.open)finish([]);});
-    pr.on('open',async()=>{
-      clearTimeout(hardCap);
-      const per=Math.max(3500,Math.min(6000,Math.floor(14000/Math.max(1,codes.length))));
-      const chunks=[];
-      for(let i=0;i<codes.length;i+=4)chunks.push(codes.slice(i,i+4));
-      const found=[];
-      for(const chunk of chunks){
-        const part=await Promise.all(chunk.map(code=>queryPublicSlot(pr,code,per)));
-        for(const row of part)if(row)found.push(row);
-      }
-      finish(found);
-    });
-  });
+async function scanPublicRooms(codes){
+  if(typeof Peer==='undefined'||!codes.length)return[];
+  const found=[];
+  for(let i=0;i<codes.length;i+=5){
+    const chunk=codes.slice(i,i+5);
+    const part=await Promise.all(chunk.map(code=>queryPublicSlotStandalone(code)));
+    for(const row of part)if(row)found.push(row);
+  }
+  return found;
 }
 async function refreshPublicRooms(){
   const el=$('#publicRooms');if(!el)return;
   if(typeof Peer==='undefined'){el.innerHTML='<div class="publicRoomsEmpty"><div>⚠️</div><div class="small muted" style="margin-top:3px">PeerJS failed to load — check your internet connection.</div></div>';return;}
   const gen=++publicScanGen;
   publicScanBusy=true;
-  const local=readPublicRoomsLocal();
+  let local=readPublicRoomsLocal();
+  if(!local.length){try{const cache=JSON.parse(sessionStorage.getItem('unoarena.publicCache')||'{}');if(cache.rooms&&Date.now()-(cache.t||0)<90000)for(const r of cache.rooms)notePublicRoom(r);local=readPublicRoomsLocal();}catch(e){}}
   if(local.length)renderPublicRoomList(el,local);
   else el.innerHTML='<div class="publicRoomsEmpty"><div>🔎</div><div class="small muted" style="margin-top:3px">Searching for open rooms…</div></div>';
   try{
     const remote=await scanPublicRooms(PUBLIC_SCAN_CODES);
     if(gen!==publicScanGen)return;
-    renderPublicRoomList(el,mergePublicRooms([local,remote]));
+    local=readPublicRoomsLocal();
+    const live=mergePublicRooms([local,remote]);
+    renderPublicRoomList(el,live);
+    try{sessionStorage.setItem('unoarena.publicCache',JSON.stringify({t:Date.now(),rooms:live}));}catch(e){}
   }catch(e){
-    if(gen===publicScanGen&&!local.length)el.innerHTML='<div class="publicRoomsEmpty"><div>⚠️</div><div class="small muted" style="margin-top:3px">Could not scan for rooms. Try refresh ↻.</div></div>';
+    if(gen===publicScanGen){
+      local=readPublicRoomsLocal();
+      if(local.length)renderPublicRoomList(el,local);
+      else el.innerHTML='<div class="publicRoomsEmpty"><div>⚠️</div><div class="small muted" style="margin-top:3px">Could not scan for rooms. Try refresh ↻.</div></div>';
+    }
   }finally{if(gen===publicScanGen)publicScanBusy=false;}
 }
 function joinRoom(code,opts){
@@ -1472,8 +1507,8 @@ function startHosting(roomType='public'){
   cleanupNet();C.leaving=false;isHost=true;createHostState(null,false,roomType);showRecon('Creating room…');
   hostOpenPeer((ok,info)=>{
     hideRecon();if(!ok){toast('Could not create room: '+info);leaveToMenu();return;}
-    C.code=info;broadcastLobby();
-    toast(roomType==='private'?'Private room UNO-'+info+' is ready — share the code!':'Public room is live — others can join from Public Rooms on the main menu.');
+    C.code=info;broadcastLobby();publishPublicRoomLocal();
+    toast(roomType==='private'?'Private room UNO-'+info+' is ready — share the code!':'Public room is live — open the main menu in another tab/window and check Public Rooms.');
     if(roomType==='public')try{new BroadcastChannel('unoarena-public').postMessage({t:'pub',refresh:1});}catch(e){}
   });
 }
@@ -1540,7 +1575,8 @@ function renderGame(){
       <div class="av" aria-label="${esc(p.name)}, ${p.n} cards">${esc(p.avatar)}${p.host?'<span class="tag">👑</span>':p.out?'<span class="tag">💀</span>':''}<span class="cnt">${p.n}</span></div>
       <div class="nm">${v.teamMode?(p.team?'🅱️ ':'🅰️ '):''}${esc(p.name)}${v.mode==='points'?` · ${p.score}`:''}</div>
       <div class="mini">${backMini.repeat(Math.min(p.n,6))}</div>
-      ${v.catchId===p.id&&!v.spectator?'<button class="btn sm catchb" data-act="catch">Catch!</button>':''}</div>`;}).join('');
+      ${v.catchId===p.id&&!v.spectator?'<button class="btn sm catchb" data-act="catch">Catch!</button>':''}
+      ${v.hostId===v.me&&p.id!==v.me&&!p.isBot?`<button class="btn sm danger catchb" data-act="kick" data-id="${p.id}">Kick</button>`:''}</div>`;}).join('');
   /* piles */
   const myTurn=v.phase==='play'&&v.turn===v.me&&!v.spectator&&!v.out,canDraw=myTurn&&!v.drawn;
   const dp=$('#drawPile');dp.innerHTML=[2,1,0].map(i=>`<div class="card back" style="left:${i*2}px;top:${-i*2}px"><span class="in"><span class="ov"><span class="lab">UNO</span></span></span></div>`).join('')+`<span class="cntb">${v.drawN} left</span>`;
@@ -1615,8 +1651,15 @@ function shockwave(){const s=$('#shock');s.classList.remove('go');void s.offsetW
 function shake(){if(reduced())return;const g=$('#game');g.classList.remove('shake');void g.offsetWidth;g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),520);}
 function burstAtTable(n=40){const r=rectOf('#table');if(r)Party.burst(r.left+r.width/2,r.top+r.height/2,getComputedStyle($('#table')).getPropertyValue('--glow')||'#fff',n,7);}
 function showEmote(pid,e){
-  const host=pid===myId&&C.view?$('#mybar .mav'):$(`#seats .seat[data-pid="${pid}"] .av`);
-  if(!host||C.screen!=='game'){toast(`${pname(pid)}: ${e}`);return;}
+  let host=null;
+  if(C.screen==='game'&&C.view){
+    host=pid===C.view.me?$('#mybar .mav'):$(`#seats .seat[data-pid="${pid}"] .av`);
+  }else if(C.screen==='lobby'&&C.lobby){
+    const i=(C.lobby.players||[]).findIndex(p=>p.id===pid);
+    const row=i>=0?$$('#lobby .prow')[i]:null;
+    if(row)host=row.querySelector('.av');
+  }
+  if(!host){toast(`${pname(pid)}: ${e}`);return;}
   const r=host.getBoundingClientRect(),s=document.createElement('span');s.className='emote'+(/^[A-Za-z]+$/.test(e)?' txt':'');s.textContent=e;
   s.style.position='fixed';s.style.left=(r.left+r.width/2)+'px';s.style.top=(r.top-4)+'px';document.body.appendChild(s);setTimeout(()=>s.remove(),2300);sfx('click');
 }
@@ -1710,8 +1753,8 @@ function doDrawIntent(){const v=C.view;if(v&&v.phase==='play'&&v.turn===v.me&&!v
 function callUno(){Snd.init();send({t:'CALL_UNO'});}
 function toggleWheel(){
   const old=$('#emoteWheel');if(old){old.remove();return;}
-  const w=document.createElement('div');w.id='emoteWheel';w.className='panel';w.innerHTML=EMOTES.slice(0,6).map(e=>`<button data-e="${e}" aria-label="Emote ${e}" style="${/^[A-Za-z]+$/.test(e)?'font-size:1rem;font-weight:800':''}">${e}</button>`).join('');
-  $('#bottom').appendChild(w);w.addEventListener('click',e=>{const b=e.target.closest('[data-e]');if(b){send({t:'EMOTE',e:b.dataset.e});w.remove();}});
+  const w=document.createElement('div');w.id='emoteWheel';w.className='panel';w.innerHTML=EMOTES.slice(0,6).map((e,i)=>`<button type="button" data-emi="${i}" aria-label="Emote ${e}" style="${/^[A-Za-z]+$/.test(e)?'font-size:1rem;font-weight:800':''}">${e}</button>`).join('');
+  $('#bottom').appendChild(w);w.addEventListener('click',ev=>{const b=ev.target.closest('[data-emi]');if(!b)return;const em=EMOTES[+b.dataset.emi];if(em){send({t:'EMOTE',e:em});w.remove();}});
 }
 /* ---- chat / log drawers ---- */
 function openDrawer(tab){C.drawer=tab;$('#drawers').classList.add('open');$('#chatPane').classList.toggle('hidden',tab!=='chat');$('#logList').classList.toggle('hidden',tab!=='log');$('#tabChat').classList.toggle('ghost',tab!=='chat');$('#tabLog').classList.toggle('ghost',tab!=='log');
@@ -1762,7 +1805,7 @@ function renderLobby(force){
     ${L.players.map(p=>`<div class="prow"><span class="av" style="background:${esc(p.color)}">${esc(p.avatar)}</span><span class="nm">${p.host?'👑 ':''}${esc(p.name)}${p.id===myId?' (you)':''}${!p.connected?' ⚠️':''}</span>
       ${p.isBot?(amHost?`<select data-botdiff="${p.id}" style="width:auto;padding:.25em">${['easy','medium','hard','chaos'].map(d=>`<option value="${d}" ${p.diff===d?'selected':''}>${d}</option>`).join('')}</select>`:`<span class="chip">🤖 ${p.diff}</span>`):''}
       ${p.ready||p.host?'<span title="Ready">✅</span>':'<span class="muted" title="Not ready">⏳</span>'}${p.isBot||L.offline?'':pingHtml(p)}
-      ${amHost&&p.id!==myId?`<button class="btn sm danger" data-act="rmv" data-id="${p.id}" aria-label="Remove ${esc(p.name)}">✕</button>`:''}</div>`).join('')}
+      ${amHost&&p.id!==myId?`<button class="btn sm danger" data-act="rmv" data-id="${p.id}" aria-label="Kick ${esc(p.name)}">Kick</button>`:''}</div>`).join('')}
     ${amHost?`<div style="display:flex;gap:6px;margin-top:8px"><select id="botDiff" style="width:auto">${['easy','medium','hard','chaos'].map(d=>`<option value="${d}" ${d==='medium'?'selected':''}>${d[0].toUpperCase()+d.slice(1)}</option>`).join('')}</select><button class="btn sm" data-act="addbot" style="flex:1">➕ Add bot</button></div>`:''}
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">${amHost?'<button class="btn big" data-act="start" style="flex:1">▶ Start game</button>':`<button class="btn big" data-act="ready" style="flex:1">${me.ready?'↩ Not ready':'✅ I am ready'}</button>`}</div>
     <p class="small muted" style="margin:8px 0 0">${amHost?'You control the rules, theme &amp; bots. Players who join mid-game spectate until the next round.':'Waiting for the host to start. Settings update live.'}</p></div></div>
@@ -1853,11 +1896,18 @@ const ACT={
   copycode(){copyText(inviteLink(C.view?C.view.code:C.code));},
   copycode2(){copyText('UNO-'+C.lobby.code);},copylink(){copyText(inviteLink(C.lobby.code));},
   lock(){send({t:'LOCK',v:!C.lobby.locked});},ready(){const me=C.lobby.players.find(p=>p.id===myId);send({t:'READY',v:!(me&&me.ready)});},
-  addbot(){send({t:'ADD_BOT',diff:($('#botDiff')||{}).value||'medium'});},rmv(b){send({t:'REMOVE',id:b.dataset.id});},
+  addbot(){send({t:'ADD_BOT',diff:($('#botDiff')||{}).value||'medium'});},
+  rmv(b){ACT.kick(b);},
   mode(b){send({t:'SETTINGS',patch:{mode:b.dataset.mode}});},theme(b){send({t:'SETTINGS',patch:{theme:b.dataset.theme}});},
   presetload(){const v=($('#presetSel')||{}).value||'';const r=v.startsWith('★ ')?Save.presets[v.slice(2)]:PRESETS[v];if(r){send({t:'SETTINGS',patch:{rulesAll:r}});toast('Loaded preset: '+v);}},
   presetsave(){const name=(window.prompt('Name for this rule preset?')||'').trim().slice(0,24);if(!name)return;const r=clone(C.lobby.settings.rules);['target','speedSecs','teamSize'].forEach(k=>delete r[k]);Save.presets[name]=r;persist();toast('Saved preset: '+name);renderLobby(true);},
-  start(){if(C.lobby.players.length<2&&C.lobby.settings.mode!=='team'){toast('Add a bot or wait for a friend first');return;}Snd.init();send({t:'START'});},
+  start(){
+    const ps=(C.lobby&&C.lobby.players||[]).filter(p=>!p.spectator);
+    if(ps.length<2&&C.lobby.settings.mode!=='team'){toast('Add at least one bot or wait for another player');return;}
+    if(C.lobby.settings.mode==='team'&&ps.length<4){toast('Team mode needs 4+ players — add bots if needed');return;}
+    Snd.init();send({t:'START'});
+  },
+  kick(b){if(confirm('Remove this player from the room?'))send({t:'REMOVE',id:b.dataset.id});},
   ptheme(b){
     Save.personalTheme=b.dataset.theme;persist();
     /* Personal theme owns all non-room screens. Inside a room, the room theme remains authoritative. */
@@ -1924,16 +1974,22 @@ function init(){
   const st=document.createElement('style');
   st.textContent='input[type=number]{background:rgba(255,255,255,.12);border:1px solid var(--panelb);border-radius:10px;padding:.4em;color:inherit;width:70px;font-size:.95rem}.theme-light input[type=number]{background:#eef1f5}.theme-paper input[type=number]{background:#fff;border:2px solid #222}.chip.btnlike{cursor:pointer}';
   document.head.appendChild(st);
+  try{const cache=JSON.parse(sessionStorage.getItem('unoarena.publicCache')||'{}');if(cache.rooms&&Date.now()-(cache.t||0)<120000)for(const r of cache.rooms)notePublicRoom(r);}catch(e){}
   FX.init();initProfile();bindEvents();applySettings();refreshPublicRooms();
   try{
     const pubChan=new BroadcastChannel('unoarena-public');
-    pubChan.onmessage=()=>{if(C.screen==='menu')refreshPublicRooms();};
+    pubChan.onmessage=ev=>{
+      const d=ev.data||{};
+      if(d.room)notePublicRoom(d.room);
+      if(d.t==='gone'&&d.code){PUB_LIVE.delete(d.code);try{const reg=JSON.parse(localStorage.getItem(PUB_LS)||'{}');delete reg[d.code];localStorage.setItem(PUB_LS,JSON.stringify(reg));}catch(e){}}
+      if(C.screen==='menu')refreshPublicRooms();
+    };
   }catch(e){}
   /* Personal theme is the user's global UI theme on the home/settings screens.
      Room themes only take over after entering a lobby/game. */
   document.body.classList.remove('theme-classic');applyTheme(homeTheme(),true);
   setInterval(tickTimer,250);
-  setInterval(()=>{if(isHost&&H&&!H.offline&&H.phase==='lobby')broadcastLobby();if(C.screen==='menu')refreshPublicRooms();},8000);
+  setInterval(()=>{if(isHost&&H&&!H.offline&&H.phase==='lobby'){broadcastLobby();publishPublicRoomLocal();}if(C.screen==='menu')refreshPublicRooms();},5000);
   const m=location.hash.match(/join=([A-Za-z0-9-]+)/);
   if(m){const code=normCode(m[1]);ensureName();if(validJoinCode(code))setTimeout(()=>joinRoom(code),400);else openJoin(code);}
 }
