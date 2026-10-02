@@ -571,7 +571,28 @@ let Save=loadSave();
 function persist(){try{localStorage.setItem(LS_KEY,JSON.stringify(Save));}catch(e){}}
 const MYKEY=(()=>{try{let k=sessionStorage.getItem('uno.key');if(!k){k=uid()+uid();sessionStorage.setItem('uno.key',k);}return k;}catch(e){return uid()+uid();}})();
 const PEER_PREFIX='unoarena-';
-const PEER_OPTS={debug:0};
+const PEER_ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]};
+const PEER_PROFILES=[
+  {host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:PEER_ICE},
+  {debug:0,config:PEER_ICE}
+];
+let activePeerProfile=0,forceCloudRelay=false;
+function currentPeerOpts(){
+  if(!forceCloudRelay&&location.protocol!=='file:'&&Number(location.port)===3000){
+    return{host:location.hostname,port:3000,path:'/peerjs',secure:location.protocol==='https:',debug:0,config:PEER_ICE};
+  }
+  return Object.assign({},PEER_PROFILES[activePeerProfile]||PEER_PROFILES[0]);
+}
+function switchToCloudRelay(){forceCloudRelay=true;activePeerProfile=0;}
+function isTransientPeerErr(e){return!!e&&['network','disconnected','server-error','socket-error','webrtc','ssl-unavailable'].includes(e.type);}
+function peerErrLabel(e){
+  if(!e)return'Connection failed';
+  if(e.type==='network'||e.type==='server-error')return'Peer relay unreachable — check internet, VPN, or ad blocker, then retry';
+  if(e.type==='peer-unavailable')return'Room not found';
+  if(e.type==='unavailable-id')return'Could not claim room ID — try again';
+  return String(e.type||e.message||'Connection failed');
+}
+function cyclePeerProfile(){if(activePeerProfile<PEER_PROFILES.length-1){activePeerProfile++;return true;}return false;}
 const PUBLIC_MODE_CODES={classic:'PCLASC',points:'PPOINT',elim:'PEELIM',speed:'PSPEED',team:'PTEAMX',nomercy:'PNOMRC',flip:'PFLIPX',chaos:'PCHAOS'};
 const PUBLIC_EXTRA_CODES=['PUB001','PUB002','PUB003','PUB004','PUB005','PUB006'];
 const publicCodeForMode=id=>PUBLIC_MODE_CODES[id]||PUBLIC_EXTRA_CODES[0];
@@ -1254,7 +1275,7 @@ function onHello(c,m){
   let p=H.players.find(q=>q.key&&q.key===key);
   if(p){
     const old=CONNS[p.id];if(old&&old!==c&&p.id!==H.hostId){try{old.close();}catch(e){}}
-    if(p.id===H.hostId){netSend(c,{t:'KICK',msg:'You are the host of this room'});return;}
+    if(p.id===H.hostId){netSend(c,{t:'KICK',msg:'You are already hosting this room in another tab'});setTimeout(()=>{try{c.close();}catch(e){}},300);return;}
     clearTimeout(GRACE[p.id]);p.connected=true;p.auto=false;if(p.takenOver){p.isBot=false;p.takenOver=false;}
     toastAll(`✅ ${p.name} is back!`);
   }else{
@@ -1292,20 +1313,32 @@ function hostOpenPeer(cb){
   if(typeof Peer==='undefined'){cb(false,'PeerJS failed to load (are you online?)');return;}
   const isPrivate=H.roomType==='private';
   const pubCodes=isPrivate?[]:publicHostCodes(H.settings.mode);
-  let tries=0,pubTry=0,opened=false;
-  const attempt=code=>{
-    const pr=new Peer(PEER_PREFIX+code,PEER_OPTS);
+  let privIds=0,pubIdx=0,profileSwaps=0,opened=false;
+  const pickCode=()=>isPrivate?genCode(8,true):(pubCodes[pubIdx]||pubCodes[0]);
+  const attempt=(code,netTry)=>{
+    let pr;
+    try{pr=new Peer(PEER_PREFIX+code,currentPeerOpts());}catch(e){cb(false,'peer-init');return;}
+    const retryNet=()=>{
+      try{pr.destroy();}catch(x){}
+      if(opened)return;
+      if(netTry<8){setTimeout(()=>attempt(code,netTry+1),450+netTry*200);return;}
+      if(!forceCloudRelay&&Number(location.port)===3000){switchToCloudRelay();attempt(code,0);return;}
+      if(profileSwaps<PEER_PROFILES.length-1){profileSwaps++;cyclePeerProfile();attempt(code,0);return;}
+      cb(false,peerErrLabel({type:'network'}));
+    };
     pr.on('open',()=>{opened=true;peer=pr;H.code=code;wirePeerHost(pr);startWatchdog();cb(true,code);});
     pr.on('error',e=>{
       if(opened)return;try{pr.destroy();}catch(x){}
       if(e.type==='unavailable-id'){
-        if(isPrivate&&tries++<6)attempt(genCode(8,true));
-        else if(!isPrivate&&pubTry<pubCodes.length)attempt(pubCodes[pubTry++]);
-        else cb(false,'unavailable-id');
-      }else cb(false,e.type||'error');
+        if(isPrivate&&privIds++<10)return attempt(genCode(8,true),0);
+        if(!isPrivate&&++pubIdx<pubCodes.length)return attempt(pubCodes[pubIdx],0);
+        return cb(false,peerErrLabel(e));
+      }
+      if(isTransientPeerErr(e))return retryNet();
+      cb(false,peerErrLabel(e));
     });
   };
-  attempt(isPrivate?genCode(8,true):pubCodes[pubTry++]);
+  attempt(pickCode(),0);
 }
 
 /* =====================================================================
@@ -1360,34 +1393,43 @@ let publicScanBusy=false,publicScanGen=0;
 function queryPublicSlotStandalone(code){
   return new Promise(resolve=>{
     if(typeof Peer==='undefined'){resolve(null);return;}
-    let settled=false;
-    const pr=new Peer(PEER_OPTS);
-    const done=v=>{if(settled)return;settled=true;try{pr.destroy();}catch(e){}resolve(v);};
-    const cap=setTimeout(()=>done(null),6500);
-    pr.on('error',()=>done(null));
-    pr.on('open',()=>{
-      const c=pr.connect(PEER_PREFIX+code,{reliable:true});
-      let answered=false;
-      const finish=v=>{if(answered)return;answered=true;clearTimeout(cap);try{c.close();}catch(e){}done(v);};
-      c.on('open',()=>{netSend(c,{t:'ROOM_QUERY'});});
-      c.on('data',raw=>{
-        const m=parseNetMsg(raw);if(!m||m.t!=='ROOM_INFO'||!m.info)return;
-        const info=m.info;
-        if(info.roomType==='public'&&info.phase==='lobby'&&!info.locked){const row=Object.assign({code},info);notePublicRoom(row);finish(row);}
-        else finish(null);
+    let settled=false,netTry=0;
+    const done=v=>{if(settled)return;settled=true;resolve(v);};
+    const cap=setTimeout(()=>done(null),9000);
+    const probe=()=>{
+      let pr;
+      try{pr=new Peer(currentPeerOpts());}catch(e){done(null);return;}
+      const finish=v=>{try{pr.destroy();}catch(e){}clearTimeout(cap);done(v);};
+      pr.on('error',e=>{
+        if(isTransientPeerErr(e)&&netTry++<2){try{pr.destroy();}catch(x){}setTimeout(probe,400);return;}
+        finish(null);
       });
-      c.on('error',()=>finish(null));
-      setTimeout(()=>finish(null),5800);
-    });
+      pr.on('open',()=>{
+        const c=pr.connect(PEER_PREFIX+code,{reliable:true});
+        let answered=false;
+        const end=v=>{if(answered)return;answered=true;try{c.close();}catch(e){}finish(v);};
+        c.on('open',()=>netSend(c,{t:'ROOM_QUERY'}));
+        c.on('data',raw=>{
+          const m=parseNetMsg(raw);if(!m||m.t!=='ROOM_INFO'||!m.info)return;
+          const info=m.info;
+          if(info.roomType==='public'&&info.phase==='lobby'&&!info.locked){const row=Object.assign({code},info);notePublicRoom(row);end(row);}
+          else end(null);
+        });
+        c.on('error',()=>end(null));
+        setTimeout(()=>end(null),6500);
+      });
+    };
+    probe();
   });
 }
 async function scanPublicRooms(codes){
   if(typeof Peer==='undefined'||!codes.length)return[];
-  const found=[];
-  for(let i=0;i<codes.length;i+=5){
-    const chunk=codes.slice(i,i+5);
+  const found=[],list=codes.slice(0,10);
+  for(let i=0;i<list.length;i+=2){
+    const chunk=list.slice(i,i+2);
     const part=await Promise.all(chunk.map(code=>queryPublicSlotStandalone(code)));
     for(const row of part)if(row)found.push(row);
+    if(i+2<list.length)await new Promise(r=>setTimeout(r,350));
   }
   return found;
 }
@@ -1424,30 +1466,40 @@ function joinRoom(code,opts){
   if(typeof Peer==='undefined'){toast('PeerJS failed to load — check your connection');return;}
   cleanupNet();C.leaving=false;C.code=code;
   showRecon(isPrivate?'Connecting to private room…':'Joining public room…');
-  let done=false,attempts=0;
-  const pr=new Peer(PEER_OPTS);peer=pr;
+  let done=false,dialTry=0,peerNetTry=0,profileSwaps=0;
   const fail=(msg)=>{if(done)return;done=true;hideRecon();toast(msg||'Could not reach the room');cleanupNet();};
-  const to=setTimeout(()=>fail('Could not reach the room — is the host still online?'),16000);
+  const to=setTimeout(()=>fail('Could not reach the room — is the host still online?'),22000);
   const dial=()=>{
     if(done||!peer||peer.destroyed||!peer.open)return;
-    attempts++;
+    dialTry++;
     const c=peer.connect(PEER_PREFIX+code,{reliable:true});
     wireClient(c,()=>{if(!done){done=true;clearTimeout(to);}});
-    c.on('error',()=>{if(!done&&attempts<4)setTimeout(dial,800);});
-    setTimeout(()=>{if(!done&&!c.open&&attempts<4){try{c.close();}catch(e){}dial();}},4500);
+    c.on('error',()=>{if(!done&&dialTry<6)setTimeout(dial,700+dialTry*150);});
+    setTimeout(()=>{if(!done&&!c.open&&dialTry<6){try{c.close();}catch(e){}dial();}},5000);
   };
-  pr.on('open',()=>dial());
-  pr.on('error',e=>{
-    if(C.recon){C.recon.busy=false;return;}
-    if(done)return;
-    if(e.type==='network'||e.type==='disconnected')return;
-    fail(e.type==='peer-unavailable'&&!opts.silent?'Room not found — check the code or Public Rooms list':'Connection error: '+(e.type||'error'));
-    clearTimeout(to);
-  });
-  pr.on('disconnected',()=>{try{pr.reconnect();}catch(e){}});
+  const openClientPeer=()=>{
+    let pr;
+    try{pr=new Peer(currentPeerOpts());}catch(e){fail('Could not start network client');return;}
+    peer=pr;
+    pr.on('open',()=>dial());
+    pr.on('disconnected',()=>{if(!done)try{pr.reconnect();}catch(e){}});
+    pr.on('error',e=>{
+      if(C.recon){C.recon.busy=false;return;}
+      if(done)return;
+      try{pr.destroy();}catch(x){}
+      if(isTransientPeerErr(e)&&peerNetTry++<8){setTimeout(openClientPeer,450+peerNetTry*200);return;}
+      if(!forceCloudRelay&&Number(location.port)===3000){switchToCloudRelay();peerNetTry=0;setTimeout(openClientPeer,300);return;}
+      if(profileSwaps<PEER_PROFILES.length-1){profileSwaps++;cyclePeerProfile();peerNetTry=0;setTimeout(openClientPeer,300);return;}
+      if(e.type==='peer-unavailable'&&!opts.silent)fail('Room not found — check the code or Public Rooms list');
+      else fail(peerErrLabel(e));
+      clearTimeout(to);
+    });
+  };
+  openClientPeer();
 }
 function onHostLost(){
-  clearInterval(C.pingT);conn=null;if(C.leaving||isHost)return;
+  clearInterval(C.pingT);conn=null;
+  if(C.leaving||isHost||(!myId&&!C.lobby))return;
   if(!C.recon)toast('Connection lost — trying to reconnect…');startRecon();
 }
 function startRecon(){
@@ -1462,7 +1514,7 @@ function startRecon(){
 function stopRecon(){if(C.recon){clearInterval(C.recon.iv);C.recon=null;}hideRecon();}
 function attemptConnect(){
   const r=C.recon;if(!r)return;r.busy=true;
-  if(!peer||peer.destroyed){peer=new Peer(PEER_OPTS);peer.on('open',()=>{r.busy=false;});peer.on('error',()=>{r.busy=false;});return;}
+  if(!peer||peer.destroyed){peer=new Peer(currentPeerOpts());peer.on('open',()=>{r.busy=false;});peer.on('error',()=>{r.busy=false;});return;}
   if(peer.disconnected){try{peer.reconnect();}catch(e){}r.busy=false;return;}
   if(!peer.open){r.busy=false;return;}
   const c=peer.connect(PEER_PREFIX+C.code,{reliable:true});wireClient(c,null);
@@ -1471,7 +1523,7 @@ function attemptConnect(){
 /* Host migration: the designated successor received a private snapshot (SNAP) and claims the room id */
 function becomeHost(){
   let data;try{data=JSON.parse(C.snap);}catch(e){C.recon&&(C.recon.hosting=false);return;}
-  const pr=new Peer(PEER_PREFIX+data.code,PEER_OPTS);let opened=false;
+  const pr=new Peer(PEER_PREFIX+data.code,currentPeerOpts());let opened=false;
   pr.on('open',()=>{
     opened=true;try{peer&&peer.destroy();}catch(e){}peer=pr;conn=null;H=data;isHost=true;offline=false;stopRecon();
     H.hostId=myId;H.seq=0;H.locked=false;
@@ -1506,7 +1558,7 @@ function startOffline(){
 function startHosting(roomType='public'){
   cleanupNet();C.leaving=false;isHost=true;createHostState(null,false,roomType);showRecon('Creating room…');
   hostOpenPeer((ok,info)=>{
-    hideRecon();if(!ok){toast('Could not create room: '+info);leaveToMenu();return;}
+    hideRecon();if(!ok){toast('Could not create room — '+info);leaveToMenu();return;}
     C.code=info;broadcastLobby();publishPublicRoomLocal();
     toast(roomType==='private'?'Private room UNO-'+info+' is ready — share the code!':'Public room is live — open the main menu in another tab/window and check Public Rooms.');
     if(roomType==='public')try{new BroadcastChannel('unoarena-public').postMessage({t:'pub',refresh:1});}catch(e){}
