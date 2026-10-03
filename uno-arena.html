@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UNO Arena — Multiplayer UNO</title>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Fredoka:wght@400;600;700&family=Orbitron:wght@500;800&family=Permanent+Marker&family=Poppins:wght@400;600;800&family=Press+Start+2P&family=Quicksand:wght@500;700&family=Righteous&display=swap" rel="stylesheet">
@@ -571,28 +571,7 @@ let Save=loadSave();
 function persist(){try{localStorage.setItem(LS_KEY,JSON.stringify(Save));}catch(e){}}
 const MYKEY=(()=>{try{let k=sessionStorage.getItem('uno.key');if(!k){k=uid()+uid();sessionStorage.setItem('uno.key',k);}return k;}catch(e){return uid()+uid();}})();
 const PEER_PREFIX='unoarena-';
-const PEER_ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'}]};
-const PEER_PROFILES=[
-  {host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,config:PEER_ICE},
-  {debug:0,config:PEER_ICE}
-];
-let activePeerProfile=0,forceCloudRelay=false;
-function currentPeerOpts(){
-  if(!forceCloudRelay&&location.protocol!=='file:'&&Number(location.port)===3000){
-    return{host:location.hostname,port:3000,path:'/peerjs',secure:location.protocol==='https:',debug:0,config:PEER_ICE};
-  }
-  return Object.assign({},PEER_PROFILES[activePeerProfile]||PEER_PROFILES[0]);
-}
-function switchToCloudRelay(){forceCloudRelay=true;activePeerProfile=0;}
-function isTransientPeerErr(e){return!!e&&['network','disconnected','server-error','socket-error','webrtc','ssl-unavailable'].includes(e.type);}
-function peerErrLabel(e){
-  if(!e)return'Connection failed';
-  if(e.type==='network'||e.type==='server-error')return'Peer relay unreachable — check internet, VPN, or ad blocker, then retry';
-  if(e.type==='peer-unavailable')return'Room not found';
-  if(e.type==='unavailable-id')return'Could not claim room ID — try again';
-  return String(e.type||e.message||'Connection failed');
-}
-function cyclePeerProfile(){if(activePeerProfile<PEER_PROFILES.length-1){activePeerProfile++;return true;}return false;}
+const PEER_OPTS={debug:0,host:'0.peerjs.com',port:443,path:'/',secure:true};
 const PUBLIC_MODE_CODES={classic:'PCLASC',points:'PPOINT',elim:'PEELIM',speed:'PSPEED',team:'PTEAMX',nomercy:'PNOMRC',flip:'PFLIPX',chaos:'PCHAOS'};
 const PUBLIC_EXTRA_CODES=['PUB001','PUB002','PUB003','PUB004','PUB005','PUB006'];
 const publicCodeForMode=id=>PUBLIC_MODE_CODES[id]||PUBLIC_EXTRA_CODES[0];
@@ -681,7 +660,7 @@ const VNAME={skip:'Skip',reverse:'Reverse',draw2:'+2',draw1:'+1',draw5:'+5',wild
 const VORDER=['0','1','2','3','4','5','6','7','8','9','skip','reverse','draw1','draw2','draw5','skipall','discardall','flip','wild','wild4','wilddraw2','wilddrawcolor','draw6','draw10','roulette'];
 const DRAWAMT={draw1:1,draw2:2,draw5:5,wild4:4,draw6:6,draw10:10,wilddraw2:2};
 const isNum=v=>v.length===1&&v>='0'&&v<='9';
-const cardName=f=>f.c==='W'?VNAME[f.v]:CNAME[f.c]+' '+(isNum(f.v)?f.v:VNAME[f.v]);
+const cardName=f=>f.c==='W'?VNAME[f.v]:cName(f.c)+' '+(isNum(f.v)?f.v:VNAME[f.v]);
 const AVATARS=['🦊','🐼','🐙','🦄','🐲','🦉','🐸','👾','🐯','🦈','🐧','🤖','😎','🥳','👻','🐵','🦁','🐨','🐰','🦖','🍕','🚀','🔥','👑'];
 const PCOLORS=['#e5252a','#f7a600','#27a94b','#1c6fe3','#8a4dff','#ff4fa3','#12c4b6','#6b7280'];
 const BOTS=[['🦊','Foxy'],['🤖','Botzilla'],['🐙','Inky'],['🐼','Pandy'],['🦄','Sparkle'],['🐲','Drako'],['🦉','Hootie'],['🐸','Frogger'],['👾','Glitch'],['🐯','Tigra'],['🦈','Chomp'],['🐧','Waddle']];
@@ -728,12 +707,13 @@ const THEMES={
  pixel:{name:'Retro Pixel',sw:'linear-gradient(135deg,#1a1c2c,#3b5dc9,#ffcd75)',fx:'pixels',snd:{wave:'square',pitch:1.1},mus:{scale:[0,4,7,4,0,5,9,5],root:262,bpm:140,wave:'square'}},
  holo:{name:'Holographic',sw:'linear-gradient(135deg,#ff6ec7,#ffd86e,#6effc7,#6ec7ff)',fx:'sparkle',snd:{wave:'sine',pitch:1.6},mus:{scale:[0,7,12,16,12,7,4,9],root:294,bpm:88,wave:'sine'}},
  galaxy:{name:'Galaxy',sw:'linear-gradient(135deg,#3b1a78,#0b4a8a,#7a1a6a)',fx:'stars',snd:{wave:'sine',pitch:.7},mus:{scale:[0,7,10,14,10,7,3,5],root:130,bpm:60,wave:'sine'}},
- lava:{name:'Inferno',sw:'linear-gradient(180deg,#2b0500,#b31200,#ff6a00)',fx:'embers',snd:{wave:'sawtooth',pitch:.6},mus:{scale:[0,1,0,3,0,5,3,1],root:98,bpm:96,wave:'sawtooth'}},
+ lava:{name:'Inferno',sw:'linear-gradient(180deg,#2b0500,#b31200,#ff6a00)',fx:'embers',cname:{B:'Orange'},snd:{wave:'sawtooth',pitch:.6},mus:{scale:[0,1,0,3,0,5,3,1],root:98,bpm:96,wave:'sawtooth'}},
  ocean:{name:'Deep Ocean',sw:'linear-gradient(180deg,#02203a,#0b8cd6,#3dffe0)',fx:'abyss',snd:{wave:'sine',pitch:.75},mus:{scale:[0,5,7,12,7,5,2,0],root:147,bpm:58,wave:'sine'}},
  paper:{name:'Paper Sketch',sw:'repeating-linear-gradient(#fbf7e6 0 8px,#b5d5ee 8px 10px)',fx:null,snd:{wave:'triangle',pitch:1.25},mus:{scale:[0,2,4,7,4,2,0,-3],root:262,bpm:100,wave:'triangle'}},
  minimal:{name:'Minimal Dark',sw:'linear-gradient(135deg,#121418,#2a2f38,#4dabf7)',fx:null,snd:{wave:'sine',pitch:1},mus:{scale:[0,5,7,5],root:196,bpm:72,wave:'sine'}},
  light:{name:'Minimal Light',sw:'linear-gradient(135deg,#f2f4f7,#d8dde4,#1a6fe0)',fx:null,snd:{wave:'sine',pitch:1.1},mus:{scale:[0,4,7,4],root:220,bpm:72,wave:'sine'}}};
 let curTheme='classic';
+function cName(c){const ov=THEMES[curTheme]?.cname;return ov&&Object.prototype.hasOwnProperty.call(ov,c)?ov[c]:CNAME[c];}
 const reduced=()=>Save.settings.reduceMotion||matchMedia('(prefers-reduced-motion:reduce)').matches;
 function effTheme(roomTheme){const rt=roomTheme||'classic';return rt==='user'?(THEMES[Save.personalTheme]?Save.personalTheme:'classic'):(THEMES[rt]?rt:'classic');}
 function applyTheme(id,instant){
@@ -895,7 +875,7 @@ function drawCards(p,n){const got=[];for(let i=0;i<n;i++){if(!H.draw.length)resh
   if(got.length){p.unoCalled=false;if(H.catchId===p.id)H.catchId=null;p.stats.draws+=got.length;}return got;}
 function penalty(v,amt){const got=drawCards(v,amt);event('draw',{pid:v.id,n:got.length,pen:amt});hostLog(`${v.name} draws ${got.length} card${got.length===1?'':'s'}`);if(amt>=4)botEmote(v,'😡',.5);return got;}
 function drawUntil(p,color){let n=0;while(n<80){if(!H.draw.length)reshuffle();if(!H.draw.length)break;const c=H.draw.pop();p.hand.push(c);n++;if(F(c).c===color)break;}
-  p.unoCalled=false;if(H.catchId===p.id)H.catchId=null;event('draw',{pid:p.id,n,pen:n});hostLog(`${p.name} draws ${n} until ${CNAME[color]}`);}
+  p.unoCalled=false;if(H.catchId===p.id)H.catchId=null;event('draw',{pid:p.id,n,pen:n});hostLog(`${p.name} draws ${n} until ${cName(color)}`);}
 function mercyAll(){if(!modeIs('nomercy'))return;H.players.forEach(p=>{if(active(p)&&p.hand.length>=25){p.out=true;H.draw=shuffle(H.draw.concat(p.hand));p.hand=[];if(H.catchId===p.id)H.catchId=null;event('mercy',{pid:p.id});hostLog(`💀 ${p.name} reached 25 cards and is eliminated!`);}});}
 function rotateHands(d){const act=actives(),order=d===1?act:act.slice().reverse(),hs=order.map(p=>p.hand);order.forEach((p,i)=>{p.hand=hs[(i-1+order.length)%order.length];});resetUno();}
 function shuffleHands(){const act=actives(),sizes=act.map(p=>p.hand.length),pool=shuffle(act.flatMap(p=>p.hand));act.forEach((p,i)=>{p.hand=pool.splice(0,sizes[i]);});resetUno();}
@@ -1015,12 +995,12 @@ function applyEffect(p,card,f){
     case'reverse':H.dir*=-1;event('reverse',{});return(actives().length===2&&R().reverseSkip)?endTurn(1):endTurn();
     case'skipall':event('skip',{all:true});hostLog(`⊗ ${p.name} skips everyone!`);return endTurn(actives().length-1);
     case'flip':flipSide();return endTurn();
-    case'discardall':{const dump=p.hand.filter(c=>F(c).c===f.c);p.hand=p.hand.filter(c=>F(c).c!==f.c);dump.forEach(c=>H.discard.splice(H.discard.length-1,0,c));hostLog(`✖ ${p.name} discards ${dump.length} more ${CNAME[f.c]} cards`);if(!p.hand.length){return endRound(p);}return endTurn();}
+    case'discardall':{const dump=p.hand.filter(c=>F(c).c===f.c);p.hand=p.hand.filter(c=>F(c).c!==f.c);dump.forEach(c=>H.discard.splice(H.discard.length-1,0,c));hostLog(`✖ ${p.name} discards ${dump.length} more ${cName(f.c)} cards`);if(!p.hand.length){return endRound(p);}return endTurn();}
     default:if(amt)return giveDraw(p,amt,v);return endTurn();
   }
 }
 function afterColor(p,color){
-  H.curColor=color;H.phase='play';event('color',{pid:p.id,color});hostLog(`${p.name} chose ${CNAME[color]}`);
+  H.curColor=color;H.phase='play';event('color',{pid:p.id,color});hostLog(`${p.name} chose ${cName(color)}`);
   const f=F(top()),v=f.v,amt=DRAWAMT[v]||0;
   if(v==='wild')return endTurn();
   if(v==='roulette'||v==='wilddrawcolor'){const victim=H.players[nextIdx(H.turn,1)];drawUntil(victim,color);return endTurn(1);}
@@ -1275,7 +1255,7 @@ function onHello(c,m){
   let p=H.players.find(q=>q.key&&q.key===key);
   if(p){
     const old=CONNS[p.id];if(old&&old!==c&&p.id!==H.hostId){try{old.close();}catch(e){}}
-    if(p.id===H.hostId){netSend(c,{t:'KICK',msg:'You are already hosting this room in another tab'});setTimeout(()=>{try{c.close();}catch(e){}},300);return;}
+    if(p.id===H.hostId){netSend(c,{t:'KICK',msg:'You are the host of this room'});return;}
     clearTimeout(GRACE[p.id]);p.connected=true;p.auto=false;if(p.takenOver){p.isBot=false;p.takenOver=false;}
     toastAll(`✅ ${p.name} is back!`);
   }else{
@@ -1309,36 +1289,64 @@ function startWatchdog(){
   clearInterval(T.watch);
   T.watch=setInterval(()=>{if(!H||!isHost)return;const t=Date.now();H.players.forEach(p=>{if(!p.isBot&&p.connected&&p.id!==H.hostId&&t-p.lastSeen>10000){const c=CONNS[p.id];try{c&&c.close();}catch(e){}dropPlayer(p.id);}});},2500);
 }
+function peerErrorTransient(type){
+  return ['network','disconnected','socket-error','server-error','socket-closed','browser-incompatible'].includes(String(type||''));
+}
 function hostOpenPeer(cb){
   if(typeof Peer==='undefined'){cb(false,'PeerJS failed to load (are you online?)');return;}
   const isPrivate=H.roomType==='private';
   const pubCodes=isPrivate?[]:publicHostCodes(H.settings.mode);
-  let privIds=0,pubIdx=0,profileSwaps=0,opened=false;
-  const pickCode=()=>isPrivate?genCode(8,true):(pubCodes[pubIdx]||pubCodes[0]);
-  const attempt=(code,netTry)=>{
+  let tries=0,pubTry=0,opened=false,finished=false,attemptTimer=null;
+  const finish=(ok,info)=>{
+    if(finished)return;
+    finished=true;
+    if(attemptTimer){clearTimeout(attemptTimer);attemptTimer=null;}
+    cb(ok,info);
+  };
+  const attempt=code=>{
+    if(finished)return;
     let pr;
-    try{pr=new Peer(PEER_PREFIX+code,currentPeerOpts());}catch(e){cb(false,'peer-init');return;}
-    const retryNet=()=>{
+    try{
+      // Keep the PeerJS constructor deliberately minimal. The game was passing
+      // custom ICE/ping configuration here; PeerJS can stall before `open`
+      // when that configuration is unavailable. The default PeerJS transport
+      // is sufficient and matches the working PeerJS build.
+      pr=new Peer(PEER_PREFIX+code,{debug:0});
+    }catch(e){finish(false,e&&e.message||'PeerJS failed to start');return;}
+
+    const fail=t=>{
+      if(opened||finished)return;
+      if(attemptTimer){clearTimeout(attemptTimer);attemptTimer=null;}
       try{pr.destroy();}catch(x){}
-      if(opened)return;
-      if(netTry<8){setTimeout(()=>attempt(code,netTry+1),450+netTry*200);return;}
-      if(!forceCloudRelay&&Number(location.port)===3000){switchToCloudRelay();attempt(code,0);return;}
-      if(profileSwaps<PEER_PROFILES.length-1){profileSwaps++;cyclePeerProfile();attempt(code,0);return;}
-      cb(false,peerErrLabel({type:'network'}));
-    };
-    pr.on('open',()=>{opened=true;peer=pr;H.code=code;wirePeerHost(pr);startWatchdog();cb(true,code);});
-    pr.on('error',e=>{
-      if(opened)return;try{pr.destroy();}catch(x){}
-      if(e.type==='unavailable-id'){
-        if(isPrivate&&privIds++<10)return attempt(genCode(8,true),0);
-        if(!isPrivate&&++pubIdx<pubCodes.length)return attempt(pubCodes[pubIdx],0);
-        return cb(false,peerErrLabel(e));
+      if(t==='unavailable-id'){
+        if(isPrivate&&tries++<8){attempt(genCode(8,true));return;}
+        if(!isPrivate&&pubTry<pubCodes.length){attempt(pubCodes[pubTry++]);return;}
       }
-      if(isTransientPeerErr(e))return retryNet();
-      cb(false,peerErrLabel(e));
+      finish(false,t||'error');
+    };
+
+    /* Never let a PeerJS attempt leave the room-creation overlay hanging forever. */
+    attemptTimer=setTimeout(()=>fail('timeout'),isPrivate?6000:3500);
+
+    pr.on('open',()=>{
+      if(opened||finished)return;
+      opened=true;
+      if(attemptTimer){clearTimeout(attemptTimer);attemptTimer=null;}
+      peer=pr;
+      H.code=code;
+
+      /* The UI must be released even if room wiring throws for any reason. */
+      hideRecon();
+      try{wirePeerHost(pr);startWatchdog();}
+      catch(e){console.error('UNO Arena host wiring failed:',e);}
+      finish(true,code);
+    });
+    pr.on('error',e=>fail(e&&e.type||'error'));
+    pr.on('disconnected',()=>{
+      if(opened){try{pr.reconnect();}catch(e){}}
     });
   };
-  attempt(pickCode(),0);
+  attempt(isPrivate?genCode(8,true):pubCodes[pubTry++]);
 }
 
 /* =====================================================================
@@ -1348,10 +1356,10 @@ const C={lobby:null,view:null,chat:[],log:[],unread:0,code:null,snap:null,recon:
 const normCode=s=>{s=String(s||'').trim().toUpperCase();if(s.startsWith('UNO-'))s=s.slice(4);return s.replace(/[^A-Z0-9]/g,'').slice(0,8);};
 const validRoomCode=s=>/^[A-Z]{8}$/.test(s);
 const validJoinCode=s=>/^[A-Z0-9]{6}$/.test(s)||/^[A-Z]{8}$/.test(s);
-const inviteLink=code=>location.href.split('#')[0]+'#join='+code;
+const inviteLink=code=>location.href.split('#')[0]+'#join='+encodeURIComponent(code);
 function showScreen(id){C.screen=id;['menu','lobby','game'].forEach(s=>$('#'+s).classList.toggle('hidden',s!==id));}
-function showRecon(txt){$('#recon').classList.remove('hidden');$('#reconTxt').textContent=txt;}
-function hideRecon(){$('#recon').classList.add('hidden');}
+function showRecon(txt){const r=$('#recon');if(!r)return;r.classList.remove('hidden');const t=$('#reconTxt');if(t)t.textContent=txt;}
+function hideRecon(){const r=$('#recon');if(!r)return;r.classList.add('hidden');r.style.display='none';requestAnimationFrame(()=>{r.style.removeProperty('display');});}
 function send(m){
   if(isHost){setTimeout(()=>{if(H)hostRecv(myId,m);},0);return;}
   netSend(conn,m);
@@ -1377,66 +1385,71 @@ function onMsg(m){
 }
 function startPing(){clearInterval(C.pingT);C.pingT=setInterval(()=>netSend(conn,{t:'PING',ts:Date.now(),rtt:C.rtt}),3000);}
 function wireClient(c,onOpen){
+  const previous=conn;
+  if(previous&&previous!==c){try{previous.close();}catch(e){}}
   conn=c;
+  let opened=false;
   const sendHello=()=>{
-    if(conn!==c||!c.open)return;
-    if(onOpen)onOpen();stopRecon();isHost=false;offline=false;hideRecon();
+    if(conn!==c||!c.open||opened)return;
+    opened=true;if(onOpen)onOpen();stopRecon();isHost=false;offline=false;hideRecon();
     netSend(c,{t:'HELLO',key:MYKEY,name:Save.name||'Player',avatar:Save.avatar,color:Save.color});startPing();
   };
   c.on('open',sendHello);
   if(c.open)sendHello();
   c.on('data',raw=>{const m=parseNetMsg(raw);if(conn===c&&m)onMsg(m);});
   c.on('close',()=>{if(conn===c)onHostLost();});
-  c.on('error',()=>{});
+  c.on('error',e=>{if(conn===c&&e&&e.type!=='peer-unavailable')console.warn('UNO Arena connection:',e.type||e);});
 }
-let publicScanBusy=false,publicScanGen=0;
-function queryPublicSlotStandalone(code){
-  return new Promise(resolve=>{
-    if(typeof Peer==='undefined'){resolve(null);return;}
-    let settled=false,netTry=0;
-    const done=v=>{if(settled)return;settled=true;resolve(v);};
-    const cap=setTimeout(()=>done(null),9000);
-    const probe=()=>{
-      let pr;
-      try{pr=new Peer(currentPeerOpts());}catch(e){done(null);return;}
-      const finish=v=>{try{pr.destroy();}catch(e){}clearTimeout(cap);done(v);};
-      pr.on('error',e=>{
-        if(isTransientPeerErr(e)&&netTry++<2){try{pr.destroy();}catch(x){}setTimeout(probe,400);return;}
-        finish(null);
-      });
-      pr.on('open',()=>{
-        const c=pr.connect(PEER_PREFIX+code,{reliable:true});
-        let answered=false;
-        const end=v=>{if(answered)return;answered=true;try{c.close();}catch(e){}finish(v);};
-        c.on('open',()=>netSend(c,{t:'ROOM_QUERY'}));
-        c.on('data',raw=>{
-          const m=parseNetMsg(raw);if(!m||m.t!=='ROOM_INFO'||!m.info)return;
-          const info=m.info;
-          if(info.roomType==='public'&&info.phase==='lobby'&&!info.locked){const row=Object.assign({code},info);notePublicRoom(row);end(row);}
-          else end(null);
-        });
-        c.on('error',()=>end(null));
-        setTimeout(()=>end(null),6500);
-      });
-    };
-    probe();
-  });
+let publicScanBusy=false,publicScanGen=0,publicScanPeer=null;
+function cancelPublicScan(){
+  publicScanGen++;
+  publicScanBusy=false;
+  if(publicScanPeer){try{publicScanPeer.destroy();}catch(e){}publicScanPeer=null;}
 }
 async function scanPublicRooms(codes){
   if(typeof Peer==='undefined'||!codes.length)return[];
-  const found=[],list=codes.slice(0,10);
-  for(let i=0;i<list.length;i+=2){
-    const chunk=list.slice(i,i+2);
-    const part=await Promise.all(chunk.map(code=>queryPublicSlotStandalone(code)));
-    for(const row of part)if(row)found.push(row);
-    if(i+2<list.length)await new Promise(r=>setTimeout(r,350));
-  }
+  const pr=new Peer(PEER_OPTS);
+  publicScanPeer=pr;
+  const open=await new Promise(resolve=>{
+    let done=false;
+    const finish=v=>{if(done)return;done=true;clearTimeout(timer);resolve(v);};
+    const timer=setTimeout(()=>finish(false),4500);
+    pr.on('open',()=>finish(true));
+    pr.on('error',()=>finish(false));
+  });
+  if(!open){try{pr.destroy();}catch(e){}if(publicScanPeer===pr)publicScanPeer=null;return[];}
+  const found=[];
+  const probes=codes.map(code=>new Promise(resolve=>{
+    let settled=false;
+    let c;
+    const finish=v=>{if(settled)return;settled=true;clearTimeout(timer);try{c&&c.close();}catch(e){}resolve(v);};
+    const timer=setTimeout(()=>finish(null),2500);
+    try{
+      c=pr.connect(PEER_PREFIX+code,{reliable:true,serialization:'json'});
+      c.on('open',()=>netSend(c,{t:'ROOM_QUERY'}));
+      c.on('data',raw=>{
+        const m=parseNetMsg(raw);
+        if(!m||m.t!=='ROOM_INFO'||!m.info)return;
+        const info=m.info;
+        if(info.roomType==='public'&&info.phase==='lobby'&&!info.locked){
+          const row=Object.assign({code},info);notePublicRoom(row);finish(row);
+        }else finish(null);
+      });
+      c.on('error',()=>finish(null));
+      c.on('close',()=>finish(null));
+    }catch(e){finish(null);}
+  }));
+  const part=await Promise.all(probes);
+  for(const row of part)if(row)found.push(row);
+  try{pr.destroy();}catch(e){}
+  if(publicScanPeer===pr)publicScanPeer=null;
   return found;
 }
 async function refreshPublicRooms(){
   const el=$('#publicRooms');if(!el)return;
   if(typeof Peer==='undefined'){el.innerHTML='<div class="publicRoomsEmpty"><div>⚠️</div><div class="small muted" style="margin-top:3px">PeerJS failed to load — check your internet connection.</div></div>';return;}
-  const gen=++publicScanGen;
+  cancelPublicScan();
+  const gen=publicScanGen;
   publicScanBusy=true;
   let local=readPublicRoomsLocal();
   if(!local.length){try{const cache=JSON.parse(sessionStorage.getItem('unoarena.publicCache')||'{}');if(cache.rooms&&Date.now()-(cache.t||0)<90000)for(const r of cache.rooms)notePublicRoom(r);local=readPublicRoomsLocal();}catch(e){}}
@@ -1458,6 +1471,7 @@ async function refreshPublicRooms(){
   }finally{if(gen===publicScanGen)publicScanBusy=false;}
 }
 function joinRoom(code,opts){
+  cancelPublicScan();
   opts=opts||{};
   code=normCode(code);
   const isPrivate=/^[A-Z]{8}$/.test(code);
@@ -1466,40 +1480,45 @@ function joinRoom(code,opts){
   if(typeof Peer==='undefined'){toast('PeerJS failed to load — check your connection');return;}
   cleanupNet();C.leaving=false;C.code=code;
   showRecon(isPrivate?'Connecting to private room…':'Joining public room…');
-  let done=false,dialTry=0,peerNetTry=0,profileSwaps=0;
-  const fail=(msg)=>{if(done)return;done=true;hideRecon();toast(msg||'Could not reach the room');cleanupNet();};
-  const to=setTimeout(()=>fail('Could not reach the room — is the host still online?'),22000);
+  let done=false,attempts=0,peerOpened=false;
+  const pr=new Peer(undefined,PEER_OPTS);peer=pr;
+  const fail=(msg)=>{if(done)return;done=true;clearTimeout(to);hideRecon();toast(msg||'Could not reach the room');cleanupNet();};
+  const to=setTimeout(()=>fail('Could not reach the room — is the host still online?'),18000);
+  const retry=()=>{
+    if(done||attempts>=4)return;
+    setTimeout(dial,Math.min(1800,450+attempts*350));
+  };
   const dial=()=>{
     if(done||!peer||peer.destroyed||!peer.open)return;
-    dialTry++;
-    const c=peer.connect(PEER_PREFIX+code,{reliable:true});
-    wireClient(c,()=>{if(!done){done=true;clearTimeout(to);}});
-    c.on('error',()=>{if(!done&&dialTry<6)setTimeout(dial,700+dialTry*150);});
-    setTimeout(()=>{if(!done&&!c.open&&dialTry<6){try{c.close();}catch(e){}dial();}},5000);
-  };
-  const openClientPeer=()=>{
-    let pr;
-    try{pr=new Peer(currentPeerOpts());}catch(e){fail('Could not start network client');return;}
-    peer=pr;
-    pr.on('open',()=>dial());
-    pr.on('disconnected',()=>{if(!done)try{pr.reconnect();}catch(e){}});
-    pr.on('error',e=>{
-      if(C.recon){C.recon.busy=false;return;}
-      if(done)return;
-      try{pr.destroy();}catch(x){}
-      if(isTransientPeerErr(e)&&peerNetTry++<8){setTimeout(openClientPeer,450+peerNetTry*200);return;}
-      if(!forceCloudRelay&&Number(location.port)===3000){switchToCloudRelay();peerNetTry=0;setTimeout(openClientPeer,300);return;}
-      if(profileSwaps<PEER_PROFILES.length-1){profileSwaps++;cyclePeerProfile();peerNetTry=0;setTimeout(openClientPeer,300);return;}
-      if(e.type==='peer-unavailable'&&!opts.silent)fail('Room not found — check the code or Public Rooms list');
-      else fail(peerErrLabel(e));
-      clearTimeout(to);
+    attempts++;
+    const target=PEER_PREFIX+code;
+    const c=peer.connect(target,{reliable:true,serialization:'json'});
+    let settled=false;
+    const success=()=>{if(settled||done)return;settled=true;done=true;clearTimeout(to);wireClient(c);};
+    c.once('open',success);
+    c.once('error',e=>{
+      if(settled||done)return;settled=true;
+      try{c.close();}catch(x){}
+      if(e&&e.type==='peer-unavailable'){
+        if(attempts<4)retry();
+        else fail(opts.silent?'Could not reach the room':'Room not found — check the code or Public Rooms list');
+      }else if(attempts<4)retry();
+      else fail('Connection timed out — please try again');
     });
+    setTimeout(()=>{if(!settled&&!done){settled=true;try{c.close();}catch(e){}if(attempts<4)retry();else fail('Connection timed out — please try again');}},5000);
   };
-  openClientPeer();
+  pr.on('open',()=>{peerOpened=true;dial();});
+  pr.on('error',e=>{
+    if(done)return;
+    if(peerErrorTransient(e&&e.type)){if(e.type==='disconnected'){try{pr.reconnect();}catch(x){}}return;}
+    if(e&&e.type==='peer-unavailable')return;
+    if(e&&e.type==='unavailable-id'){fail('PeerJS could not create a temporary connection ID — please retry');return;}
+    console.warn('UNO Arena PeerJS:',e&&e.type||e);
+  });
+  pr.on('disconnected',()=>{if(!done){try{pr.reconnect();}catch(e){}}});
 }
 function onHostLost(){
-  clearInterval(C.pingT);conn=null;
-  if(C.leaving||isHost||(!myId&&!C.lobby))return;
+  clearInterval(C.pingT);conn=null;if(C.leaving||isHost)return;
   if(!C.recon)toast('Connection lost — trying to reconnect…');startRecon();
 }
 function startRecon(){
@@ -1514,16 +1533,16 @@ function startRecon(){
 function stopRecon(){if(C.recon){clearInterval(C.recon.iv);C.recon=null;}hideRecon();}
 function attemptConnect(){
   const r=C.recon;if(!r)return;r.busy=true;
-  if(!peer||peer.destroyed){peer=new Peer(currentPeerOpts());peer.on('open',()=>{r.busy=false;});peer.on('error',()=>{r.busy=false;});return;}
+  if(!peer||peer.destroyed){peer=new Peer(PEER_OPTS);peer.on('open',()=>{r.busy=false;});peer.on('error',()=>{r.busy=false;});return;}
   if(peer.disconnected){try{peer.reconnect();}catch(e){}r.busy=false;return;}
   if(!peer.open){r.busy=false;return;}
-  const c=peer.connect(PEER_PREFIX+C.code,{reliable:true});wireClient(c,null);
+  const c=peer.connect(PEER_PREFIX+C.code,{reliable:true,serialization:'json'});wireClient(c,null);
   setTimeout(()=>{if(C.recon&&r.busy&&!c.open){r.busy=false;try{c.close();}catch(e){}}},5000);
 }
 /* Host migration: the designated successor received a private snapshot (SNAP) and claims the room id */
 function becomeHost(){
   let data;try{data=JSON.parse(C.snap);}catch(e){C.recon&&(C.recon.hosting=false);return;}
-  const pr=new Peer(PEER_PREFIX+data.code,currentPeerOpts());let opened=false;
+  const pr=new Peer(PEER_PREFIX+data.code,PEER_OPTS);let opened=false;
   pr.on('open',()=>{
     opened=true;try{peer&&peer.destroy();}catch(e){}peer=pr;conn=null;H=data;isHost=true;offline=false;stopRecon();
     H.hostId=myId;H.seq=0;H.locked=false;
@@ -1556,13 +1575,33 @@ function startOffline(){
   addBot('medium');addBot('medium');addBot('hard');broadcastLobby();
 }
 function startHosting(roomType='public'){
-  cleanupNet();C.leaving=false;isHost=true;createHostState(null,false,roomType);showRecon('Creating room…');
-  hostOpenPeer((ok,info)=>{
-    hideRecon();if(!ok){toast('Could not create room — '+info);leaveToMenu();return;}
-    C.code=info;broadcastLobby();publishPublicRoomLocal();
-    toast(roomType==='private'?'Private room UNO-'+info+' is ready — share the code!':'Public room is live — open the main menu in another tab/window and check Public Rooms.');
-    if(roomType==='public')try{new BroadcastChannel('unoarena-public').postMessage({t:'pub',refresh:1});}catch(e){}
-  });
+  cancelPublicScan();
+  cleanupNet();C.leaving=false;isHost=true;createHostState(null,false,roomType);
+  showRecon('Creating room…');
+  let settled=false;
+  const safety=setTimeout(()=>{
+    if(settled)return;
+    settled=true;
+    hideRecon();
+    toast('Room creation timed out — please try again.');
+    leaveToMenu();
+  },16000);
+  try{
+    hostOpenPeer((ok,info)=>{
+      if(settled)return;
+      settled=true;clearTimeout(safety);
+      hideRecon();
+      if(!ok){toast('Could not create room: '+info);leaveToMenu();return;}
+      C.code=info;broadcastLobby();publishPublicRoomLocal();
+      toast(roomType==='private'?'Private room UNO-'+info+' is ready — share the code!':'Public room is live — open the main menu in another tab/window and check Public Rooms.');
+      if(roomType==='public')try{new BroadcastChannel('unoarena-public').postMessage({t:'pub',refresh:1});}catch(e){}
+    });
+  }catch(e){
+    clearTimeout(safety);settled=true;hideRecon();
+    console.error('UNO Arena room creation failed:',e);
+    toast('Could not create room. Please try again.');
+    leaveToMenu();
+  }
 }
 
 /* =====================================================================
@@ -1636,7 +1675,7 @@ function renderGame(){
   const dc=$('#discardPile');dc.innerHTML='';
   C.tops.forEach((c,i)=>{const el=cardEl(c,v.side,false);el.style.transform=`rotate(${((c.id*37)%30)-15}deg)`;if(i===C.tops.length-1){if(C.hideTop)el.style.visibility='hidden';else if(C.newTop&&!reduced())el.classList.add('land');}dc.appendChild(el);});
   /* hud */
-  $('#hud').innerHTML=`<span class="cc"><i></i>${CNAME[v.cur]}${v.side==='d'?' · DARK':''}</span>${v.pending?`<span class="pend">+${v.pending} stacked</span>`:''}${v.wildBan?'<span>🚫 Wilds banned</span>':''}${v.chaos&&v.mode==='chaos'?`<span>${esc(v.chaos)}</span>`:''}`;
+  $('#hud').innerHTML=`<span class="cc"><i></i>${cName(v.cur)}${v.side==='d'?' · DARK':''}</span>${v.pending?`<span class="pend">+${v.pending} stacked</span>`:''}${v.wildBan?'<span>🚫 Wilds banned</span>':''}${v.chaos&&v.mode==='chaos'?`<span>${esc(v.chaos)}</span>`:''}`;
   /* my bar */
   const tot=(v.mode==='speed'?v.rules.speedSecs:v.rules.timer)*1000;
   const who=v.spectator?'👀 Watching — you will join next round':v.out?'💀 You are eliminated':myTurn?(v.drawn?'Play the drawn card or pass':v.pending?`⚠️ Stack or draw ${v.pending}!`:'✨ Your turn!'):(v.phase==='play'||v.phase==='color'?`Waiting for ${esc(pname(v.actor))}…`:'');
@@ -1727,7 +1766,7 @@ function handleEvent(k,d){
     case'draw':{if(d.pid===me){C.drewThisGame=true;if(d.pen>st.bigStack){st.bigStack=d.pen;persist();}if(d.pen>=12)unlock('stack');}animateDraw(d.pid,d.n);sfx('draw');break;}
     case'skip':sfx('skip');banner(d.all?'⊗ SKIP EVERYONE!':`⊘ ${pname(d.pid)} skipped!`);shockwave();break;
     case'reverse':sfx('reverse');banner('⇄ REVERSE!');{const r=$('#ring');r.classList.add('flipping');setTimeout(()=>r.classList.remove('flipping'),650);}break;
-    case'color':sfx('wild');banner(`🎨 ${pname(d.pid)}: ${CNAME[d.color]}`);burstAtTable(36);break;
+    case'color':sfx('wild');banner(`🎨 ${pname(d.pid)}: ${cName(d.color)}`);burstAtTable(36);break;
     case'uno':banner(`🔥 ${pname(d.pid)} ${d.pid===me?'have':'has'} UNO!`);sfx('uno');burstAtTable(40);if(d.pid===me){st.unoCalls++;if(st.unoCalls>=10)unlock('unomaster');persist();}break;
     case'catch':sfx('catch');banner(`🚨 ${pname(d.by)} caught ${pname(d.pid)}!`);if(d.by===me){st.catches++;persist();if(st.catches>=3)unlock('sniper');}break;
     case'challenge':sfx('catch');banner(d.success?'⚔️ Bluff exposed!':'⚔️ Challenge failed!');if(d.by===me&&d.success)unlock('challenger');break;
@@ -1761,10 +1800,10 @@ function managePopups(){
   C.popupKey=key;
   if(kind==='color'){
     const cols=v.side==='d'?COLORS_D:COLORS_L;
-    showPopup(kind,`<div class="mbox panel" role="dialog" aria-label="Choose a color"><h2>🎨 Choose a color</h2><div class="colpick">${cols.map(c=>`<button data-act="col" data-col="${c}" style="--cc:var(${CVAR[c]})" aria-label="${CNAME[c]}">${CSYM[c]} ${CNAME[c]}</button>`).join('')}</div></div>`,true);
+    showPopup(kind,`<div class="mbox panel" role="dialog" aria-label="Choose a color"><h2>🎨 Choose a color</h2><div class="colpick">${cols.map(c=>`<button data-act="col" data-col="${c}" style="--cc:var(${CVAR[c]})" aria-label="${cName(c)}">${CSYM[c]} ${cName(c)}</button>`).join('')}</div></div>`,true);
   }else if(kind==='challenge'){
     const by=pname(v.chal.by);
-    showPopup(kind,`<div class="mbox panel" role="dialog"><h2>⚔️ Challenge the +4?</h2><p>${esc(by)} played a <b>Wild +4</b> (color now ${CNAME[v.cur]}).<br><span class="small muted">If ${esc(by)} held a ${CNAME[v.chal.prev]} card, they draw 4 instead. Otherwise you draw 6!</span></p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn danger" data-act="chal" data-v="1">⚔️ Challenge!</button><button class="btn" data-act="chal" data-v="0">😬 Accept (+${v.pending||4})</button></div></div>`,true);
+    showPopup(kind,`<div class="mbox panel" role="dialog"><h2>⚔️ Challenge the +4?</h2><p>${esc(by)} played a <b>Wild +4</b> (color now ${cName(v.cur)}).<br><span class="small muted">If ${esc(by)} held a ${cName(v.chal.prev)} card, they draw 4 instead. Otherwise you draw 6!</span></p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn danger" data-act="chal" data-v="1">⚔️ Challenge!</button><button class="btn" data-act="chal" data-v="0">😬 Accept (+${v.pending||4})</button></div></div>`,true);
   }else if(kind==='swap'){
     const others=v.players.filter(p=>p.id!==v.me&&!p.spectator&&!p.out);
     showPopup(kind,`<div class="mbox panel" role="dialog"><h2>🔄 Swap hands with…</h2><div style="display:grid;gap:8px">${others.map(p=>`<button class="btn" data-act="swap" data-id="${p.id}">${esc(p.avatar)} ${esc(p.name)} — ${p.n} cards</button>`).join('')}</div></div>`,true);
@@ -1894,7 +1933,7 @@ function openJoin(code){
 }
 function openStats(){
   const s=Save.stats,cols=['R','Y','G','B'],fav=Object.entries(s.colors).sort((a,b)=>b[1]-a[1])[0];
-  openModal(`<h2>🏆 Lifetime Stats</h2><div class="stgrid">${[['Games',s.games],['Wins',s.wins],['Win rate',s.games?Math.round(100*s.wins/s.games)+'%':'—'],['Win streak',s.streak],['Best streak',s.best],['Favorite color',fav&&fav[1]?CNAME[fav[0]]:'—'],['Biggest stack survived',s.bigStack?'+'+s.bigStack:'—'],['UNO catches',s.catches]].map(([k,v])=>`<div class="stbox"><b>${v}</b>${k}</div>`).join('')}</div>
+  openModal(`<h2>🏆 Lifetime Stats</h2><div class="stgrid">${[['Games',s.games],['Wins',s.wins],['Win rate',s.games?Math.round(100*s.wins/s.games)+'%':'—'],['Win streak',s.streak],['Best streak',s.best],['Favorite color',fav&&fav[1]?cName(fav[0]):'—'],['Biggest stack survived',s.bigStack?'+'+s.bigStack:'—'],['UNO catches',s.catches]].map(([k,v])=>`<div class="stbox"><b>${v}</b>${k}</div>`).join('')}</div>
    <h3 style="margin:10px 0 6px">Achievements</h3>${Object.entries(ACHS).map(([id,a])=>`<div class="ach ${s.ach[id]?'':'lock'}"><span class="ic">${a[0]}</span><span><b>${a[1]}</b><br><small class="muted">${a[2]}</small></span></div>`).join('')}
    <button class="btn danger sm" data-act="resetstats" style="margin-top:8px">Reset stats</button>`);
 }
@@ -2041,7 +2080,7 @@ function init(){
      Room themes only take over after entering a lobby/game. */
   document.body.classList.remove('theme-classic');applyTheme(homeTheme(),true);
   setInterval(tickTimer,250);
-  setInterval(()=>{if(isHost&&H&&!H.offline&&H.phase==='lobby'){broadcastLobby();publishPublicRoomLocal();}if(C.screen==='menu')refreshPublicRooms();},5000);
+  setInterval(()=>{if(isHost&&H&&!H.offline&&H.phase==='lobby'){broadcastLobby();publishPublicRoomLocal();}if(C.screen==='menu'&&!publicScanBusy)refreshPublicRooms();},20000);
   const m=location.hash.match(/join=([A-Za-z0-9-]+)/);
   if(m){const code=normCode(m[1]);ensureName();if(validJoinCode(code))setTimeout(()=>joinRoom(code),400);else openJoin(code);}
 }
