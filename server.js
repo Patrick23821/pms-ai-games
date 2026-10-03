@@ -1,6 +1,6 @@
 import http from "node:http";
 import express from "express";
-import { createBareServer } from "@mercuryworkshop/bare-server-node";
+import { createBareServer } from "@tomphttp/bare-server-node";
 
 const app = express();
 const bare = createBareServer("/bare/");
@@ -27,5 +27,5 @@ server.on("upgrade", (req, socket, head) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Tesseract server listening on port ${PORT}`);
+  console.log(`Tesseract server running on port ${PORT}`);
 });
