@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://unpkg.com/playroomkit@0.0.95/multiplayer.full.umd.js" crossorigin="anonymous"></script>
 
@@ -310,13 +309,17 @@ body.touch #joy{display:block}
 .palI{padding:8px 10px;border-radius:9px;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
 .palI.on,.palI:hover{background:rgba(56,225,255,.15)}
 #tooltip{position:fixed;z-index:100;pointer-events:none;padding:7px 10px;border-radius:9px;background:#0d1b30;border:1px solid var(--line2);font-size:12px;max-width:260px;opacity:0;transition:opacity .12s;box-shadow:0 6px 20px rgba(0,0,0,.5)}
-#loading{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(ellipse at 50% 30%,#1a3a66,#0B1220 70%);pointer-events:auto}
-#loading .logo{font:900 64px Outfit;letter-spacing:-.03em;background:linear-gradient(180deg,#fff,#38E1FF);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 20px rgba(56,225,255,.4))}
-#serverBrowser{width:min(720px,94vw);max-height:min(78vh,640px);display:flex;flex-direction:column;gap:14px;padding:22px 24px;border-radius:22px;background:linear-gradient(180deg,rgba(20,42,72,.96),rgba(12,24,44,.96));border:1px solid rgba(56,225,255,.25);box-shadow:0 24px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);overflow:hidden}
-#serverBrowser h2{margin:0;font:900 26px Outfit;letter-spacing:-.02em}
-#serverBrowser .sub{font-size:13px;color:var(--mute);line-height:1.45}
-.srvGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;overflow-y:auto;padding:4px 2px;max-height:280px}
-.srvCard{padding:12px 14px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.04);cursor:pointer;text-align:left;transition:.15s;font:inherit;color:inherit;width:100%}
+#loading{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px;padding:clamp(12px,3vh,28px) 12px 20px;background:radial-gradient(ellipse at 50% 30%,#1a3a66,#0B1220 70%);pointer-events:auto;overflow-y:auto}
+#loading .logo{font:900 clamp(36px,7vw,56px) Outfit;letter-spacing:-.03em;background:linear-gradient(180deg,#fff,#38E1FF);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 20px rgba(56,225,255,.4));flex:none}
+#serverBrowser{width:min(820px,96vw);flex:1;min-height:min(520px,72vh);max-height:none;display:flex;flex-direction:column;gap:12px;padding:20px 22px 18px;border-radius:22px;background:linear-gradient(180deg,rgba(20,42,72,.96),rgba(12,24,44,.96));border:1px solid rgba(56,225,255,.25);box-shadow:0 24px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);overflow:visible}
+#serverBrowser h2{margin:0;font:900 24px Outfit;letter-spacing:-.02em;flex:none}
+#serverBrowser .sub{font-size:13px;color:var(--mute);line-height:1.45;flex:none}
+#serverBrowserScroll{flex:1;min-height:0;overflow-y:auto;padding-right:4px;display:flex;flex-direction:column;gap:10px}
+.srvGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;padding:2px 0;max-height:none;overflow:visible}
+#serverBrowser button.srvCard{display:block;color:var(--text);font-size:14px;line-height:1.35;-webkit-appearance:none;appearance:none;text-align:left}
+#serverBrowser button.srvCard .n span{color:var(--text)}
+#serverBrowser button.srvCard .d{color:var(--mute)}
+.srvCard{padding:14px 16px;border-radius:14px;border:1px solid var(--line2);background:rgba(255,255,255,.04);cursor:pointer;text-align:left;transition:.15s;font:inherit;color:var(--text);width:100%;min-height:72px}
 .srvCard.busy{opacity:.65;pointer-events:none;border-color:var(--cyan)}
 .srvCard:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .srvCard:disabled .srvDot{background:var(--mute);box-shadow:none}
@@ -392,7 +395,7 @@ body.reduced *{animation-duration:.001s!important;transition:none!important}
 <div id="tut" class="hidden"><div id="tutHole"></div><div id="tutBox" class="panel"></div></div>
 <div id="palette" class="panel hidden"><input id="palIn" class="inp" style="width:100%" placeholder="Type a command… (e.g. nextfish, weather, tp)" autocomplete="off"><div id="palList"></div></div>
 <div id="tooltip"></div>
-<div id="loading"><div class="logo">DEEP CAST</div><div id="serverBrowser"><h2>Choose a server</h2><p class="sub">Public islands use Playroom when opened via <span class="mono">http://</span>, or PeerJS when opened as a local HTML file. Private rooms always use PeerJS. No AI bots — only real anglers.<br><span id="openHint" class="mute" style="font-size:12px;display:block;margin-top:8px"></span></p><div class="sec" style="margin:0 0 4px">Public servers</div><div class="srvGrid" id="pubSrvGrid"></div><div class="sec" style="margin:12px 0 4px">💀 Hardcore servers <span class="mute" style="font-weight:400;font-size:12px">— separate Hardcore Coins &amp; Pearls, tougher fishing, bigger payouts</span></div><div class="srvGrid" id="hcSrvGrid"></div><div class="sec" style="margin:12px 0 4px">Private server</div><div class="row" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="mute" style="font-size:12px">Username</span><input class="inp" id="joinName" placeholder="3–25 characters" maxlength="25" style="flex:1;min-width:160px"></div><div id="privRow"><button class="btn green" id="btnCreatePriv">Create private room</button><input class="inp" id="privCode" placeholder="Room code" maxlength="12"><button class="btn cyan" id="btnJoinPriv">Join</button></div><div id="netStatus"></div><button class="btn ghost sm" id="btnSolo" style="align-self:flex-start;margin-top:4px">Play offline (solo)</button></div><div class="lbar hidden" id="loadBar"><div id="lfill"></div></div><div id="ltext" class="mute h">Pick a server to cast off…</div></div>
+<div id="loading"><div class="logo">DEEP CAST</div><div id="serverBrowser"><h2>Choose a server</h2><p class="sub">Public islands use Playroom when opened via <span class="mono">http://</span>, or PeerJS when opened as a local HTML file. Private rooms always use PeerJS. No AI bots — only real anglers.<br><span id="openHint" class="mute" style="font-size:12px;display:block;margin-top:8px"></span></p><div id="serverBrowserScroll"><div class="sec" style="margin:0 0 4px">Public servers</div><div class="srvGrid" id="pubSrvGrid"></div><div class="sec" style="margin:12px 0 4px">💀 Hardcore servers <span class="mute" style="font-weight:400;font-size:12px">— separate Hardcore Coins &amp; Pearls, tougher fishing, bigger payouts</span></div><div class="srvGrid" id="hcSrvGrid"></div></div><div class="sec" style="margin:12px 0 4px">Private server</div><div class="row" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="mute" style="font-size:12px">Username</span><input class="inp" id="joinName" placeholder="3–25 characters" maxlength="25" style="flex:1;min-width:160px"></div><div id="privRow"><button class="btn green" id="btnCreatePriv">Create private room</button><input class="inp" id="privCode" placeholder="Room code" maxlength="12"><button class="btn cyan" id="btnJoinPriv">Join</button></div><div id="netStatus"></div><button class="btn ghost sm" id="btnSolo" style="align-self:flex-start;margin-top:4px">Play offline (solo)</button></div><div class="lbar hidden" id="loadBar"><div id="lfill"></div></div><div id="ltext" class="mute h">Pick a server to cast off…</div></div>
 
 <script>
 (function () {
@@ -2218,6 +2221,18 @@ const Net = (() => {
     if (mode.startsWith('private')) broadcast(msg);
     else { const pr = PR(); const me = pr?.myPlayer?.(); if (me?.setState) me.setState('pose', msg, true); }
   }
+  function bestPlayroomBuildState(parts) {
+    let best = null;
+    for (const player of parts) {
+      const st = player.getState?.('build')?.state;
+      if (!st || !Array.isArray(st.objects)) continue;
+      const t = st.t || 0;
+      const n = st.objects.length;
+      const score = t + n * 0.001;
+      if (!best || score > best.score || (score === best.score && n > best.n)) best = { st, score, n };
+    }
+    return best?.st;
+  }
   function syncPlayroomPeers() {
     const pr = PR(); if (mode !== 'playroom' || !pr?.getParticipants) return;
     refreshWorldAuthority();
@@ -2229,20 +2244,27 @@ const Net = (() => {
       else if (!RT.remotes.some(x => x.id === id)) upsertRemote({ id, name: player.getProfile?.()?.name || 'Angler', x: 0, y: 0, z: 0, yaw: 0 });
     }
     const authP = parts.find(p => p.id === RT.worldAuthId) || parts[0];
-    const bmsg = authP?.getState?.('build');
-    if (bmsg?.state) queueOrApplyBuildState(bmsg.state);
+    const bestBuild = bestPlayroomBuildState(parts);
+    if (bestBuild) queueOrApplyBuildState(bestBuild);
+    else {
+      const bmsg = authP?.getState?.('build');
+      if (bmsg?.state) queueOrApplyBuildState(bmsg.state);
+    }
     const srv = authP?.getState?.('server');
     if (srv?.settings || srv?.world) queueOrApplyServerState(srv);
     if (isWorldAuthority()) {
+      let peerBest = null;
       for (const player of parts) {
-        if (player.id === myNetId || player.id === RT.worldAuthId) continue;
+        if (player.id === myNetId) continue;
         const peerB = player.getState?.('build');
-        if (!peerB?.state) continue;
-        const h = buildPayloadHash(peerB.state);
-        if (h && h !== BUILD.netHash) {
-          applyNetworkBuildState(peerB.state).then(() => sendBuildState(buildPayload()));
-          break;
-        }
+        if (!peerB?.state?.objects) continue;
+        const st = peerB.state;
+        const score = (st.t || 0) + st.objects.length * 0.001;
+        if (!peerBest || score > peerBest.score) peerBest = { state: st, score };
+      }
+      if (peerBest) {
+        const h = buildPayloadHash(peerBest.state);
+        if (h && h !== BUILD.netHash) applyNetworkBuildState(peerBest.state).then(() => sendBuildState(buildPayload()));
       }
     }
   }
@@ -2424,27 +2446,32 @@ const Net = (() => {
   function renderBrowser() {
     const grid = $('#pubSrvGrid');
     const hcGrid = $('#hcSrvGrid');
+    if (!grid) return;
     const peerRelay = PLAYROOM_NEEDS_HTTP;
     const relayLbl = peerRelay ? 'PeerJS relay (local file)' : 'Playroom fast relay';
-    grid.innerHTML = PUBLIC_SERVERS.map(s => `<button type="button" class="srvCard" data-pub="${s.id}"><div class="n"><span>${esc(s.name)}</span><span class="srvDot"></span></div><div class="d">${esc(s.region)} · ${relayLbl}</div></button>`).join('');
-    if (hcGrid) hcGrid.innerHTML = HARDCORE_SERVERS.map(s => `<button type="button" class="srvCard hc" data-hc="${s.id}"><div class="n"><span>💀 ${esc(s.name)}</span><span class="srvDot" style="background:#ff5a5f"></span></div><div class="d">${esc(s.region)} · Hardcore · ${relayLbl}</div></button>`).join('');
+    grid.innerHTML = PUBLIC_SERVERS.map(s => `<button type="button" class="srvCard" data-pub="${esc(s.id)}"><div class="n"><span>${esc(s.name)}</span><span class="srvDot" aria-hidden="true"></span></div><div class="d">${esc(s.region)} · ${relayLbl}</div></button>`).join('');
+    if (hcGrid) hcGrid.innerHTML = HARDCORE_SERVERS.map(s => `<button type="button" class="srvCard hc" data-hc="${esc(s.id)}"><div class="n"><span>💀 ${esc(s.name)}</span><span class="srvDot" style="background:#ff5a5f" aria-hidden="true"></span></div><div class="d">${esc(s.region)} · Hardcore · ${relayLbl}</div></button>`).join('');
     if (peerRelay) setStatus('Local file mode: public islands use PeerJS. For Playroom relay, open via http://localhost.');
-    if (grid.dataset.bound) return;
-    grid.dataset.bound = '1';
-    grid.addEventListener('click', e => {
-      const card = e.target.closest('button[data-pub]'); if (!card) return;
-      e.preventDefault();
-      const s = PUBLIC_SERVERS.find(x => x.id === card.dataset.pub); if (!s) return;
-      card.classList.add('busy'); setStatus('Joining ' + s.name + '…');
-      startGame({ type: 'public', room: s.room, name: s.name, hardcore: false }).finally(()=> card.classList.remove('busy'));
-    });
-    hcGrid?.addEventListener('click', e => {
-      const card = e.target.closest('button[data-hc]'); if (!card) return;
-      e.preventDefault();
-      const s = HARDCORE_SERVERS.find(x => x.id === card.dataset.hc); if (!s) return;
-      card.classList.add('busy'); setStatus('Joining ' + s.name + ' (Hardcore)…');
-      startGame({ type: 'public', room: s.room, name: s.name, hardcore: true }).finally(()=> card.classList.remove('busy'));
-    });
+    if (!grid.dataset.bound) {
+      grid.dataset.bound = '1';
+      grid.addEventListener('click', e => {
+        const card = e.target.closest('button[data-pub]'); if (!card) return;
+        e.preventDefault();
+        const s = PUBLIC_SERVERS.find(x => x.id === card.dataset.pub); if (!s) return;
+        card.classList.add('busy'); setStatus('Joining ' + s.name + '…');
+        startGame({ type: 'public', room: s.room, name: s.name, hardcore: false }).finally(()=> card.classList.remove('busy'));
+      });
+    }
+    if (hcGrid && !hcGrid.dataset.bound) {
+      hcGrid.dataset.bound = '1';
+      hcGrid.addEventListener('click', e => {
+        const card = e.target.closest('button[data-hc]'); if (!card) return;
+        e.preventDefault();
+        const s = HARDCORE_SERVERS.find(x => x.id === card.dataset.hc); if (!s) return;
+        card.classList.add('busy'); setStatus('Joining ' + s.name + ' (Hardcore)…');
+        startGame({ type: 'public', room: s.room, name: s.name, hardcore: true }).finally(()=> card.classList.remove('busy'));
+      });
+    }
   }
   let srvSyncT = 0;
   function publishServerState(force) {
@@ -2642,6 +2669,7 @@ async function startGame(choice) {
   $('#serverBrowser').classList.add('hidden'); $('#loadBar').classList.remove('hidden');
   try {
     setLoad(8, choice.type === 'public' ? 'Joining public server…' : 'Connecting…'); await Net.connect(choice);
+    ensureMultiplayerBuildAccess();
     if (Net.privateCode) { $('#privCode').value = Net.privateCode; toast('Room code: ' + Net.privateCode, 'gold', 5); }
     await init();
   } catch (e) {
@@ -3836,11 +3864,22 @@ BUILD.receivedNetBuild = false;
 BUILD.lastNetBuildT = 0;
 let buildPersistT = 0;
 
+function ensureMultiplayerBuildAccess() {
+  if (Net.mode === 'solo') return;
+  const p = Auth.get('me');
+  if (!p || p.baseRole !== 'player') return;
+  p.baseRole = 'builder';
+  ensureBuilderKit();
+}
+
 function canPublishBuild(payload) {
   const m = Net.mode;
   if (m === 'solo') return false;
   if (!RT.ready) return false;
-  if (!Auth.can('me', 'build')) return false;
+  if (!Auth.can('me', 'build')) {
+    ensureMultiplayerBuildAccess();
+    if (!Auth.can('me', 'build')) return false;
+  }
   if (m === 'private-host') return true;
   if (m === 'private-join') return true;
   if (m === 'playroom') return true;
@@ -4117,7 +4156,7 @@ function placePrefab(id, p) {
   syncBuildNow();
 }
 function removeObj(o) { o.parent?.remove(o); const kill = []; o.traverse(c => { if (isBuildObj(c)) kill.push(c); }); BUILD.objects = BUILD.objects.filter(x => !kill.includes(x)); BUILD.mixers = BUILD.mixers.filter(m => !kill.includes(m.obj)); }
-async function buildDelete() { if (!BUILD.sel.length) return; const eds = BUILD.sel.filter(canEdit); if (!eds.length) return; if (CFG.build.confirmDelete && eds.length > 1 && !(await confirmDlg('Delete objects?', `Delete ${eds.length} objects?`, 'Delete', 'red'))) return; pushUndo(); eds.forEach(removeObj); BUILD.sel = []; attachGizmo(); rebuildColliders(); renderBuildUI(); }
+async function buildDelete() { if (!BUILD.sel.length) return; const eds = BUILD.sel.filter(canEdit); if (!eds.length) return; if (CFG.build.confirmDelete && eds.length > 1 && !(await confirmDlg('Delete objects?', `Delete ${eds.length} objects?`, 'Delete', 'red'))) return; pushUndo(); eds.forEach(removeObj); BUILD.sel = []; attachGizmo(); rebuildColliders(); renderBuildUI(); syncBuildNow(); }
 function buildDuplicate() { if (!BUILD.sel.length || !budgetOk(BUILD.sel.length)) return; pushUndo(); const st = BUILD.snap.move || 1; BUILD.sel = BUILD.sel.map(o => { const d = serObj(o); const strip = x => { delete x.id; x.children.forEach(strip); }; strip(d); d.owner = S.name; d.pos[0] += st; const n = deserObj(d, o.parent); return n; }); attachGizmo(); rebuildColliders(); renderBuildUI(); }
 function buildGroup() { if (BUILD.sel.length < 2) return toast('Select 2+ objects to group', '', 1.2); pushUndo(); const g = makeGroupObj(); const c = V3(); BUILD.sel.forEach(o => c.add(o.getWorldPosition(V3()))); c.divideScalar(BUILD.sel.length); g.position.copy(c); BUILD.root.add(g); BUILD.objects.push(g); BUILD.sel.forEach(o => g.attach(o)); BUILD.sel = [g]; attachGizmo(); renderBuildUI(); }
 function buildUngroup() { const g = BUILD.sel[0]; if (!g || g.userData.prefab !== 'group') return toast('Select a group', '', 1.2); pushUndo(); const kids = g.children.filter(isBuildObj); kids.forEach(k => BUILD.root.attach(k)); removeObj(g); kids.forEach(k => { if (!BUILD.objects.includes(k)) BUILD.objects.push(k); k.traverse(c => { if (isBuildObj(c) && !BUILD.objects.includes(c)) BUILD.objects.push(c); }); }); BUILD.sel = kids; attachGizmo(); renderBuildUI(); }
@@ -4485,6 +4524,7 @@ async function init() {
   const nameInput = $('#joinName'); if (nameInput) nameInput.value = S.name;
   Auth.addPlayer({ id: 'me', name: S.name, bot: false, baseRole: 'player', connId: Auth.SESSION.connId });
   const persistedRole = readPersistentRole(S.name); if (persistedRole) Auth.get('me').baseRole = persistedRole;
+  ensureMultiplayerBuildAccess();
   ensureBuilderKit();
   cleanseSecretInventory();
   setLoad(60, 'Spawning anglers…'); await frame(); initPlayer();
