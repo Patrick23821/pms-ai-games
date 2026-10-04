@@ -1,8 +1,0 @@
-just so i don't forget!!!
-
- "file": "filename.html",
-      "title": "Sample Text",
-      "tagline": "Description",
-      "tags": ["arcade", "casual"],
-      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/filename.webp",
-    },
