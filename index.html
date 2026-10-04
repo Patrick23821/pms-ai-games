@@ -5,33 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Omega Arcade</title>
 
-<!--
-  ==========================================================================
-  [MK-a7x9q2]  ACCESS POINT  (Ctrl+F this exact string: MK-a7x9q2)
-  ==========================================================================
-
-  WHERE TO OPEN IT AFTER YOU PUSH arcade.html INTO YOUR REPO
-  ----------------------------------------------------------
-  LIVE (GitHub Pages, if Pages is ON for that repo/branch):
-    https://Patrick23821.github.io/pms-ai-games/arcade.html
-
-  EDIT IT ON GITHUB:
-    https://github.com/Patrick23821/pms-ai-games/new/main
-    (name the file  arcade.html  and commit, then Pages serves it)
-
-  THE REPO SCANNER READS THIS ENDPOINT (public repos, no key needed):
-    https://api.github.com/repos/Patrick23821/pms-ai-games/contents/?ref=main
-
-  YOU CAN RE-POINT ALL OF THAT IN 3 SECONDS -> search  MK-k4m1z8  (config block)
-  TO ADD / THEME GAMES             -> search  MK-p3v7n5  (the GAMES list)
-  THUMBNAIL RULES (link or dataURL)-> search  MK-t9c2r6
-  TITLE PICKUP FROM GAME FILES     -> search  MK-y2j6f4
-  IF THE API IS BLOCKED / OFFLINE  -> search  MK-9f2m4x (manualFiles)
-
-  Every marker in this file starts with  MK-  so one Ctrl+F finds the whole map.
-  ==========================================================================
--->
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -401,16 +374,19 @@ pre.code s{color:#4f7386;text-decoration:none}
           <p>Drop <span class="f-mono text-[var(--cyan)]">yourgame.html</span> next to <span class="f-mono text-[var(--cyan)]">arcade.html</span> in the repo root (or set <span class="f-mono">CFG.folder</span>).
           Anything ending in <span class="f-mono">.html</span> appears automatically, except the exclusions in
           <span class="f-mono">CFG.exclude</span> — <span class="f-mono">index.html</span> is always skipped.</p>
-          <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · TITLES</p>
-          <p>The name on the shelf comes from the real <span class="f-mono text-[var(--cyan)]">&lt;title&gt;</span> tag inside the game file
-          (fetched from raw.githubusercontent.com). Override it per game with <span class="f-mono">title:"…"</span> in the GAMES list,
-          or offline with <span class="f-mono">CFG.titles["file.html"]="…"</span>.</p>
+          <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · METADATA (<span class="f-mono">info.json</span>)</p>
+          <p>Commit <span class="f-mono text-[var(--cyan)]">info.json</span> next to <span class="f-mono">arcade.html</span> with a
+          <span class="f-mono">games</span> array — one object per cartridge (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
+          <span class="f-mono">tagline</span>, <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
+          Copy from <span class="f-mono">info.template.json</span> in the repo. Without a title, the shelf falls back to the game file’s
+          <span class="f-mono">&lt;title&gt;</span> tag, then the filename.</p>
         </div>
         <div>
           <p class="f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2.5 · THUMBNAILS</p>
-          <p>Set <span class="f-mono">thumb:"https://…png"</span> (any link) or <span class="f-mono">thumb:"data:image/…"</span> (inline image, no hosting needed).
-          The link is matched to a file by its name — <span class="f-mono">file:"snake.html"</span> or just <span class="f-mono">"snake"</span>.
-          <span class="text-[var(--mag)]">No entry, or a broken link ⇒ the card renders the first initial of the title on a generated neon plate.</span></p>
+          <p>In <span class="f-mono">info.json</span>, set <span class="f-mono">thumb</span> to any image URL or a full
+          <span class="f-mono">data:image/…</span> string (use <span class="f-mono">img_dataurl_converter_for_thumbnails.html</span> to build one).
+          Match each entry with <span class="f-mono">"file": "yourgame.html"</span>.
+          <span class="text-[var(--mag)]">Empty or broken ⇒ neon initial plate from the display title.</span></p>
           <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">3 · WHERE TO ACCESS</p>
           <p>Push, enable Pages, then open
           <span class="f-mono text-[var(--cyan)] break-all" id="help-url">…</span>.
@@ -423,13 +399,19 @@ pre.code s{color:#4f7386;text-decoration:none}
         <div class="f-mono text-[10px] tracking-[.3em] text-[var(--dim)]">THE CONFIG BLOCK LOOKS LIKE THIS ▾</div>
         <button class="btn notch-s" id="copycfg"><i class="fa-regular fa-copy"></i>Copy snippet</button>
       </div>
-<pre class="code mt-3" id="cfgsnippet">const GAMES = [
-  <s>// leave empty — the vault lists every .html in the repo automatically</s>
-
-  { file: <b>"uno-arena.html"</b>,              <s>// optional overrides only</s>
-    tagline: <b>"Multiplayer UNO arena"</b>,
-    tags: [<b>"card"</b>, <b>"multiplayer"</b>] },
-];</pre>
+<pre class="code mt-3" id="cfgsnippet">{
+  "version": 1,
+  "games": [
+    {
+      "file": <b>"fishing.html"</b>,
+      "title": <b>"Neon Deep Sea"</b>,
+      "tagline": <b>"Cast for glowing catches"</b>,
+      "tags": [<b>"arcade"</b>, <b>"casual"</b>],
+      "thumb": <b>"https://…/cover.png"</b>,
+      "hot": false
+    }
+  ]
+}</pre>
       <div class="grid sm:grid-cols-3 gap-3 mt-6 f-mono text-[10px] text-[var(--dim)]">
         <div class="p-3 border border-[rgba(47,243,208,.18)] bg-[rgba(47,243,208,.04)]"><span class="text-[var(--cyan)]">SHORTCUTS</span><br>/ search · ESC exit game · F fullscreen · R reload · S sound</div>
         <div class="p-3 border border-[rgba(255,47,135,.2)] bg-[rgba(255,47,135,.05)]"><span class="text-[var(--mag)]">OFFLINE MODE</span><br>Opened as file:// ? Cards still build from GAMES + manualFiles.</div>
@@ -469,19 +451,21 @@ const CFG = {
     // "uno-arena.html": "UNO ARENA",
   },
   scrapeTitles: true,                          /* read <title> from each game file */
+  infoFile: "info.json",                       /* [MK-i7n4j2] shelf metadata in the repo */
 };
 
 /* ==========================================================================
-   [MK-p3v7n5] GAME LIST  ▸ per-cartridge overrides (thumbnail + title + lore)
+   [MK-p3v7n5] GAME LIST  ▸ optional local overrides (info.json is preferred)
    ==========================================================================
+   Edit  info.json  in the repo for titles, taglines, tags, and thumbnails.
+   Use this array only for one-off overrides baked into arcade.html.
    [MK-t9c2r6] THUMB RULES:
      • thumb may be ANY http(s) image link OR a full dataURL (data:image/png;base64,… / svg)
-     • keyed by the exact repo filename in  file:  ("snake.html" or "snake" both work)
+     • set it in info.json (or here) on the matching  file  key
      • missing / empty / broken link  ⇒  auto neon plate with the FIRST LETTER of the title
    ========================================================================== */
 const GAMES = [
-  /* Repo .html files appear automatically. Add entries here only for overrides:
-     { file: "fishing.html", tagline: "…", tags: ["arcade"], thumb: "https://…" }, */
+  /* { file: "fishing.html", title: "…", tagline: "…", tags: ["arcade"], thumb: "data:image/…" }, */
 ];
 
 /* [MK-b6h3s1] CARD ART ENGINE — colours/plates are generated, nothing to edit below */
@@ -611,28 +595,96 @@ const ARCADE = (() => {
     }));
   }
 
-  /* ---------- merge repo files with the declared GAMES list ---------- */
+  /* ==================================================================
+     [MK-i7n4j2] INFO.JSON — per-cartridge metadata from the repo
+     ================================================================== */
+  function normalizeInfoEntry(g) {
+    if (!g || !g.file) return null;
+    return {
+      file: String(g.file).trim(),
+      title: g.title != null ? String(g.title).trim() : "",
+      tagline: g.tagline != null ? String(g.tagline).trim() : "",
+      tags: Array.isArray(g.tags) ? g.tags : (g.tags ? [g.tags] : []),
+      thumb: g.thumb,
+      hot: !!g.hot,
+      hidden: !!g.hidden,
+    };
+  }
+
+  function parseInfoPayload(data) {
+    if (!data || typeof data !== "object") return [];
+    if (Array.isArray(data)) return data.map(normalizeInfoEntry).filter(Boolean);
+    const list = data.games ?? data.cartridges;
+    if (Array.isArray(list)) return list.map(normalizeInfoEntry).filter(Boolean);
+    if (list && typeof list === "object") {
+      return Object.entries(list).map(([file, meta]) =>
+        normalizeInfoEntry({ file, ...(meta && typeof meta === "object" ? meta : {}) })
+      ).filter(Boolean);
+    }
+    return [];
+  }
+
+  async function loadRepoInfo() {
+    const name = (CFG.infoFile || "info.json").replace(/^\/+/, "");
+    if (!name) return [];
+    log(`fetch shelf metadata · ${name}`, "dim");
+    const urls = [rawURL(name), fileURL(name)];
+    for (const u of urls) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch(u, { signal: ctrl.signal, cache: "no-store" });
+        clearTimeout(t);
+        if (!r.ok) continue;
+        const data = await r.json();
+        const entries = parseInfoPayload(data);
+        log(`OK · ${entries.length} entr${entries.length === 1 ? "y" : "ies"} in ${name}`, "ok");
+        return entries;
+      } catch (e) {
+        log(`${name} via ${u.split("/").slice(-2).join("/")}: ${e.message}`, "dim");
+      }
+    }
+    log(`no ${name} — titles/thumbs from file scrape + GAMES only`, "warn");
+    return [];
+  }
+
+  function mergeCartridgeMeta(file, infoEntry, gamesEntry) {
+    const c = { ...(infoEntry || {}), ...(gamesEntry || {}) };
+    const titleFromInfo = !!(infoEntry && infoEntry.title);
+    const titleFromGames = !!(gamesEntry && gamesEntry.title);
+    const titleFromCfg = !!(CFG.titles[file] || CFG.titles[key(file)]);
+    let titleSrc = "auto";
+    if (titleFromGames) titleSrc = "config";
+    else if (titleFromInfo) titleSrc = "info";
+    else if (titleFromCfg) titleSrc = "config";
+    return {
+      file,
+      title: c.title || CFG.titles[file] || CFG.titles[key(file)] || pretty(file),
+      titleSrc,
+      thumb: normThumb(c.thumb),
+      tagline: c.tagline || "",
+      tags: Array.isArray(c.tags) ? c.tags : (c.tags ? [c.tags] : []),
+      hot: !!c.hot,
+      hidden: !!c.hidden,
+    };
+  }
+
+  /* ---------- merge repo files with info.json + the declared GAMES list ---------- */
   async function build() {
     setStatus("scanning repository…");
-    const found = await scanRepo();
-    const declared = GAMES.map(g => g.file).filter(Boolean);
+    const [found, repoInfo] = await Promise.all([scanRepo(), loadRepoInfo()]);
+    const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
+    const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
+    const hiddenKeys = new Set(repoInfo.filter(g => g.hidden).map(g => key(g.file)));
+    const declared = [...repoInfo.map(g => g.file), ...GAMES.map(g => g.file)].filter(Boolean);
     const all = [...new Set([...found, ...declared, ...CFG.manualFiles])]
       .filter(f => /\.html?$/i.test(f))
+      .filter(f => !hiddenKeys.has(key(f)) || gamesMap.has(key(f)))
       .sort((a, b) => a.localeCompare(b));
 
-    const cfgMap = new Map(GAMES.map(g => [key(g.file), g]));
     S.games = all.map(f => {
-      const c = cfgMap.get(key(f)) || {};
-      return {
-        file: f,
-        title: c.title || CFG.titles[f] || CFG.titles[key(f)] || pretty(f),
-        titleSrc: c.title ? "config" : (CFG.titles[f] ? "config" : "auto"),
-        thumb: normThumb(c.thumb),
-        tagline: c.tagline || "",
-        tags: Array.isArray(c.tags) ? c.tags : (c.tags ? [c.tags] : []),
-        hot: !!c.hot,
-        found: found.some(x => key(x) === key(f)),
-      };
+      const merged = mergeCartridgeMeta(f, infoMap.get(key(f)), gamesMap.get(key(f)));
+      return { ...merged, found: found.some(x => key(x) === key(f)) };
     });
     renderTags();
     render();
@@ -709,6 +761,8 @@ const ARCADE = (() => {
     const plays = S.plays[key(g.file)] || 0;
     const srcBadge = !g.found
       ? `<div class="badge" style="top:8px;right:8px;color:var(--amber);border-color:rgba(255,194,71,.5)">declared</div>`
+      : g.titleSrc === "info"
+        ? `<div class="badge" style="top:8px;right:8px;color:var(--lime);border-color:rgba(157,255,79,.45)">info.json</div>`
       : g.titleSrc === "file"
         ? `<div class="badge" style="top:8px;right:8px">title auto</div>` : "";
     return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
@@ -879,7 +933,7 @@ const ARCADE = (() => {
       ["arcade.html kernel v2.6 …", 120],
       [`mount repo <span class="dim">"${esc(CFG.owner)}/${esc(CFG.repo)}:${esc(CFG.branch)}"</span>`, 150],
       [`exclude list: <span class="dim">${CFG.exclude.join(", ")}</span>`, 100],
-      [`declared cartridges: <span class="dim">${GAMES.length}</span>`, 100],
+      [`local GAMES overrides: <span class="dim">${GAMES.length}</span> · metadata file: <span class="dim">${esc(CFG.infoFile || "info.json")}</span>`, 100],
     ];
     for (const [m, d] of steps) { log(m); await sleep(d); }
     build().catch(e => log("build error: " + esc(e.message), "err"));
