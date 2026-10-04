@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Omega Arcade</title>
+
+<!--
+  ==========================================================================
+  [MK-a7x9q2]  ACCESS POINT  (Ctrl+F this exact string: MK-a7x9q2)
+  ==========================================================================
+
+  WHERE TO OPEN IT AFTER YOU PUSH arcade.html INTO YOUR REPO
+  ----------------------------------------------------------
+  LIVE (GitHub Pages, if Pages is ON for that repo/branch):
+    https://Patrick23821.github.io/pms-ai-games/arcade.html
+
+  EDIT IT ON GITHUB:
+    https://github.com/Patrick23821/pms-ai-games/new/main
+    (name the file  arcade.html  and commit, then Pages serves it)
+
+  THE REPO SCANNER READS THIS ENDPOINT (public repos, no key needed):
+    https://api.github.com/repos/Patrick23821/pms-ai-games/contents/?ref=main
+
+  YOU CAN RE-POINT ALL OF THAT IN 3 SECONDS -> search  MK-k4m1z8  (config block)
+  TO ADD / THEME GAMES             -> search  MK-p3v7n5  (the GAMES list)
+  THUMBNAIL RULES (link or dataURL)-> search  MK-t9c2r6
+  TITLE PICKUP FROM GAME FILES     -> search  MK-y2j6f4
+  IF THE API IS BLOCKED / OFFLINE  -> search  MK-9f2m4x (manualFiles)
+
+  Every marker in this file starts with  MK-  so one Ctrl+F finds the whole map.
+  ==========================================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='rgb(6,9,18)'/><path d='M6 22 L16 6 L26 22 Z' fill='none' stroke='rgb(47,243,208)' stroke-width='3'/></svg>">
+
+<style>
+/* [MK-i6q0e3] THEME TOKENS / NEON PALETTE  */
+:root{
+  --void:#05070e; --void2:#080d1a; --panel:#0a1120;
+  --cyan:#2ff3d0; --cyan-d:#12a98f;
+  --mag:#ff2f87; --amber:#ffc247; --ice:#7cc4ff; --lime:#9dff4f;
+  --txt:#cfe6ee; --dim:#6d8496;
+  --edge:rgba(47,243,208,.26);
+  --grid-line:rgba(124,196,255,.055);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--void); color:var(--txt);
+  font-family:"Chakra Petch",system-ui,sans-serif;
+  min-height:100vh; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.f-disp{font-family:"Orbitron","Chakra Petch",sans-serif;letter-spacing:.06em}
+.f-mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+::selection{background:var(--mag);color:#05070e}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#070b15}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--cyan-d),#1b4a63);border:2px solid #070b15}
+::-webkit-scrollbar-thumb:hover{background:var(--cyan)}
+
+/* ---- layered ambient background ---- */
+#stars{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.floor{
+  position:fixed;left:-25%;right:-25%;bottom:-6vh;height:52vh;z-index:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(90deg,var(--grid-line) 0 1px,transparent 1px 84px),
+    repeating-linear-gradient(0deg,rgba(47,243,208,.09) 0 1px,transparent 1px 62px);
+  transform:perspective(360px) rotateX(72deg);
+  mask-image:linear-gradient(to top,#000 5%,transparent 88%);
+  -webkit-mask-image:linear-gradient(to top,#000 5%,transparent 88%);
+  animation:floorRun 6.5s linear infinite;
+}
+@keyframes floorRun{to{background-position:0 62px,0 62px}}
+.halo{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(90px);opacity:.5}
+.halo.a{width:44vw;height:44vw;left:-12vw;top:-14vw;background:radial-gradient(circle,rgba(47,243,208,.36),transparent 65%);animation:drift 26s ease-in-out infinite}
+.halo.b{width:38vw;height:38vw;right:-10vw;top:6vh;background:radial-gradient(circle,rgba(255,47,135,.28),transparent 66%);animation:drift 31s ease-in-out infinite reverse}
+.halo.c{width:34vw;height:34vw;left:36vw;bottom:-16vw;background:radial-gradient(circle,rgba(124,196,255,.22),transparent 70%);animation:drift 23s ease-in-out infinite}
+@keyframes drift{50%{transform:translate3d(3vw,-4vh,0) scale(1.14)}}
+.crt{
+  position:fixed;inset:0;z-index:60;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.34) 0 1px,transparent 1px 3px);
+  mix-blend-mode:multiply;opacity:.5;
+}
+.flicker{display:none}
+.vig{position:fixed;inset:0;z-index:59;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 42%,rgba(0,0,0,.72) 100%)}
+
+/* ---- shapes ---- */
+.notch{clip-path:polygon(15px 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%,0 15px)}
+.notch-s{clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+.edge{position:relative;background:linear-gradient(150deg,rgba(47,243,208,.5),rgba(255,47,135,.28) 46%,rgba(124,196,255,.16) 72%,rgba(47,243,208,.42));padding:1px}
+.edge>.edge-in{background:linear-gradient(165deg,#0a1120,#070b14 60%,#0a1424)}
+
+.neon{text-shadow:0 0 7px rgba(47,243,208,.6),0 0 26px rgba(47,243,208,.22)}
+.neon-m{text-shadow:0 0 7px rgba(255,47,135,.6),0 0 26px rgba(255,47,135,.22)}
+.neon-a{text-shadow:0 0 7px rgba(255,194,71,.55),0 0 22px rgba(255,194,71,.18)}
+
+/* ---- glitch wordmark ---- */
+.glitch{position:relative;display:inline-block}
+.glitch>span.g1,.glitch>span.g2{position:absolute;left:0;top:0;opacity:.72;pointer-events:none;mix-blend-mode:screen}
+.glitch>span.g1{color:var(--mag);clip-path:inset(14% 0 52% 0);animation:gl1 3.4s infinite steps(2,end)}
+.glitch>span.g2{color:var(--ice);clip-path:inset(58% 0 12% 0);animation:gl2 2.7s infinite steps(2,end)}
+@keyframes gl1{0%,88%{transform:translate(0,0)}90%{transform:translate(-4px,-2px)}94%{transform:translate(3px,1px)}100%{transform:translate(0,0)}}
+@keyframes gl2{0%,84%{transform:translate(0,0)}87%{transform:translate(5px,2px)}92%{transform:translate(-3px,-1px)}100%{transform:translate(0,0)}}
+
+/* ---- controls ---- */
+.btn{
+  --bc:var(--cyan);
+  font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:7px;padding:9px 14px;color:var(--txt);
+  background:linear-gradient(180deg,rgba(47,243,208,.09),rgba(47,243,208,.02));
+  border:1px solid rgba(47,243,208,.3);cursor:pointer;transition:.18s;position:relative;overflow:hidden;
+}
+.btn i{font-size:12px;color:var(--bc)}
+.btn:hover{color:#03070c;background:var(--bc);border-color:var(--bc);box-shadow:0 0 18px rgba(47,243,208,.4)}
+.btn:hover i{color:#03070c}
+.btn.warn{--bc:var(--mag);border-color:rgba(255,47,135,.32);background:linear-gradient(180deg,rgba(255,47,135,.09),rgba(255,47,135,.02))}
+.btn.warn:hover{box-shadow:0 0 18px rgba(255,47,135,.42)}
+.btn.gold{--bc:var(--amber);border-color:rgba(255,194,71,.3);background:linear-gradient(180deg,rgba(255,194,71,.09),transparent)}
+.btn:active{transform:translateY(1px)}
+.btn[aria-pressed="true"]{background:var(--bc);color:#04080e}
+.btn[aria-pressed="true"] i{color:#04080e}
+
+.field{
+  background:rgba(4,8,16,.86);border:1px solid rgba(124,196,255,.2);color:var(--txt);
+  font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.1em;padding:10px 12px;outline:none;transition:.2s;
+}
+.field:focus{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(47,243,208,.35),0 0 22px rgba(47,243,208,.2)}
+select.field{cursor:pointer}
+.chip{
+  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  padding:6px 11px;border:1px solid rgba(124,196,255,.2);color:var(--dim);background:rgba(8,14,26,.7);cursor:pointer;transition:.16s;
+}
+.chip:hover{color:var(--cyan);border-color:rgba(47,243,208,.5)}
+.chip[aria-pressed="true"]{color:#04080e;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 16px rgba(47,243,208,.35)}
+
+/* ---- cards ---- */
+.rack{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(268px,1fr))}
+.rack.list{grid-template-columns:1fr;gap:10px}
+.gcard{position:relative;display:flex;flex-direction:column;cursor:pointer;transition:transform .24s cubic-bezier(.2,.9,.25,1),filter .24s}
+.gcard .aura{position:absolute;inset:-14px;z-index:-1;border-radius:22px;filter:blur(24px);opacity:0;transition:.3s;
+  background:radial-gradient(60% 60% at 30% 20%,rgba(47,243,208,.55),transparent 70%),radial-gradient(60% 60% at 75% 85%,rgba(255,47,135,.45),transparent 70%)}
+.gcard:hover,.gcard:focus-visible{transform:translateY(-6px)}
+.gcard:hover .aura,.gcard:focus-visible .aura{opacity:.75}
+.gcard:hover .edge{background:linear-gradient(150deg,var(--cyan),var(--mag) 50%,var(--ice))}
+.gthumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:#060a13}
+.gimg{width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.06);transition:transform .5s cubic-bezier(.2,.9,.25,1),filter .35s;display:block}
+.gcard:hover .gimg{transform:scale(1.07);filter:saturate(1.3) contrast(1.12)}
+.ginit{width:100%;height:100%;display:grid;place-items:center;position:relative;overflow:hidden}
+.ginit b{font-family:"Orbitron",sans-serif;font-weight:900;font-size:clamp(52px,26vw,86px);line-height:1;color:rgba(255,255,255,.92);
+  text-shadow:0 0 20px rgba(255,255,255,.35),0 6px 22px rgba(0,0,0,.6);position:relative;z-index:1}
+.ginit::after{content:"";position:absolute;inset:0;z-index:0;background:
+  repeating-linear-gradient(115deg,rgba(255,255,255,.07) 0 2px,transparent 2px 9px),
+  repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 4px)}
+.gthumb>.ginit,.gthumb>.gimg{position:relative;z-index:0}
+.sweep{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent 38%,rgba(255,255,255,.22) 48%,transparent 58%);
+  transform:translateX(-105%);transition:transform .62s ease}
+.gcard:hover .sweep{transform:translateX(105%)}
+.crn{position:absolute;z-index:3;width:12px;height:12px;border:2px solid var(--cyan);opacity:0;transition:.22s}
+.crn.tl{top:6px;left:6px;border-right:0;border-bottom:0}
+.crn.tr{top:6px;right:6px;border-left:0;border-bottom:0}
+.crn.bl{bottom:6px;left:6px;border-right:0;border-top:0}
+.crn.br{bottom:6px;right:6px;border-left:0;border-top:0}
+.gcard:hover .crn{opacity:1}
+.badge{position:absolute;z-index:3;font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;padding:4px 7px;background:rgba(4,8,15,.82);border:1px solid rgba(47,243,208,.4);color:var(--cyan);backdrop-filter:blur(4px)}
+.playveil{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:linear-gradient(180deg,rgba(4,7,14,.2),rgba(4,7,14,.78));opacity:0;transition:.24s}
+.gcard:hover .playveil{opacity:1}
+.playbtn{display:flex;align-items:center;gap:9px;padding:11px 20px;background:var(--cyan);color:#04080e;font-family:"Orbitron",sans-serif;font-weight:700;font-size:12px;letter-spacing:.2em;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:0 0 26px rgba(47,243,208,.55);transform:translateY(8px);transition:.26s}
+.gcard:hover .playbtn{transform:translateY(0)}
+.gtitle{font-family:"Orbitron",sans-serif;font-weight:700;font-size:15px;letter-spacing:.03em;color:#eafcff;line-height:1.25}
+.gfile{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim);letter-spacing:.06em;word-break:break-all}
+.tag{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border:1px solid rgba(255,194,71,.35);color:var(--amber);background:rgba(255,194,71,.07)}
+.ico-btn{width:28px;height:28px;display:grid;place-items:center;border:1px solid rgba(124,196,255,.22);background:rgba(8,14,25,.7);color:var(--dim);cursor:pointer;transition:.16s;font-size:12px}
+.ico-btn:hover{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 14px rgba(47,243,208,.3)}
+.ico-btn.on{color:var(--mag);border-color:rgba(255,47,135,.6);background:rgba(255,47,135,.12);text-shadow:0 0 10px rgba(255,47,135,.7)}
+.reveal{opacity:0;transform:translateY(22px) scale(.985)}
+.reveal.in{opacity:1;transform:none;transition:opacity .5s ease,transform .55s cubic-bezier(.2,.9,.25,1)}
+
+/* list view tweaks */
+.rack.list .gcard{flex-direction:row;align-items:stretch}
+.rack.list .gthumb{width:180px;flex:0 0 180px;aspect-ratio:auto}
+.rack.list .gbody{flex:1}
+@media(max-width:640px){.rack.list .gthumb{width:104px;flex-basis:104px}}
+
+/* ---- console / ticker ---- */
+.console{font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.75;color:#79f4d8}
+.console .err{color:var(--mag)}
+.console .warn{color:var(--amber)}
+.console .dim{color:#41637a}
+.caret::after{content:"▮";animation:blink 1s steps(1,end) infinite;color:var(--cyan)}
+@keyframes blink{50%{opacity:0}}
+.ticker{overflow:hidden;position:relative;border-block:1px solid rgba(47,243,208,.16);background:linear-gradient(90deg,rgba(47,243,208,.06),transparent 30%,transparent 70%,rgba(255,47,135,.06))}
+.ticker .run{display:inline-flex;gap:44px;white-space:nowrap;padding:8px 0;animation:run 34s linear infinite;will-change:transform}
+.ticker:hover .run{animation-play-state:paused}
+@keyframes run{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---- modal ---- */
+.shell{position:fixed;inset:0;z-index:80;background:rgba(3,5,11,.9);backdrop-filter:blur(7px);display:none;place-items:center;padding:clamp(0px,2.4vw,26px)}
+.shell.open{display:grid;animation:pop .26s ease}
+@keyframes pop{from{opacity:0;transform:scale(.985)}}
+.cab{width:min(1180px,100%);height:min(86vh,760px);display:flex;flex-direction:column;background:linear-gradient(165deg,#0a1322,#060a13)}
+.screen{position:relative;flex:1;background:#02040a;overflow:hidden}
+.screen iframe{width:100%;height:100%;border:0;display:block;background:#000}
+.loadveil{position:absolute;inset:0;display:grid;place-items:center;gap:14px;background:radial-gradient(circle at 50% 45%,rgba(47,243,208,.09),rgba(3,6,12,.96) 62%)}
+.bar{width:210px;height:5px;background:rgba(255,255,255,.09);overflow:hidden}
+.bar i{display:block;height:100%;width:38%;background:linear-gradient(90deg,var(--cyan),var(--mag));animation:load 1.05s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes load{from{transform:translateX(-120%)}to{transform:translateX(360%)}}
+
+/* ---- boot ---- */
+#boot{position:fixed;inset:0;z-index:120;background:#03060d;display:grid;place-items:center;transition:opacity .5s ease}
+#boot.done{opacity:0;pointer-events:none}
+
+/* ---- help pre ---- */
+pre.code{font-family:"JetBrains Mono",monospace;font-size:11.5px;line-height:1.8;color:#a8e8dd;background:rgba(3,7,14,.85);border:1px solid rgba(47,243,208,.2);padding:14px 16px;overflow:auto;white-space:pre}
+pre.code b{color:var(--amber);font-weight:400}
+pre.code em{color:var(--mag);font-style:normal}
+pre.code s{color:#4f7386;text-decoration:none}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::after,*::before{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.01s!important}
+  .floor{animation:none}
+}
+</style>
+</head>
+
+<body class="relative">
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="floor" aria-hidden="true"></div>
+<div class="halo a" aria-hidden="true"></div><div class="halo b" aria-hidden="true"></div><div class="halo c" aria-hidden="true"></div>
+<div class="crt" aria-hidden="true"></div><div class="vig" aria-hidden="true"></div>
+
+<!-- ============================ BOOT ============================ -->
+<div id="boot" role="status" aria-live="polite">
+  <div class="w-[min(560px,90vw)]">
+    <div class="f-disp text-[clamp(30px,7vw,58px)] font-black text-[#eafcff] neon leading-none">OMEGA<span class="text-[var(--mag)] neon-m"> ARCADE</span></div>
+    <div class="console mt-5 space-y-1" id="bootlog"></div>
+    <div class="bar mt-5"><i></i></div>
+    <div class="f-mono text-[10px] tracking-[.3em] text-[var(--dim)] mt-3">PRESS ANY KEY TO SKIP</div>
+  </div>
+</div>
+
+<div class="relative z-10">
+
+  <!-- ============================ HEADER ============================ -->
+  <header class="px-[clamp(16px,4vw,54px)] pt-8 pb-5">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div>
+        <div class="f-mono text-[10px] tracking-[.42em] text-[var(--cyan)]/80 flex items-center gap-2">
+          <i class="fa-solid fa-satellite-dish text-[var(--mag)]"></i> CABINET NETWORK · SECTOR 7 · ONLINE
+        </div>
+        <h1 class="f-disp font-black leading-[.92] mt-3 text-[clamp(34px,8.4vw,86px)] text-[#f2feff] neon glitch">
+          OMEGA<span class="text-[var(--mag)] neon-m"> ARCADE</span>
+          <span class="g1" aria-hidden="true">OMEGA ARCADE</span><span class="g2" aria-hidden="true">OMEGA ARCADE</span>
+        </h1>
+      </div>
+
+      <div class="flex flex-col items-end gap-3">
+        <div class="edge notch-s"><div class="edge-in notch-s px-4 py-3 flex items-center gap-5">
+          <div class="text-right">
+            <div class="f-mono text-[9px] tracking-[.28em] text-[var(--dim)]">CARTRIDGES</div>
+            <div class="f-disp text-2xl font-black text-[var(--cyan)] neon" id="stat-count">00</div>
+          </div>
+          <div class="w-px h-9 bg-[var(--edge)]"></div>
+          <div class="text-right">
+            <div class="f-mono text-[9px] tracking-[.28em] text-[var(--dim)]">CREDITS</div>
+            <div class="f-disp text-2xl font-black text-[var(--amber)] neon-a" id="stat-credits">00</div>
+          </div>
+          <div class="w-px h-9 bg-[var(--edge)]"></div>
+          <div class="text-right">
+            <div class="f-mono text-[9px] tracking-[.28em] text-[var(--dim)]">SIGNAL</div>
+            <div class="f-disp text-2xl font-black text-[var(--mag)] neon-m" id="stat-source">···</div>
+          </div>
+        </div></div>
+        <div class="flex items-center gap-2">
+          <button class="btn notch-s" id="btn-refresh"><i class="fa-solid fa-rotate"></i>Rescan repo</button>
+          <button class="btn notch-s gold" id="btn-help"><i class="fa-solid fa-circle-question"></i>Setup</button>
+          <button class="btn notch-s" id="btn-sound" aria-pressed="true" title="Toggle blips"><i class="fa-solid fa-volume-high"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ticker -->
+    <div class="ticker notch-s mt-7">
+      <div class="run f-mono text-[10.5px] tracking-[.2em] text-[#7fa8bd]" id="ticker"></div>
+    </div>
+  </header>
+
+  <!-- ============================ TOOLBAR ============================ -->
+  <section class="px-[clamp(16px,4vw,54px)] sticky top-0 z-40 backdrop-blur-md bg-[rgba(5,7,14,.72)] border-b border-[rgba(47,243,208,.14)] py-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <label class="relative flex-1 min-w-[220px]">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[11px] text-[var(--cyan)]"></i>
+        <input id="q" class="field notch-s w-full pl-9 pr-3 py-[11px]" placeholder="SEARCH TITLES / FILES   ( / )" autocomplete="off" spellcheck="false">
+      </label>
+      <select id="sort" class="field notch-s" aria-label="Sort">
+        <option value="title">SORT ▸ A–Z</option>
+        <option value="recent">SORT ▸ RECENTLY PLAYED</option>
+        <option value="fav">SORT ▸ FAVOURITES FIRST</option>
+        <option value="plays">SORT ▸ MOST PLAYED</option>
+        <option value="file">SORT ▸ FILENAME</option>
+      </select>
+      <div class="flex gap-1">
+        <button class="btn notch-s" id="v-grid" aria-pressed="true" title="Grid view"><i class="fa-solid fa-table-cells-large"></i></button>
+        <button class="btn notch-s" id="v-list" aria-pressed="false" title="List view"><i class="fa-solid fa-list"></i></button>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 mt-3" id="tags"></div>
+  </section>
+
+  <!-- ============================ STATUS LINE ============================ -->
+  <section class="px-[clamp(16px,4vw,54px)] pt-5">
+    <div class="edge notch-s"><div class="edge-in notch-s px-4 py-3 flex items-start gap-3">
+      <i class="fa-solid fa-terminal text-[var(--cyan)] mt-[3px]"></i>
+      <div class="console flex-1 min-w-0"><span id="statusline" class="caret">mounting vault…</span></div>
+      <div class="f-mono text-[10px] text-[var(--dim)] whitespace-nowrap hidden sm:block" id="ratelimit"></div>
+    </div></div>
+  </section>
+
+  <!-- ============================ RACK ============================ -->
+  <main class="px-[clamp(16px,4vw,54px)] pt-6 pb-16">
+    <div id="rack" class="rack"></div>
+    <div id="empty" class="hidden pt-10">
+      <div class="edge notch"><div class="edge-in notch p-8 sm:p-12 text-center">
+        <div class="text-4xl text-[var(--mag)] mb-4"><i class="fa-solid fa-ghost"></i></div>
+        <div class="f-disp text-2xl font-bold text-[#eafcff]">EMPTY SLOT</div>
+        <p class="text-[#8fb2c4] mt-3 max-w-[58ch] mx-auto leading-relaxed" id="emptymsg">
+          No <span class="f-mono text-[var(--cyan)]">.html</span> cartridges were found next to this file. Push a game file into the repo,
+          or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).
+        </p>
+        <div class="flex flex-wrap gap-2 justify-center mt-6">
+          <button class="btn notch-s" onclick="ARCADE.rescan()"><i class="fa-solid fa-rotate"></i>Rescan</button>
+          <button class="btn notch-s gold" onclick="ARCADE.help(true)"><i class="fa-solid fa-book-open"></i>Setup guide</button>
+        </div>
+      </div></div>
+    </div>
+  </main>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="px-[clamp(16px,4vw,54px)] pb-12 pt-6 border-t border-[rgba(47,243,208,.12)]">
+    <div class="flex flex-wrap justify-between gap-6 items-center">
+      <div class="f-disp font-black text-xl text-[#eafcff] neon">OMEGA<span class="text-[var(--mag)]"> ARCADE</span></div>
+      <div class="f-mono text-[10px] text-[var(--dim)]">LAST SYNC ▸ <span class="text-[var(--cyan)]" id="ft-sync">never</span></div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============================ LAUNCH SHELL ============================ -->
+<div class="shell" id="shell" role="dialog" aria-modal="true" aria-label="Game screen">
+  <div class="cab edge notch">
+    <div class="edge-in notch flex-1 flex flex-col min-h-0">
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-[rgba(47,243,208,.18)] bg-[rgba(6,10,18,.7)]">
+        <div class="w-2.5 h-2.5 rounded-full bg-[var(--cyan)] shadow-[0_0_12px_var(--cyan)] animate-pulse"></div>
+        <div class="min-w-0 flex-1">
+          <div class="f-disp font-bold text-[15px] text-[#eafcff] truncate" id="m-title">—</div>
+          <div class="f-mono text-[10px] text-[var(--dim)] truncate" id="m-file">—</div>
+        </div>
+        <div class="f-mono text-[9px] tracking-[.24em] text-[var(--dim)] hidden md:block" id="m-hint">[F] full · [R] reload · [ESC] exit</div>
+        <div class="flex items-center gap-1.5">
+          <button class="ico-btn notch-s" id="m-reload" title="Reload (R)"><i class="fa-solid fa-rotate-right"></i></button>
+          <button class="ico-btn notch-s" id="m-newtab" title="Open in new tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+          <button class="ico-btn notch-s" id="m-fs" title="Fullscreen (F)"><i class="fa-solid fa-expand"></i></button>
+          <button class="ico-btn notch-s" id="m-close" title="Exit (ESC)" style="color:var(--mag);border-color:rgba(255,47,135,.5)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="screen notch-s" id="m-screen">
+        <iframe id="m-frame" title="Game" allow="autoplay; fullscreen; gamepad; clipboard-write; xr-spatial-tracking" loading="eager"></iframe>
+        <div class="loadveil" id="m-load">
+          <div class="text-center px-6">
+            <div class="f-disp text-[var(--cyan)] neon text-lg tracking-[.2em] mb-3">BOOTING CARTRIDGE</div>
+            <div class="bar mx-auto"><i></i></div>
+            <div class="f-mono text-[10px] text-[var(--dim)] mt-4 tracking-[.2em]" id="m-loadurl">…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ HELP PANEL ============================ -->
+<div class="shell" id="helpshell" role="dialog" aria-modal="true" aria-label="Setup guide">
+  <div class="w-[min(880px,100%)] max-h-[88vh] overflow-auto edge notch">
+    <div class="edge-in notch p-6 sm:p-8">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <div class="f-mono text-[10px] tracking-[.34em] text-[var(--cyan)]">OPERATOR MANUAL</div>
+          <h2 class="f-disp text-2xl sm:text-3xl font-black text-[#f2feff] neon mt-1">WIRING UP YOUR GAMES</h2>
+        </div>
+        <button class="ico-btn notch-s" onclick="ARCADE.help(false)" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-5 text-[13.5px] leading-relaxed text-[#9dc0d1]">
+        <div>
+          <p class="f-disp text-[var(--amber)] font-bold tracking-wide mb-1">1 · THE FILES</p>
+          <p>Drop <span class="f-mono text-[var(--cyan)]">yourgame.html</span> next to <span class="f-mono text-[var(--cyan)]">arcade.html</span> in the repo root (or set <span class="f-mono">CFG.folder</span>).
+          Anything ending in <span class="f-mono">.html</span> appears automatically, except the exclusions in
+          <span class="f-mono">CFG.exclude</span> — <span class="f-mono">index.html</span> is always skipped.</p>
+          <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · TITLES</p>
+          <p>The name on the shelf comes from the real <span class="f-mono text-[var(--cyan)]">&lt;title&gt;</span> tag inside the game file
+          (fetched from raw.githubusercontent.com). Override it per game with <span class="f-mono">title:"…"</span> in the GAMES list,
+          or offline with <span class="f-mono">CFG.titles["file.html"]="…"</span>.</p>
+        </div>
+        <div>
+          <p class="f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2.5 · THUMBNAILS</p>
+          <p>Set <span class="f-mono">thumb:"https://…png"</span> (any link) or <span class="f-mono">thumb:"data:image/…"</span> (inline image, no hosting needed).
+          The link is matched to a file by its name — <span class="f-mono">file:"snake.html"</span> or just <span class="f-mono">"snake"</span>.
+          <span class="text-[var(--mag)]">No entry, or a broken link ⇒ the card renders the first initial of the title on a generated neon plate.</span></p>
+          <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">3 · WHERE TO ACCESS</p>
+          <p>Push, enable Pages, then open
+          <span class="f-mono text-[var(--cyan)] break-all" id="help-url">…</span>.
+          On a private repo the API returns 404 — add a read-only token to <span class="f-mono">CFG.token</span>
+          (<span class="f-mono">MK-4t2kp6</span>) or just fill <span class="f-mono">CFG.manualFiles</span>.</p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-between">
+        <div class="f-mono text-[10px] tracking-[.3em] text-[var(--dim)]">THE CONFIG BLOCK LOOKS LIKE THIS ▾</div>
+        <button class="btn notch-s" id="copycfg"><i class="fa-regular fa-copy"></i>Copy snippet</button>
+      </div>
+<pre class="code mt-3" id="cfgsnippet">const GAMES = [
+  <s>// leave empty — the vault lists every .html in the repo automatically</s>
+
+  { file: <b>"uno-arena.html"</b>,              <s>// optional overrides only</s>
+    tagline: <b>"Multiplayer UNO arena"</b>,
+    tags: [<b>"card"</b>, <b>"multiplayer"</b>] },
+];</pre>
+      <div class="grid sm:grid-cols-3 gap-3 mt-6 f-mono text-[10px] text-[var(--dim)]">
+        <div class="p-3 border border-[rgba(47,243,208,.18)] bg-[rgba(47,243,208,.04)]"><span class="text-[var(--cyan)]">SHORTCUTS</span><br>/ search · ESC exit game · F fullscreen · R reload · S sound</div>
+        <div class="p-3 border border-[rgba(255,47,135,.2)] bg-[rgba(255,47,135,.05)]"><span class="text-[var(--mag)]">OFFLINE MODE</span><br>Opened as file:// ? Cards still build from GAMES + manualFiles.</div>
+        <div class="p-3 border border-[rgba(255,194,71,.2)] bg-[rgba(255,194,71,.05)]"><span class="text-[var(--amber)]">CTRL+F MAP</span><br>Every subsystem is tagged with a MK-xxxxxx marker.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link id="fa" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous"
+      onerror="setTimeout(()=>{try{ARCADE.iconsFallback()}catch(e){}},1500)">
+<script>
+/* ==========================================================================
+   [MK-k4m1z8] CONFIG  ▸ THE ONLY THING YOU REALLY NEED TO TOUCH
+   ==========================================================================
+   owner/repo  : your GitHub repo (already pre-filled below)
+   branch      : the branch that holds the game files (main / master / gh-pages)
+   folder      : sub-folder inside the repo, "" = repo root
+   pagesBase   : base URL of the GitHub Pages site that SERVES the games
+   token       : optional read-only PAT for private repos  [MK-4t2kp6]
+   exclude     : files that must never appear on the shelf
+   manualFiles : offline / rate-limit fallback list
+   titles      : offline title overrides, keyed by filename
+   ========================================================================== */
+const CFG = {
+  owner: "Patrick23821",
+  repo : "pms-ai-games",
+  branch: "main",
+  folder: "",
+  pagesBase: "https://Patrick23821.github.io/pms-ai-games",
+  token: "",                                   /* [MK-4t2kp6] private repo only */
+  exclude: ["index.html", "arcade.html"],
+  manualFiles: [                               /* [MK-9f2m4x] used if the API fails */
+    // "extra-game.html",
+  ],
+  titles: {                                    /* [MK-y2j6f4] offline title overrides */
+    // "uno-arena.html": "UNO ARENA",
+  },
+  scrapeTitles: true,                          /* read <title> from each game file */
+};
+
+/* ==========================================================================
+   [MK-p3v7n5] GAME LIST  ▸ per-cartridge overrides (thumbnail + title + lore)
+   ==========================================================================
+   [MK-t9c2r6] THUMB RULES:
+     • thumb may be ANY http(s) image link OR a full dataURL (data:image/png;base64,… / svg)
+     • keyed by the exact repo filename in  file:  ("snake.html" or "snake" both work)
+     • missing / empty / broken link  ⇒  auto neon plate with the FIRST LETTER of the title
+   ========================================================================== */
+const GAMES = [
+  /* Repo .html files appear automatically. Add entries here only for overrides:
+     { file: "fishing.html", tagline: "…", tags: ["arcade"], thumb: "https://…" }, */
+];
+
+/* [MK-b6h3s1] CARD ART ENGINE — colours/plates are generated, nothing to edit below */
+const ARCADE = (() => {
+  "use strict";
+
+  /* ---------- state ---------- */
+  const S = {
+    games: [],            /* merged: repo files + declared list  */
+    query: "", tag: "ALL", sort: "title", view: "grid",
+    favs: new Set(load("arcade.favs", [])),
+    recent: load("arcade.recent", []),
+    plays: load("arcade.plays", {}),
+    source: "—", ready: false, sound: load("arcade.sound", true),
+    io: null,
+  };
+
+  /* ---------- tiny utils ---------- */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s = "") => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const key = f => String(f || "").toLowerCase().replace(/\.html?$/, "").replace(/^\.?\//, "");
+  const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
+  const pretty = f => key(f).replace(/[-_.]+/g, " ").replace(/\b\w/g, m => m.toUpperCase()).trim() || "UNTITLED";
+  function load(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch { return d; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { } }
+  const pad = n => String(n).padStart(2, "0");
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  /* ==================================================================
+     [MK-m2r0c9] SOUND ENGINE — WebAudio blips, no assets
+     ================================================================== */
+  const Snd = {
+    ctx: null,
+    init() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { } } },
+    play(freq = 520, dur = .06, type = "square", vol = .035, slide = 0) {
+      if (!S.sound) return; this.init(); const c = this.ctx; if (!c) return;
+      if (c.state === "suspended") c.resume();
+      const o = c.createOscillator(), g = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(freq, c.currentTime);
+      if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), c.currentTime + dur);
+      g.gain.setValueAtTime(0, c.currentTime);
+      g.gain.linearRampToValueAtTime(vol, c.currentTime + .008);
+      g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + dur);
+      o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + dur + .02);
+    },
+    hover() { if (!this._t || Date.now() - this._t > 90) { this._t = Date.now(); this.play(880, .035, "sine", .016, 120); } },
+    click() { this.play(300, .09, "square", .05, -140); },
+    insert() { [440, 660, 880, 1320].forEach((f, i) => setTimeout(() => this.play(f, .1, "square", .045), i * 78)); },
+    nope() { this.play(150, .22, "sawtooth", .05, -80); },
+  };
+
+  /* ==================================================================
+     [MK-f8n1t3] REPO SCANNER — GitHub contents API, tree API, fallback
+     ================================================================== */
+  const api = p => `https://api.github.com/repos/${CFG.owner}/${CFG.repo}/${p}`;
+  const authH = () => CFG.token ? { Authorization: "Bearer " + CFG.token } : {};
+  const fileURL = f => `${(CFG.pagesBase || "").replace(/\/$/, "")}/${encodeURIComponent(f)}`;
+  const rawURL = f => `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch || "main"}/${(CFG.folder ? CFG.folder.replace(/\/$/, "") + "/" : "")}${encodeURIComponent(f)}`;
+  const isHtml = f => /\.html?$/i.test(f) && !CFG.exclude.some(x => x.toLowerCase() === String(f).toLowerCase()) && !/^index\.html?$/i.test(f.split("/").pop());
+
+  async function fetchJSON(url) {
+    const r = await fetch(url, { headers: { Accept: "application/vnd.github+json", ...authH() }, cache: "no-store" });
+    const left = r.headers.get("x-rateLimit-remaining") || r.headers.get("x-ratelimit-remaining");
+    if (left != null) $("#ratelimit").textContent = "API QUOTA " + left + "/60";
+    if (!r.ok) throw Object.assign(new Error(url.split("/").slice(-1)[0] + " → HTTP " + r.status), { status: r.status });
+    return r.json();
+  }
+
+  async function scanRepo() {
+    const folder = (CFG.folder || "").replace(/^\/|\/$/g, "");
+    const ref = CFG.branch ? "?ref=" + encodeURIComponent(CFG.branch) : "";
+    log(`GET ${api("contents/" + folder + ref).replace("repos/", "")}`, "dim");
+    try {
+      const data = await fetchJSON(api("contents/" + folder + ref));
+      if (!Array.isArray(data)) throw new Error("path is not a directory");
+      const files = data.filter(e => e.type === "file" && isHtml(e.name)).map(e => e.name);
+      S.source = "GITHUB API";
+      log(`OK · ${data.length} entries read · ${files.length} cartridge(s) matched`, "ok");
+      return files;
+    } catch (e) {
+      log("contents API failed: " + e.message, "warn");
+    }
+    try {
+      const t = await fetchJSON(api(`git/trees/${encodeURIComponent(CFG.branch || "main")}?recursive=1`));
+      const files = (t.tree || []).filter(n => n.type === "blob" && isHtml(n.path))
+        .map(n => n.path.split("/").pop());
+      const uniq = [...new Set(files)].filter(f => !f.includes("/"));
+      S.source = "GIT TREE";
+      log(`tree fallback · ${uniq.length} cartridge(s)`, "ok");
+      return uniq;
+    } catch (e) { log("git tree failed: " + e.message, "warn"); }
+    S.source = "LOCAL LIST";
+    log(`falling back to CFG.manualFiles (${CFG.manualFiles.length}) + GAMES list`, "warn");
+    return CFG.manualFiles.filter(isHtml);
+  }
+
+  /* ==================================================================
+     [MK-y2j6f4] TITLE PICKER — reads <title> from inside the game file
+     ================================================================== */
+  async function readTitle(file) {
+    const urls = [rawURL(file), fileURL(file)];
+    for (const u of urls) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 7000);
+        const r = await fetch(u, { signal: ctrl.signal, cache: "force-cache" });
+        clearTimeout(t);
+        if (!r.ok) continue;
+        const src = await r.text();
+        /* games can also declare  <title> or <!-- arcade-title: X --> */
+        const meta = src.match(/<!--\s*arcade[-_]title\s*:\s*([^\n>]+?)\s*-->/i);
+        const tag = src.match(/<title[^>]*>([\s\S]{1,160}?)<\/title>/i);
+        const h1 = src.match(/<h1[^>]*>([\s\S]{1,120}?)<\/h1>/i);
+        const raw = (meta && meta[1]) || (tag && tag[1]) || (h1 && h1[1]) || "";
+        const clean = raw.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+        if (clean && clean.length > 1) return clean.slice(0, 64);
+      } catch { /* offline / CORS — silent, filename wins */ }
+    }
+    return "";
+  }
+
+  async function pool(items, n, fn) {
+    let i = 0;
+    await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+      while (i < items.length) { const k = i++; await fn(items[k], k); }
+    }));
+  }
+
+  /* ---------- merge repo files with the declared GAMES list ---------- */
+  async function build() {
+    setStatus("scanning repository…");
+    const found = await scanRepo();
+    const declared = GAMES.map(g => g.file).filter(Boolean);
+    const all = [...new Set([...found, ...declared, ...CFG.manualFiles])]
+      .filter(f => /\.html?$/i.test(f))
+      .sort((a, b) => a.localeCompare(b));
+
+    const cfgMap = new Map(GAMES.map(g => [key(g.file), g]));
+    S.games = all.map(f => {
+      const c = cfgMap.get(key(f)) || {};
+      return {
+        file: f,
+        title: c.title || CFG.titles[f] || CFG.titles[key(f)] || pretty(f),
+        titleSrc: c.title ? "config" : (CFG.titles[f] ? "config" : "auto"),
+        thumb: normThumb(c.thumb),
+        tagline: c.tagline || "",
+        tags: Array.isArray(c.tags) ? c.tags : (c.tags ? [c.tags] : []),
+        hot: !!c.hot,
+        found: found.some(x => key(x) === key(f)),
+      };
+    });
+    renderTags();
+    render();
+    setStatus(`${S.games.length} cartridge(s) on the wall · source ${S.source}`);
+
+    if (CFG.scrapeTitles) {
+      const need = S.games.filter(g => g.titleSrc === "auto" && g.found);
+      if (need.length && !location.protocol.startsWith("file")) {
+        setStatus("reading &lt;title&gt; tags from " + need.length + " file(s)…");
+        await pool(need, 6, async g => {
+          const t = await readTitle(g.file);
+          if (t) { g.title = t; g.titleSrc = "file"; }
+        });
+        renderTags(); render();
+      }
+      log("title scan complete", "dim");
+    }
+    finishSource();
+  }
+
+  /* [MK-t9c2r6] normalise a thumbnail value: link, dataURL, or nothing */
+  function normThumb(v) {
+    const s = String(v || "").trim();
+    if (!s) return "";
+    if (/^(https?:)?\/\//i.test(s) || /^data:image\//i.test(s) || /^images?\//i.test(s) || /^\.{0,2}\/[^\s]/.test(s)) return s;
+    return ""; /* not an image reference → treat as missing → initials plate */
+  }
+
+  function finishSource() {
+    S.ready = true;
+    const el = $("#stat-source");
+    el.textContent = S.source === "GITHUB API" ? "LIVE" : S.source === "LOCAL LIST" ? "LOCAL" : "TREE";
+    el.style.color = S.source === "LOCAL LIST" ? "var(--amber)" : "var(--cyan)";
+    $("#stat-count").textContent = pad(S.games.length);
+    $("#ft-sync").textContent = new Date().toLocaleTimeString();
+    renderTicker();
+  }
+
+  /* ---------- logging ---------- */
+  function log(msg, cls = "") {
+    const c = $("#bootlog"); if (!c) return;
+    const line = document.createElement("div");
+    line.className = cls; line.innerHTML = msg;
+    c.appendChild(line);
+    while (c.children.length > 7) c.removeChild(c.firstChild);
+  }
+  const setStatus = m => $("#statusline").innerHTML = m;
+
+  /* ==================================================================
+     [MK-0z5t2 + MK-g1n4l9] RENDER / CARD ART / LAUNCHER
+     ================================================================== */
+  function initialsPlate(g) {
+    const h = hash(g.file + g.title);
+    const a = h % 360, b = (h * 7 + 140) % 360;
+    const letter = (g.title.trim()[0] || "?").toUpperCase();
+    return `<div class="ginit" style="background:
+        radial-gradient(120% 110% at 22% 12%, hsl(${a} 92% 58% / .55), transparent 62%),
+        radial-gradient(130% 120% at 82% 96%, hsl(${b} 96% 55% / .5), transparent 60%),
+        linear-gradient(160deg,#070c16,#0d1626)">
+        <b style="text-shadow:0 0 26px hsl(${a} 100% 70% / .8),0 0 60px hsl(${b} 100% 60% / .5)">${esc(letter)}</b>
+      </div>`;
+  }
+
+  function thumbHTML(g) {
+    if (g.thumb) {
+      return `<img class="gimg" src="${esc(g.thumb)}" alt="" loading="lazy"
+                onerror="ARCADE.brokenThumb(this)">`;
+    }
+    return initialsPlate(g);
+  }
+
+  const card = g => {
+    const fav = S.favs.has(key(g.file));
+    const plays = S.plays[key(g.file)] || 0;
+    const srcBadge = !g.found
+      ? `<div class="badge" style="top:8px;right:8px;color:var(--amber);border-color:rgba(255,194,71,.5)">declared</div>`
+      : g.titleSrc === "file"
+        ? `<div class="badge" style="top:8px;right:8px">title auto</div>` : "";
+    return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
+              aria-label="Play ${esc(g.title)}">
+      <div class="aura"></div>
+      <div class="edge notch">
+        <div class="edge-in notch flex flex-col h-full">
+          <div class="gthumb">
+            ${thumbHTML(g)}
+            <div class="sweep"></div>
+            <span class="crn tl"></span><span class="crn tr"></span><span class="crn bl"></span><span class="crn br"></span>
+            ${g.hot ? `<div class="badge" style="top:8px;left:8px;color:var(--mag);border-color:rgba(255,47,135,.6)"><i class="fa-solid fa-bolt"></i> HOT</div>` : ""}
+            ${srcBadge}
+            <div class="playveil"><div class="playbtn"><i class="fa-solid fa-play"></i>Play</div></div>
+          </div>
+          <div class="gbody p-[13px] flex flex-col gap-2 flex-1">
+            <div class="flex items-start gap-2">
+              <h3 class="gtitle flex-1">${esc(g.title)}</h3>
+              <button class="ico-btn notch-s ${fav ? "on" : ""}" data-fav="${esc(g.file)}" title="Favourite">
+                <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
+            </div>
+            ${g.tagline ? `<p class="text-[12.5px] leading-snug text-[#7f9fb2] line-clamp-2">${esc(g.tagline)}</p>` : ""}
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="gfile"><i class="fa-regular fa-file-code"></i> ${esc(g.file)}</span>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-auto pt-1">
+              <div class="flex flex-wrap gap-1.5">${g.tags.slice(0, 3).map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}</div>
+              <div class="f-mono text-[9.5px] tracking-[.18em] ${plays ? "text-[var(--cyan)]" : "text-[var(--dim)]"}">
+                ${plays ? "×" + plays : (S.recent[0] === g.file ? "NEW" : "UNPLAYED")}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>`;
+  };
+
+  function renderTags() {
+    const all = [...new Set(S.games.flatMap(g => g.tags).map(t => t.toLowerCase()))].sort();
+    $("#tags").innerHTML =
+      `<button class="chip notch-s" data-tag="ALL" aria-pressed="${S.tag === "ALL"}">all · ${S.games.length}</button>` +
+      `<button class="chip notch-s" data-tag="__fav" aria-pressed="${S.tag === "__fav"}">
+         <i class="fa-solid fa-star"></i> favs · ${S.favs.size}</button>` +
+      all.map(t => `<button class="chip notch-s" data-tag="${esc(t)}" aria-pressed="${S.tag === t}">${esc(t)} · ${S.games.filter(g => g.tags.map(x => x.toLowerCase()).includes(t)).length}</button>`).join("");
+  }
+
+  function visible() {
+    const q = S.query.trim().toLowerCase();
+    let out = S.games.filter(g => {
+      if (S.tag === "__fav" && !S.favs.has(key(g.file))) return false;
+      if (S.tag !== "ALL" && S.tag !== "__fav" && !g.tags.map(t => t.toLowerCase()).includes(S.tag)) return false;
+      if (!q) return true;
+      return (g.title + " " + g.file + " " + g.tagline + " " + g.tags.join(" ")).toLowerCase().includes(q);
+    });
+    const rFirst = f => { const i = S.recent.indexOf(f); return i < 0 ? 999 : i; };
+    out.sort((a, b) =>
+      S.sort === "recent" ? rFirst(a.file) - rFirst(b.file) || a.title.localeCompare(b.title)
+      : S.sort === "plays" ? (S.plays[key(b.file)] || 0) - (S.plays[key(a.file)] || 0) || a.title.localeCompare(b.title)
+      : S.sort === "fav" ? (S.favs.has(key(b.file)) - S.favs.has(key(a.file))) || a.title.localeCompare(b.title)
+      : S.sort === "file" ? a.file.localeCompare(b.file)
+      : a.title.localeCompare(b.title));
+    return out;
+  }
+
+  function render() {
+    const list = visible();
+    const rack = $("#rack");
+    rack.className = "rack" + (S.view === "list" ? " list" : "");
+    rack.innerHTML = list.map(card).join("");
+    $("#empty").classList.toggle("hidden", list.length > 0);
+    if (!list.length) $("#emptymsg").innerHTML = S.games.length
+      ? `Nothing matches <span class="f-mono text-[var(--cyan)]">"${esc(S.query) || S.tag}"</span> — ${S.games.length} cartridge(s) total.`
+      : `No <span class="f-mono text-[var(--cyan)]">.html</span> cartridges were found next to this file. Push a game into the repo, or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).`;
+    $$(".gcard", rack).forEach(el => {
+      el.addEventListener("mouseenter", () => Snd.hover());
+      el.addEventListener("click", e => { if (!e.target.closest("[data-fav]")) launch(el.dataset.file); });
+      el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); launch(el.dataset.file); } });
+    });
+    $$("[data-fav]", rack).forEach(b => b.addEventListener("click", e => {
+      e.stopPropagation();
+      const k = key(b.dataset.fav);
+      S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
+      save("arcade.favs", [...S.favs]); Snd.click(); renderTags(); render();
+    }));
+    revealObserve();
+    renderTicker();
+  }
+
+  function revealObserve() {
+    if (!("IntersectionObserver" in window)) { $$(".reveal").forEach(e => e.classList.add("in")); return; }
+    S.io?.disconnect();
+    S.io = new IntersectionObserver((ents) => ents.forEach((en, i) => {
+      if (en.isIntersecting) { en.target.style.transitionDelay = (Math.min(i, 8) * 45) + "ms"; en.target.classList.add("in"); S.io.unobserve(en.target); }
+    }), { rootMargin: "60px 0px -40px 0px", threshold: .06 });
+    $$(".gcard.reveal").forEach(e => S.io.observe(e));
+  }
+
+  function renderTicker() {
+    const parts = [];
+    S.recent.slice(0, 4).forEach(f => {
+      const g = S.games.find(x => x.file === f);
+      if (g) parts.push(`<span><i class="fa-solid fa-clock-rotate-left text-[var(--mag)]"></i> LAST PLAYED · ${esc(g.title)}</span>`);
+    });
+    [...S.games]
+      .filter(g => (S.plays[key(g.file)] || 0) > 0)
+      .sort((a, b) => (S.plays[key(b.file)] || 0) - (S.plays[key(a.file)] || 0))
+      .slice(0, 3)
+      .forEach(g => parts.push(`<span><i class="fa-solid fa-ranking-star text-[var(--amber)]"></i> MOST PLAYED · ${esc(g.title.toUpperCase())} ×${S.plays[key(g.file)]}</span>`));
+    if (S.games.length) {
+      parts.push(`<span><i class="fa-solid fa-layer-group text-[var(--cyan)]"></i> VAULT · ${S.games.length} CARTRIDGE${S.games.length === 1 ? "" : "S"}</span>`);
+      S.games.forEach(g => parts.push(`<span><i class="fa-solid fa-gamepad text-[var(--ice)]"></i> ${esc(g.title.toUpperCase())} <span class="text-[var(--dim)]">· ${esc(g.file)}</span></span>`));
+    } else if (S.ready || S.source !== "—") {
+      parts.push(`<span><i class="fa-solid fa-box-open text-[var(--amber)]"></i> NO CARTRIDGES IN REPO — PUSH .HTML FILES OR RESCAN</span>`);
+    }
+    if (S.favs.size) parts.push(`<span><i class="fa-solid fa-star text-[var(--amber)]"></i> FAVOURITES · ${S.favs.size}</span>`);
+    const credits = Object.values(S.plays).reduce((a, b) => a + b, 0);
+    if (credits) parts.push(`<span><i class="fa-solid fa-coins text-[var(--cyan)]"></i> TOTAL PLAYS · ${credits}</span>`);
+    if (S.source && S.source !== "—") parts.push(`<span><i class="fa-solid fa-satellite text-[var(--ice)]"></i> SYNC · ${esc(S.source)}</span>`);
+    if (!parts.length) parts.push(`<span class="text-[var(--dim)]">MOUNTING VAULT…</span>`);
+    const one = parts.join("");
+    $("#ticker").innerHTML = one + one;
+  }
+
+  /* ---------- launcher ---------- */
+  let curFile = "", loadTimer = 0;
+  function launch(file) {
+    const g = S.games.find(x => x.file === file); if (!g) return;
+    if (!g.found) log(`launching "${esc(file)}" — not confirmed in repo listing`, "warn");
+    curFile = file;
+    const url = fileURL(file);
+    $("#m-title").textContent = g.title;
+    $("#m-file").innerHTML = `<span class="text-[var(--cyan)]">${esc(file)}</span> · ${esc(url.replace(/^https?:\/\//, ""))}`;
+    $("#m-loadurl").textContent = url.replace(/^https?:\/\//, "").slice(0, 74);
+    $("#m-load").style.display = "grid";
+    const fr = $("#m-frame");
+    fr.src = url;
+    Snd.insert();
+    const k = key(file);
+    S.plays[k] = (S.plays[k] || 0) + 1; save("arcade.plays", S.plays);
+    S.recent = [file, ...S.recent.filter(f => f !== file)].slice(0, 10); save("arcade.recent", S.recent);
+    $("#stat-credits").textContent = pad(Object.values(S.plays).reduce((a, b) => a + b, 0));
+    render();
+    $("#shell").classList.add("open");
+    document.body.style.overflow = "hidden";
+    clearTimeout(loadTimer);
+    loadTimer = setTimeout(() => {
+      if ($("#m-load").style.display !== "none")
+        $("#m-loadurl").innerHTML = `slow or blocked signal — <button class="btn notch-s" style="padding:3px 8px" onclick="ARCADE.newtab()">open in new tab</button>`;
+    }, 9000);
+  }
+  function closeGame() {
+    $("#shell").classList.remove("open");
+    $("#m-frame").src = "about:blank";
+    document.body.style.overflow = "";
+    Snd.play(220, .12, "triangle", .04, -120);
+  }
+
+  /* ---------- storage helpers exposed for the UI ---------- */
+  function toggleFav(file) {
+    const k = key(file);
+    S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
+    save("arcade.favs", [...S.favs]); renderTags(); render();
+  }
+
+  /* ==================== boot sequence ==================== */
+  async function boot() {
+    const steps = [
+      ["arcade.html kernel v2.6 …", 120],
+      [`mount repo <span class="dim">"${esc(CFG.owner)}/${esc(CFG.repo)}:${esc(CFG.branch)}"</span>`, 150],
+      [`exclude list: <span class="dim">${CFG.exclude.join(", ")}</span>`, 100],
+      [`declared cartridges: <span class="dim">${GAMES.length}</span>`, 100],
+    ];
+    for (const [m, d] of steps) { log(m); await sleep(d); }
+    build().catch(e => log("build error: " + esc(e.message), "err"));
+    await sleep(280);
+    dismissBoot();
+  }
+  const dismissBoot = () => { const b = $("#boot"); if (b && !b.classList.contains("done")) { b.classList.add("done"); setTimeout(() => b.remove(), 600); } };
+
+  /* ==================== background starfield ==================== */
+  function stars() {
+    const c = $("#stars"), x = c.getContext("2d");
+    if (!x) return;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let w = 0, h = 0, pts = [], mx = 0, my = 0, raf = 0;
+    const mk = () => {
+      w = c.width = innerWidth * devicePixelRatio; h = c.height = innerHeight * devicePixelRatio;
+      const n = Math.min(230, Math.round(innerWidth * innerHeight / 9000));
+      pts = Array.from({ length: n }, () => ({
+        x: Math.random() * w, y: Math.random() * h, z: Math.random() * .8 + .2,
+        r: Math.random() * 1.5 + .3, c: Math.random(), s: Math.random() * .28 + .04,
+      }));
+    };
+    mk(); addEventListener("resize", mk, { passive: true });
+    addEventListener("pointermove", e => { mx = (e.clientX / innerWidth - .5); my = (e.clientY / innerHeight - .5); }, { passive: true });
+    const draw = () => {
+      x.clearRect(0, 0, w, h);
+      for (const p of pts) {
+        p.y += p.s * p.z * devicePixelRatio; if (p.y > h) { p.y = -2; p.x = Math.random() * w; }
+        const ox = mx * 26 * p.z * devicePixelRatio, oy = my * 18 * p.z * devicePixelRatio;
+        const tw = .45 + .55 * Math.abs(Math.sin((performance.now() / 1000) * (0.6 + p.z) + p.x));
+        x.beginPath();
+        const col = p.c > .9 ? `rgba(255,47,135,${tw * .9})` : p.c > .74 ? `rgba(255,194,71,${tw * .8})` : p.c > .5 ? `rgba(124,196,255,${tw * .75})` : `rgba(47,243,208,${tw * .7})`;
+        x.fillStyle = col;
+        x.arc(p.x + ox, p.y + oy, p.r * p.z * devicePixelRatio, 0, 6.284);
+        x.fill();
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    if (!reduce) draw();
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) cancelAnimationFrame(raf); else if (!reduce) draw();
+    });
+  }
+
+  /* ==================== wiring ==================== */
+  function wire() {
+    $("#q").addEventListener("input", e => { S.query = e.target.value; render(); });
+    $("#sort").addEventListener("change", e => { S.sort = e.target.value; render(); Snd.click(); });
+    $("#tags").addEventListener("click", e => {
+      const b = e.target.closest("[data-tag]"); if (!b) return;
+      S.tag = b.dataset.tag; Snd.click(); renderTags(); render();
+    });
+    const setView = v => { S.view = v; $("#v-grid").setAttribute("aria-pressed", v === "grid"); $("#v-list").setAttribute("aria-pressed", v === "list"); save("arcade.view", v); Snd.click(); render(); };
+    $("#v-grid").addEventListener("click", () => setView("grid"));
+    $("#v-list").addEventListener("click", () => setView("list"));
+    setView(load("arcade.view", "grid") || "grid");
+
+    $("#btn-refresh").addEventListener("click", () => { Snd.click(); rescan(); });
+    $("#btn-help").addEventListener("click", () => help(true));
+    $("#btn-sound").addEventListener("click", e => {
+      S.sound = !S.sound; save("arcade.sound", S.sound);
+      e.currentTarget.setAttribute("aria-pressed", S.sound);
+      e.currentTarget.innerHTML = `<i class="fa-solid fa-volume-${S.sound ? "high" : "xmark"}"></i>`;
+      if (S.sound) Snd.click();
+    });
+    $("#m-close").addEventListener("click", closeGame);
+    $("#m-reload").addEventListener("click", () => reload());
+    $("#m-fs").addEventListener("click", () => full());
+    $("#m-newtab").addEventListener("click", () => newtab());
+    $("#m-frame").addEventListener("load", () => { $("#m-load").style.display = "none"; });
+    $("#shell").addEventListener("click", e => { if (e.target.id === "shell") closeGame(); });
+    $("#helpshell").addEventListener("click", e => { if (e.target.id === "helpshell") help(false); });
+    $("#copycfg").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText($("#cfgsnippet").innerText); Snd.click();
+        $("#copycfg").innerHTML = '<i class="fa-solid fa-check"></i>copied'; setTimeout(() => $("#copycfg").innerHTML = '<i class="fa-regular fa-copy"></i>Copy snippet', 1600);
+      } catch { ARCADE.help(false); }
+    });
+    $("#help-url").textContent = (CFG.pagesBase || "").replace(/\/$/, "") + "/arcade.html";
+    $("#stat-credits").textContent = pad(Object.values(S.plays).reduce((a, b) => a + b, 0));
+
+    /* [MK-0z5t2] KEYBOARD */
+    addEventListener("keydown", e => {
+      if (e.key === "Escape") { $("#shell").classList.contains("open") ? closeGame() : help(false); }
+      if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
+      const open = $("#shell").classList.contains("open");
+      if (open && !/input|textarea/i.test(document.activeElement.tagName)) {
+        if (e.key.toLowerCase() === "f") { e.preventDefault(); full(); }
+        if (e.key.toLowerCase() === "r") { e.preventDefault(); reload(); }
+      }
+      if (e.key.toLowerCase() === "s" && !/input|textarea|select/i.test(document.activeElement.tagName)) $("#btn-sound").click();
+      dismissBoot();
+    });
+    addEventListener("pointerdown", dismissBoot, { once: true });
+    addEventListener("pointerdown", () => Snd.init(), { once: true });
+  }
+
+  function full() {
+    const el = $("#m-screen");
+    document.fullscreenElement ? document.exitFullscreen() : (el.requestFullscreen?.() || el.webkitRequestFullscreen?.());
+  }
+  function reload() { const f = $("#m-frame"); const s = f.src; f.src = "about:blank"; $("#m-load").style.display = "grid"; setTimeout(() => f.src = s, 120); Snd.play(660, .07, "square", .04); }
+  function newtab() { if (curFile) window.open(fileURL(curFile), "_blank", "noopener"); }
+  function help(on) { $("#helpshell").classList.toggle("open", on !== false); document.body.style.overflow = on !== false ? "hidden" : ""; }
+  function rescan() { setStatus("rescanning…"); S.source = "—"; build().catch(e => setStatus("scan failed: " + esc(e.message))); }
+  function brokenThumb(img) {
+    const g = S.games.find(x => fileURL(x.file) === img.src || x.thumb === img.src);
+    const holder = img.closest(".gthumb"); if (!holder) return;
+    holder.innerHTML = (g ? initialsPlate(g) : `<div class="ginit" style="background:linear-gradient(160deg,#070c16,#0d1626)"><b>?</b></div>`) +
+      `<span class="crn tl"></span><span class="crn tr"></span><span class="crn bl"></span><span class="crn br"></span>
+       <div class="playveil"><div class="playbtn"><i class="fa-solid fa-play"></i>Play</div></div>
+       <div class="badge" style="bottom:8px;left:8px;color:var(--amber);border-color:rgba(255,194,71,.5)">thumb link failed</div>`;
+    holder.dataset.broken = "1";
+  }
+  /* icon safety net: if the FA stylesheet never lands, swap glyphs for text arrows */
+  function iconsFallback() {
+    if (document.documentElement.dataset.noicons) return;
+    document.documentElement.dataset.noicons = "1";
+    const st = document.createElement("style");
+    st.textContent = "i[class*='fa-']{font-family:inherit!important}i[class*='fa-']::before{content:''}";
+    document.head.appendChild(st);
+  }
+
+  /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
+  return { boot, wire, stars, rescan, help, newtab, launch, closeGame, toggleFav, brokenThumb, iconsFallback, CFG, GAMES, key };
+})();
+
+document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
+</script>
+
+</body>
+</html>
