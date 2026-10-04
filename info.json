@@ -7,7 +7,14 @@
       "tagline": "",
       "tags": ["arcade", "casual", "fishing"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fishing.webp",
-      "hot": false,
+      "hidden": false
+    },
+    {
+      "file": "uno_arena.html",
+      "title": "Uno Arena",
+      "tagline": "Based off the original card game, Uno! (who would've guessed)",
+      "tags": ["game", "fun"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/uno_arena.webp",
       "hidden": false
     },
     {
@@ -16,7 +23,6 @@
       "tagline": "Make music (web)",
       "tags": ["daw", "music", "music_composition"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fl_remake.webp",
-      "hot": false,
       "hidden": false
     }
   ],
@@ -26,7 +32,6 @@
     "tagline": "Optional subtitle under the title on each card.",
     "tags": "Strings used for filter chips (e.g. arcade, puzzle, multiplayer).",
     "thumb": "HTTPS image URL OR full data:image/...;base64,... string. Use img_dataurl_converter_for_thumbnails.html to paste a data URL. Empty = neon initial plate.",
-    "hot": "true shows a HOT badge on the card.",
     "hidden": "true removes the game from the shelf (still playable if you know the URL)."
   }
 }
