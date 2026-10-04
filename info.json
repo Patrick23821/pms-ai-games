@@ -6,7 +6,7 @@
       "title": "Deep Cast",
       "tagline": "",
       "tags": ["arcade", "casual", "fishing"],
-      "thumb": "",
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fishing.webp",
       "hot": false,
       "hidden": false
     },
@@ -15,7 +15,7 @@
       "title": "FL Studio (Remake)",
       "tagline": "Make music (web)",
       "tags": ["daw", "music", "music_composition"],
-      "thumb": "",
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fl_remake.webp",
       "hot": false,
       "hidden": false
     }
