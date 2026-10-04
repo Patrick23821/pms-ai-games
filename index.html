@@ -297,15 +297,6 @@ pre.code s{color:#4f7386;text-decoration:none}
     <div class="flex flex-wrap items-center gap-2 mt-3" id="tags"></div>
   </section>
 
-  <!-- ============================ STATUS LINE ============================ -->
-  <section class="px-[clamp(16px,4vw,54px)] pt-5">
-    <div class="edge notch-s"><div class="edge-in notch-s px-4 py-3 flex items-start gap-3">
-      <i class="fa-solid fa-terminal text-[var(--cyan)] mt-[3px]"></i>
-      <div class="console flex-1 min-w-0"><span id="statusline" class="caret">mounting vault…</span></div>
-      <div class="f-mono text-[10px] text-[var(--dim)] whitespace-nowrap hidden sm:block" id="ratelimit"></div>
-    </div></div>
-  </section>
-
   <!-- ============================ RACK ============================ -->
   <main class="px-[clamp(16px,4vw,54px)] pt-6 pb-16">
     <div id="rack" class="rack"></div>
@@ -462,6 +453,7 @@ const CFG = {
   },
   scrapeTitles: true,                          /* read <title> from each game file */
   infoFile: "info.json",                       /* [MK-i7n4j2] shelf metadata in the repo */
+  repoCacheMinutes: 15,                        /* [MK-c8r2e1] skip GitHub API if cache is fresh */
 };
 
 /* ==========================================================================
@@ -539,13 +531,41 @@ const ARCADE = (() => {
 
   async function fetchJSON(url) {
     const r = await fetch(url, { headers: { Accept: "application/vnd.github+json", ...authH() }, cache: "no-store" });
-    const left = r.headers.get("x-rateLimit-remaining") || r.headers.get("x-ratelimit-remaining");
-    if (left != null) $("#ratelimit").textContent = "API QUOTA " + left + "/60";
     if (!r.ok) throw Object.assign(new Error(url.split("/").slice(-1)[0] + " → HTTP " + r.status), { status: r.status });
     return r.json();
   }
 
-  async function scanRepo() {
+  /* [MK-c8r2e1] browser cache for repo file listing — saves GitHub API quota */
+  function repoCacheKey() {
+    return "arcade.repoFiles.v1:" + [CFG.owner, CFG.repo, CFG.branch || "main", CFG.folder || ""].join("|");
+  }
+  function repoCacheTtlMs() { return Math.max(1, CFG.repoCacheMinutes ?? 15) * 60 * 1000; }
+  function readRepoCache(allowStale) {
+    try {
+      const v = JSON.parse(localStorage.getItem(repoCacheKey()));
+      if (!v || !Array.isArray(v.files)) return null;
+      const age = Date.now() - (v.at || 0);
+      if (!allowStale && age > repoCacheTtlMs()) return null;
+      return { ...v, age };
+    } catch { return null; }
+  }
+  function writeRepoCache(files, source) {
+    try {
+      save(repoCacheKey(), { at: Date.now(), files, source: source || S.source || "GITHUB API" });
+    } catch { }
+  }
+
+  async function scanRepo(force = false) {
+    if (!force) {
+      const hit = readRepoCache(false);
+      if (hit) {
+        S.source = "CACHE";
+        const left = Math.max(0, repoCacheTtlMs() - hit.age);
+        log(`repo listing cached locally · ${hit.files.length} .html · API skip ${Math.ceil(left / 60000)} min`, "ok");
+        return hit.files;
+      }
+    } else log("rescan — bypassing local repo cache", "dim");
+
     const folder = (CFG.folder || "").replace(/^\/|\/$/g, "");
     const ref = CFG.branch ? "?ref=" + encodeURIComponent(CFG.branch) : "";
     log(`GET ${api("contents/" + folder + ref).replace("repos/", "")}`, "dim");
@@ -555,6 +575,7 @@ const ARCADE = (() => {
       const files = data.filter(e => e.type === "file" && isHtml(e.name)).map(e => e.name);
       S.source = "GITHUB API";
       log(`OK · ${data.length} entries read · ${files.length} cartridge(s) matched`, "ok");
+      writeRepoCache(files, S.source);
       return files;
     } catch (e) {
       log("contents API failed: " + e.message, "warn");
@@ -566,10 +587,17 @@ const ARCADE = (() => {
       const uniq = [...new Set(files)].filter(f => !f.includes("/"));
       S.source = "GIT TREE";
       log(`tree fallback · ${uniq.length} cartridge(s)`, "ok");
+      writeRepoCache(uniq, S.source);
       return uniq;
     } catch (e) { log("git tree failed: " + e.message, "warn"); }
+    const stale = readRepoCache(true);
+    if (stale) {
+      S.source = "CACHE";
+      log(`API blocked — using older cached listing (${stale.files.length} file(s))`, "warn");
+      return stale.files;
+    }
     S.source = "LOCAL LIST";
-    log(`falling back to CFG.manualFiles (${CFG.manualFiles.length}) + GAMES list`, "warn");
+    log(`falling back to info.json / manualFiles (${CFG.manualFiles.length})`, "warn");
     return CFG.manualFiles.filter(isHtml);
   }
 
@@ -680,9 +708,10 @@ const ARCADE = (() => {
   }
 
   /* ---------- merge repo files with info.json + the declared GAMES list ---------- */
-  async function build() {
+  async function build(forceScan = false) {
     setStatus("scanning repository…");
-    const [found, repoInfo] = await Promise.all([scanRepo(), loadRepoInfo()]);
+    const repoInfo = await loadRepoInfo();
+    const found = await scanRepo(forceScan);
     const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
     const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
     const hiddenKeys = new Set(repoInfo.filter(g => g.hidden).map(g => key(g.file)));
@@ -694,7 +723,9 @@ const ARCADE = (() => {
 
     S.games = all.map(f => {
       const merged = mergeCartridgeMeta(f, infoMap.get(key(f)), gamesMap.get(key(f)));
-      return { ...merged, found: found.some(x => key(x) === key(f)) };
+      const inListing = found.some(x => key(x) === key(f));
+      const inInfo = infoMap.has(key(f));
+      return { ...merged, found: inListing || inInfo };
     });
     renderTags();
     render();
@@ -726,7 +757,7 @@ const ARCADE = (() => {
   function finishSource() {
     S.ready = true;
     const el = $("#stat-source");
-    el.textContent = S.source === "GITHUB API" ? "LIVE" : S.source === "LOCAL LIST" ? "LOCAL" : "TREE";
+    el.textContent = S.source === "GITHUB API" ? "LIVE" : S.source === "CACHE" ? "CACHE" : S.source === "LOCAL LIST" ? "LOCAL" : "TREE";
     el.style.color = S.source === "LOCAL LIST" ? "var(--amber)" : "var(--cyan)";
     $("#stat-count").textContent = pad(S.games.length);
     $("#ft-sync").textContent = new Date().toLocaleTimeString();
@@ -741,7 +772,7 @@ const ARCADE = (() => {
     c.appendChild(line);
     while (c.children.length > 7) c.removeChild(c.firstChild);
   }
-  const setStatus = m => $("#statusline").innerHTML = m;
+  const setStatus = () => {};
 
   /* ==================================================================
      [MK-0z5t2 + MK-g1n4l9] RENDER / CARD ART / LAUNCHER
@@ -1040,7 +1071,7 @@ const ARCADE = (() => {
   function reload() { const f = $("#m-frame"); const s = f.src; f.src = "about:blank"; $("#m-load").style.display = "grid"; setTimeout(() => f.src = s, 120); Snd.play(660, .07, "square", .04); }
   function newtab() { if (curFile) window.open(fileURL(curFile), "_blank", "noopener"); }
   function help(on) { $("#helpshell").classList.toggle("open", on !== false); document.body.style.overflow = on !== false ? "hidden" : ""; }
-  function rescan() { setStatus("rescanning…"); S.source = "—"; build().catch(e => setStatus("scan failed: " + esc(e.message))); }
+  function rescan() { setStatus("rescanning…"); S.source = "—"; build(true).catch(e => setStatus("scan failed: " + esc(e.message))); }
   function brokenThumb(img) {
     const g = S.games.find(x => fileURL(x.file) === img.src || x.thumb === img.src);
     const holder = img.closest(".gthumb"); if (!holder) return;
