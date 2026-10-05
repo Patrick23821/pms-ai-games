@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Omega Arcade</title>
 
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -363,6 +362,7 @@ pre.code s{color:#4f7386;text-decoration:none}
           <p>Commit <span class="f-mono text-[var(--cyan)]">info.json</span> next to <span class="f-mono">arcade.html</span> with a
           <span class="f-mono">games</span> array — one object per cartridge (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
           <span class="f-mono">tagline</span>, <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
+          Entries only appear on the shelf after the matching <span class="f-mono">.html</span> file exists in the repo (metadata alone does not create a card).
           Copy from <span class="f-mono">info.template.json</span> in the repo. Without a title, the shelf falls back to the game file’s
           <span class="f-mono">&lt;title&gt;</span> tag, then the filename.</p>
         </div>
@@ -460,7 +460,7 @@ const ARCADE = (() => {
 
   /* ---------- state ---------- */
   const S = {
-    games: [],            /* merged: repo files + declared list  */
+    games: [],            /* repo .html files enriched with info.json / GAMES  */
     query: "", tag: "ALL", sort: "title", view: "grid",
     favs: new Set(load("arcade.favs", [])),
     recent: load("arcade.recent", []),
@@ -691,32 +691,43 @@ const ARCADE = (() => {
     };
   }
 
-  /* ---------- merge repo files with info.json + the declared GAMES list ---------- */
+  /* ---------- merge repo listing with info.json + GAMES (metadata only; no phantom cards) ---------- */
   async function build(forceScan = false) {
     setStatus("scanning repository…");
     const repoInfo = await loadRepoInfo();
-    const found = await scanRepo(forceScan);
+    let found = await scanRepo(forceScan);
+    /* offline fallback: baked-in GAMES list still counts as “present” */
+    if (S.source === "LOCAL LIST") {
+      found = [...new Set([...found, ...GAMES.map(g => g.file).filter(isHtml)])];
+    }
+    const foundSet = new Set(found.map(f => key(f)));
     const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
     const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
     const hiddenKeys = new Set(repoInfo.filter(g => g.hidden).map(g => key(g.file)));
-    const declared = [...repoInfo.map(g => g.file), ...GAMES.map(g => g.file)].filter(Boolean);
-    const all = [...new Set([...found, ...declared, ...CFG.manualFiles])]
+    const declaredOnly = [...repoInfo.map(g => g.file), ...GAMES.map(g => g.file)]
+      .filter(Boolean)
+      .filter(f => !foundSet.has(key(f)));
+    if (declaredOnly.length) {
+      const sample = declaredOnly.slice(0, 6).map(f => esc(f)).join(", ");
+      const more = declaredOnly.length > 6 ? ` … +${declaredOnly.length - 6}` : "";
+      log(`waiting for ${declaredOnly.length} file(s) in repo before showing shelf cards: ${sample}${more}`, "dim");
+    }
+
+    const all = [...new Set(found)]
       .filter(f => /\.html?$/i.test(f))
       .filter(f => !hiddenKeys.has(key(f)) || gamesMap.has(key(f)))
       .sort((a, b) => a.localeCompare(b));
 
     S.games = all.map(f => {
       const merged = mergeCartridgeMeta(f, infoMap.get(key(f)), gamesMap.get(key(f)));
-      const inListing = found.some(x => key(x) === key(f));
-      const inInfo = infoMap.has(key(f));
-      return { ...merged, found: inListing || inInfo };
+      return { ...merged, found: true };
     });
     renderTags();
     render();
     setStatus(`${S.games.length} cartridge(s) on the wall · source ${S.source}`);
 
     if (CFG.scrapeTitles) {
-      const need = S.games.filter(g => g.titleSrc === "auto" && g.found);
+      const need = S.games.filter(g => g.titleSrc === "auto");
       if (need.length && !location.protocol.startsWith("file")) {
         setStatus("reading &lt;title&gt; tags from " + need.length + " file(s)…");
         await pool(need, 6, async g => {
@@ -904,7 +915,6 @@ const ARCADE = (() => {
   let curFile = "", loadTimer = 0;
   function launch(file) {
     const g = S.games.find(x => x.file === file); if (!g) return;
-    if (!g.found) log(`launching "${esc(file)}" — not confirmed in repo listing`, "warn");
     curFile = file;
     const url = fileURL(file);
     $("#m-title").textContent = g.title;
