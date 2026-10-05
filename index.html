@@ -5,6 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Omega Arcade</title>
 
+<!--
+  ==========================================================================
+  [MK-a7x9q2]  ACCESS POINT  (Ctrl+F this exact string: MK-a7x9q2)
+  ==========================================================================
+
+  WHERE TO OPEN IT AFTER YOU PUSH arcade.html INTO YOUR REPO
+  ----------------------------------------------------------
+  LIVE (GitHub Pages, if Pages is ON for that repo/branch):
+    https://Patrick23821.github.io/pms-ai-games/arcade.html
+
+  EDIT IT ON GITHUB:
+    https://github.com/Patrick23821/pms-ai-games/new/main
+    (name the file  arcade.html  and commit, then Pages serves it)
+
+  THE REPO SCANNER READS THIS ENDPOINT (public repos, no key needed):
+    https://api.github.com/repos/Patrick23821/pms-ai-games/contents/?ref=main
+
+  YOU CAN RE-POINT ALL OF THAT IN 3 SECONDS -> search  MK-k4m1z8  (config block)
+  PER-GAME METADATA (title, thumb) -> search  MK-i7n4j2  (repo info.json)
+  TO ADD / THEME GAMES             -> search  MK-p3v7n5  (the GAMES list)
+  THUMBNAIL RULES (link or dataURL)-> search  MK-t9c2r6
+  TITLE PICKUP FROM GAME FILES     -> search  MK-y2j6f4
+  IF THE API IS BLOCKED / OFFLINE  -> search  MK-9f2m4x (manualFiles)
+
+  Every marker in this file starts with  MK-  so one Ctrl+F finds the whole map.
+  ==========================================================================
+-->
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -245,22 +273,6 @@ pre.code s{color:#4f7386;text-decoration:none}
       </div>
 
       <div class="flex flex-col items-end gap-3">
-        <div class="edge notch-s"><div class="edge-in notch-s px-4 py-3 flex items-center gap-5">
-          <div class="text-right">
-            <div class="f-mono text-[9px] tracking-[.28em] text-[var(--dim)]">CARTRIDGES</div>
-            <div class="f-disp text-2xl font-black text-[var(--cyan)] neon" id="stat-count">00</div>
-          </div>
-          <div class="w-px h-9 bg-[var(--edge)]"></div>
-          <div class="text-right">
-            <div class="f-mono text-[9px] tracking-[.28em] text-[var(--dim)]">CREDITS</div>
-            <div class="f-disp text-2xl font-black text-[var(--amber)] neon-a" id="stat-credits">00</div>
-          </div>
-          <div class="w-px h-9 bg-[var(--edge)]"></div>
-          <div class="text-right">
-            <div class="f-mono text-[9px] tracking-[.28em] text-[var(--dim)]">SIGNAL</div>
-            <div class="f-disp text-2xl font-black text-[var(--mag)] neon-m" id="stat-source">···</div>
-          </div>
-        </div></div>
         <div class="flex items-center gap-2">
           <button class="btn notch-s" id="btn-refresh"><i class="fa-solid fa-rotate"></i>Rescan repo</button>
           <button class="btn notch-s gold" id="btn-help"><i class="fa-solid fa-circle-question"></i>Setup</button>
@@ -756,10 +768,6 @@ const ARCADE = (() => {
 
   function finishSource() {
     S.ready = true;
-    const el = $("#stat-source");
-    el.textContent = S.source === "GITHUB API" ? "LIVE" : S.source === "CACHE" ? "CACHE" : S.source === "LOCAL LIST" ? "LOCAL" : "TREE";
-    el.style.color = S.source === "LOCAL LIST" ? "var(--amber)" : "var(--cyan)";
-    $("#stat-count").textContent = pad(S.games.length);
     $("#ft-sync").textContent = new Date().toLocaleTimeString();
     renderTicker();
   }
@@ -937,7 +945,6 @@ const ARCADE = (() => {
     const k = key(file);
     S.plays[k] = (S.plays[k] || 0) + 1; save("arcade.plays", S.plays);
     S.recent = [file, ...S.recent.filter(f => f !== file)].slice(0, 10); save("arcade.recent", S.recent);
-    $("#stat-credits").textContent = pad(Object.values(S.plays).reduce((a, b) => a + b, 0));
     render();
     $("#shell").classList.add("open");
     document.body.style.overflow = "hidden";
@@ -1046,7 +1053,6 @@ const ARCADE = (() => {
       } catch { ARCADE.help(false); }
     });
     $("#help-url").textContent = (CFG.pagesBase || "").replace(/\/$/, "") + "/arcade.html";
-    $("#stat-credits").textContent = pad(Object.values(S.plays).reduce((a, b) => a + b, 0));
 
     /* [MK-0z5t2] KEYBOARD */
     addEventListener("keydown", e => {
