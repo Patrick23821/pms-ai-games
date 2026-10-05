@@ -10,6 +10,14 @@
       "hidden": false
     },
     {
+      "file": "orbit.html",
+      "title": "Orbit",
+      "tagline": "Discord is being targetted by many districts, so heres an alt.",
+      "tags": ["chatroom", "communication"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/orbit.webp",
+      "hidden": false
+    },
+    {
       "file": "uno_arena.html",
       "title": "Uno Arena",
       "tagline": "Based off the original card game, Uno! (who would've guessed)",
