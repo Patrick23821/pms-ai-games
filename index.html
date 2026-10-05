@@ -149,13 +149,13 @@ select.field{cursor:pointer}
 .playbtn{display:flex;align-items:center;gap:9px;padding:11px 20px;background:var(--cyan);color:#04080e;font-family:"Orbitron",sans-serif;font-weight:700;font-size:12px;letter-spacing:.2em;
   clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:0 0 26px rgba(47,243,208,.55);transform:translateY(8px);transition:.26s}
 .gcard:hover .playbtn{transform:translateY(0)}
-.gbody{flex:1;display:flex;flex-direction:column;min-height:0}
-.ghead{display:flex;align-items:flex-start;gap:8px;min-height:2.6em}
-.gtitle{font-family:"Orbitron",sans-serif;font-weight:700;font-size:15px;letter-spacing:.03em;color:#eafcff;line-height:1.3;margin:0;flex:1;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
-.gtagline{font-size:12.5px;line-height:1.375;color:#7f9fb2;margin:0;flex:none;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.75em}
-.gtagline:empty::before{content:"\00a0"}
+.gbody{flex:1;display:flex;flex-direction:column;min-height:0;overflow:visible}
+.ghead{display:flex;align-items:flex-start;gap:8px}
+.gtitle{font-family:"Orbitron",sans-serif;font-weight:700;font-size:15px;letter-spacing:.03em;color:#eafcff;line-height:1.35;margin:0;flex:1;
+  overflow-wrap:anywhere;word-break:break-word}
+.gtagline{font-size:12.5px;line-height:1.45;color:#7f9fb2;margin:0;flex:1 1 auto;
+  overflow-wrap:anywhere;word-break:break-word;white-space:normal}
+.gtagline:empty{display:none}
 .gfile{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim);letter-spacing:.06em;word-break:break-all}
 .gfoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;min-height:28px}
 .gtags{display:flex;flex-wrap:wrap;gap:6px;min-height:22px;flex:1;align-content:flex-start}
@@ -163,13 +163,19 @@ select.field{cursor:pointer}
 .ico-btn{width:28px;height:28px;display:grid;place-items:center;border:1px solid rgba(124,196,255,.22);background:rgba(8,14,25,.7);color:var(--dim);cursor:pointer;transition:.16s;font-size:12px}
 .ico-btn:hover{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 14px rgba(47,243,208,.3)}
 .ico-btn.on{color:var(--mag);border-color:rgba(255,47,135,.6);background:rgba(255,47,135,.12);text-shadow:0 0 10px rgba(255,47,135,.7)}
+.ico-btn.direct.on{color:var(--cyan);border-color:rgba(47,243,208,.65);background:rgba(47,243,208,.12);text-shadow:0 0 10px rgba(47,243,208,.55)}
+.ghead-actions{display:flex;shrink:0;gap:4px}
+.setting-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid rgba(47,243,208,.18);background:rgba(47,243,208,.04);cursor:pointer;transition:.16s}
+.setting-row:hover{border-color:rgba(47,243,208,.45)}
+.setting-row input{margin-top:3px;accent-color:var(--cyan);width:16px;height:16px;cursor:pointer}
 .reveal{opacity:0;transform:translateY(22px) scale(.985)}
 .reveal.in{opacity:1;transform:none;transition:opacity .5s ease,transform .55s cubic-bezier(.2,.9,.25,1)}
 
 /* list view tweaks */
-.rack.list .gcard{flex-direction:row;align-items:stretch}
-.rack.list .gthumb{width:180px;flex:0 0 180px;aspect-ratio:auto}
-.rack.list .gbody{flex:1}
+.rack.list .gcard{flex-direction:row;align-items:stretch;height:auto}
+.rack.list .gthumb{width:180px;flex:0 0 180px;aspect-ratio:auto;align-self:stretch}
+.rack.list .gbody{flex:1;min-height:auto}
+.rack.list .gtagline{max-width:none}
 @media(max-width:640px){.rack.list .gthumb{width:104px;flex-basis:104px}}
 
 /* ---- console / ticker ---- */
@@ -247,6 +253,7 @@ pre.code s{color:#4f7386;text-decoration:none}
       <div class="flex flex-col items-end gap-3">
         <div class="flex items-center gap-2">
           <button class="btn notch-s" id="btn-refresh"><i class="fa-solid fa-rotate"></i>Rescan repo</button>
+          <button class="btn notch-s" id="btn-settings" title="Arcade settings"><i class="fa-solid fa-gear"></i>Settings</button>
           <button class="btn notch-s" id="btn-sound" aria-pressed="true" title="Toggle blips"><i class="fa-solid fa-volume-high"></i></button>
         </div>
       </div>
@@ -268,7 +275,7 @@ pre.code s{color:#4f7386;text-decoration:none}
       <select id="sort" class="field notch-s" aria-label="Sort">
         <option value="title">SORT ▸ A–Z</option>
         <option value="recent">SORT ▸ RECENTLY PLAYED</option>
-        <option value="fav">SORT ▸ FAVOURITES FIRST</option>
+        <option value="fav">SORT ▸ FAVORITES FIRST</option>
         <option value="plays">SORT ▸ MOST PLAYED</option>
         <option value="file">SORT ▸ FILENAME</option>
       </select>
@@ -285,13 +292,13 @@ pre.code s{color:#4f7386;text-decoration:none}
     <div id="rack" class="rack"></div>
     <div id="empty" class="hidden pt-10">
       <div class="edge notch"><div class="edge-in notch p-8 sm:p-12 text-center">
-        <div class="text-4xl text-[var(--mag)] mb-4"><i class="fa-solid fa-ghost"></i></div>
-        <div class="f-disp text-2xl font-bold text-[#eafcff]">EMPTY SLOT</div>
+        <div class="text-4xl text-[var(--mag)] mb-4" id="emptyicon"><i class="fa-solid fa-ghost"></i></div>
+        <div class="f-disp text-2xl font-bold text-[#eafcff]" id="emptytitle">NO GAMES</div>
         <p class="text-[#8fb2c4] mt-3 max-w-[58ch] mx-auto leading-relaxed" id="emptymsg">
-          No <span class="f-mono text-[var(--cyan)]">.html</span> cartridges were found next to this file. Push a game file into the repo,
+          No <span class="f-mono text-[var(--cyan)]">.html</span> games were found next to this file. Add a game to the repo,
           or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).
         </p>
-        <div class="flex flex-wrap gap-2 justify-center mt-6">
+        <div class="flex flex-wrap gap-2 justify-center mt-6" id="emptyactions">
           <button class="btn notch-s" onclick="ARCADE.rescan()"><i class="fa-solid fa-rotate"></i>Rescan</button>
           <button class="btn notch-s gold" onclick="ARCADE.help(true)"><i class="fa-solid fa-book-open"></i>Setup guide</button>
         </div>
@@ -330,12 +337,37 @@ pre.code s{color:#4f7386;text-decoration:none}
         <iframe id="m-frame" title="Game" allow="autoplay; fullscreen; gamepad; clipboard-write; xr-spatial-tracking" loading="eager"></iframe>
         <div class="loadveil" id="m-load">
           <div class="text-center px-6">
-            <div class="f-disp text-[var(--cyan)] neon text-lg tracking-[.2em] mb-3">BOOTING CARTRIDGE</div>
+            <div class="f-disp text-[var(--cyan)] neon text-lg tracking-[.2em] mb-3">LOADING GAME</div>
             <div class="bar mx-auto"><i></i></div>
             <div class="f-mono text-[10px] text-[var(--dim)] mt-4 tracking-[.2em]" id="m-loadurl">…</div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ SETTINGS PANEL ============================ -->
+<div class="shell" id="settingsshell" role="dialog" aria-modal="true" aria-label="Arcade settings">
+  <div class="w-[min(520px,100%)] max-h-[88vh] overflow-auto edge notch">
+    <div class="edge-in notch p-6 sm:p-8">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div>
+          <div class="f-mono text-[10px] tracking-[.34em] text-[var(--cyan)]">PREFERENCES</div>
+          <h2 class="f-disp text-2xl sm:text-3xl font-black text-[#f2feff] neon mt-1">ARCADE SETTINGS</h2>
+        </div>
+        <button class="ico-btn notch-s" onclick="ARCADE.settings(false)" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <label class="setting-row notch-s" for="set-direct-all">
+        <input type="checkbox" id="set-direct-all">
+        <span>
+          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Open games directly</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Skip the in-arcade player and go straight to the game when you click a card.</span>
+        </span>
+      </label>
+      <p class="mt-4 text-[13px] text-[#8fb2c4] leading-relaxed">
+        Per game: use the <i class="fa-solid fa-bolt text-[var(--cyan)]"></i> button on a card to toggle direct open for that game only (when the setting above is off).
+      </p>
     </div>
   </div>
 </div>
@@ -360,7 +392,7 @@ pre.code s{color:#4f7386;text-decoration:none}
           <span class="f-mono">CFG.exclude</span> — <span class="f-mono">index.html</span> is always skipped.</p>
           <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · METADATA (<span class="f-mono">info.json</span>)</p>
           <p>Commit <span class="f-mono text-[var(--cyan)]">info.json</span> next to <span class="f-mono">arcade.html</span> with a
-          <span class="f-mono">games</span> array — one object per cartridge (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
+          <span class="f-mono">games</span> array — one object per game (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
           <span class="f-mono">tagline</span>, <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
           Entries only appear on the shelf after the matching <span class="f-mono">.html</span> file exists in the repo (metadata alone does not create a card).
           Copy from <span class="f-mono">info.template.json</span> in the repo. Without a title, the shelf falls back to the game file’s
@@ -463,6 +495,8 @@ const ARCADE = (() => {
     games: [],            /* repo .html files enriched with info.json / GAMES  */
     query: "", tag: "ALL", sort: "title", view: "grid",
     favs: new Set(load("arcade.favs", [])),
+    direct: new Set(load("arcade.direct", [])),
+    directAll: !!load("arcade.directAll", false),
     recent: load("arcade.recent", []),
     plays: load("arcade.plays", {}),
     source: "—", ready: false, sound: load("arcade.sound", true),
@@ -724,7 +758,7 @@ const ARCADE = (() => {
     });
     renderTags();
     render();
-    setStatus(`${S.games.length} cartridge(s) on the wall · source ${S.source}`);
+    setStatus(`${S.games.length} game${S.games.length === 1 ? "" : "s"} on the shelf · source ${S.source}`);
 
     if (CFG.scrapeTitles) {
       const need = S.games.filter(g => g.titleSrc === "auto");
@@ -788,8 +822,22 @@ const ARCADE = (() => {
     return initialsPlate(g);
   }
 
+  function isDirectOpen(file) {
+    const k = key(file);
+    return S.directAll || S.direct.has(k);
+  }
+
+  function recordPlay(file) {
+    const k = key(file);
+    S.plays[k] = (S.plays[k] || 0) + 1;
+    save("arcade.plays", S.plays);
+    S.recent = [file, ...S.recent.filter(f => f !== file)].slice(0, 10);
+    save("arcade.recent", S.recent);
+  }
+
   const card = g => {
     const fav = S.favs.has(key(g.file));
+    const direct = isDirectOpen(g.file);
     const plays = S.plays[key(g.file)] || 0;
     return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
               aria-label="Play ${esc(g.title)}">
@@ -806,8 +854,13 @@ const ARCADE = (() => {
           <div class="gbody p-[13px] gap-2">
             <div class="ghead">
               <h3 class="gtitle">${esc(g.title)}</h3>
-              <button class="ico-btn notch-s shrink-0 ${fav ? "on" : ""}" data-fav="${esc(g.file)}" title="Favourite">
-                <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
+              <div class="ghead-actions">
+                <button type="button" class="ico-btn direct notch-s ${direct ? "on" : ""}" data-direct="${esc(g.file)}"
+                  title="${direct ? "Opens game directly — click to use in-arcade player" : "Open this game directly (skip player)"}">
+                  <i class="fa-solid fa-bolt"></i></button>
+                <button type="button" class="ico-btn notch-s ${fav ? "on" : ""}" data-fav="${esc(g.file)}" title="Favorite">
+                  <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
+              </div>
             </div>
             <p class="gtagline">${g.tagline ? esc(g.tagline) : ""}</p>
             <div class="flex flex-wrap items-center gap-1.5">
@@ -830,7 +883,7 @@ const ARCADE = (() => {
     $("#tags").innerHTML =
       `<button class="chip notch-s" data-tag="ALL" aria-pressed="${S.tag === "ALL"}">all · ${S.games.length}</button>` +
       `<button class="chip notch-s" data-tag="__fav" aria-pressed="${S.tag === "__fav"}">
-         <i class="fa-solid fa-star"></i> favs · ${S.favs.size}</button>` +
+         <i class="fa-solid fa-star"></i> Favorites · ${S.favs.size}</button>` +
       all.map(t => `<button class="chip notch-s" data-tag="${esc(t)}" aria-pressed="${S.tag === t}">${esc(t)} · ${S.games.filter(g => g.tags.map(x => x.toLowerCase()).includes(t)).length}</button>`).join("");
   }
 
@@ -858,12 +911,35 @@ const ARCADE = (() => {
     rack.className = "rack" + (S.view === "list" ? " list" : "");
     rack.innerHTML = list.map(card).join("");
     $("#empty").classList.toggle("hidden", list.length > 0);
-    if (!list.length) $("#emptymsg").innerHTML = S.games.length
-      ? `Nothing matches <span class="f-mono text-[var(--cyan)]">"${esc(S.query) || S.tag}"</span> — ${S.games.length} cartridge(s) total.`
-      : `No <span class="f-mono text-[var(--cyan)]">.html</span> cartridges were found next to this file. Push a game into the repo, or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).`;
+    if (!list.length) {
+      const emptyFavs = S.tag === "__fav" && !S.favs.size;
+      const noGames = !S.games.length;
+      const actions = $("#emptyactions");
+      const icon = $("#emptyicon");
+      if (emptyFavs) {
+        icon.innerHTML = `<i class="fa-regular fa-star"></i>`;
+        $("#emptytitle").textContent = "NO FAVORITES";
+        $("#emptymsg").innerHTML = `Tap the <i class="fa-regular fa-star text-[var(--amber)]"></i> on any game to save it here.`;
+        actions.classList.add("hidden");
+      } else if (noGames) {
+        icon.innerHTML = `<i class="fa-solid fa-ghost"></i>`;
+        $("#emptytitle").textContent = "NO GAMES";
+        $("#emptymsg").innerHTML = `No <span class="f-mono text-[var(--cyan)]">.html</span> games were found next to this file. Add a game to the repo, or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).`;
+        actions.classList.remove("hidden");
+      } else {
+        icon.innerHTML = `<i class="fa-solid fa-filter"></i>`;
+        $("#emptytitle").textContent = "NO MATCHES";
+        const label = esc(S.query.trim() || (S.tag === "ALL" ? "filters" : S.tag));
+        $("#emptymsg").innerHTML = `Nothing matches <span class="f-mono text-[var(--cyan)]">${label}</span> — ${S.games.length} game${S.games.length === 1 ? "" : "s"} total.`;
+        actions.classList.add("hidden");
+      }
+    }
     $$(".gcard", rack).forEach(el => {
       el.addEventListener("mouseenter", () => Snd.hover());
-      el.addEventListener("click", e => { if (!e.target.closest("[data-fav]")) launch(el.dataset.file); });
+      el.addEventListener("click", e => {
+        if (e.target.closest("[data-fav]") || e.target.closest("[data-direct]")) return;
+        launch(el.dataset.file);
+      });
       el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); launch(el.dataset.file); } });
     });
     $$("[data-fav]", rack).forEach(b => b.addEventListener("click", e => {
@@ -871,6 +947,10 @@ const ARCADE = (() => {
       const k = key(b.dataset.fav);
       S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
       save("arcade.favs", [...S.favs]); Snd.click(); renderTags(); render();
+    }));
+    $$("[data-direct]", rack).forEach(b => b.addEventListener("click", e => {
+      e.stopPropagation();
+      toggleDirect(b.dataset.direct);
     }));
     revealObserve();
     renderTicker();
@@ -897,12 +977,12 @@ const ARCADE = (() => {
       .slice(0, 3)
       .forEach(g => parts.push(`<span><i class="fa-solid fa-ranking-star text-[var(--amber)]"></i> MOST PLAYED · ${esc(g.title.toUpperCase())} ×${S.plays[key(g.file)]}</span>`));
     if (S.games.length) {
-      parts.push(`<span><i class="fa-solid fa-layer-group text-[var(--cyan)]"></i> VAULT · ${S.games.length} CARTRIDGE${S.games.length === 1 ? "" : "S"}</span>`);
+      parts.push(`<span><i class="fa-solid fa-layer-group text-[var(--cyan)]"></i> VAULT · ${S.games.length} GAME${S.games.length === 1 ? "" : "S"}</span>`);
       S.games.forEach(g => parts.push(`<span><i class="fa-solid fa-gamepad text-[var(--ice)]"></i> ${esc(g.title.toUpperCase())} <span class="text-[var(--dim)]">· ${esc(g.file)}</span></span>`));
     } else if (S.ready || S.source !== "—") {
-      parts.push(`<span><i class="fa-solid fa-box-open text-[var(--amber)]"></i> NO CARTRIDGES IN REPO — PUSH .HTML FILES OR RESCAN</span>`);
+      parts.push(`<span><i class="fa-solid fa-box-open text-[var(--amber)]"></i> NO GAMES IN REPO — ADD .HTML FILES OR RESCAN</span>`);
     }
-    if (S.favs.size) parts.push(`<span><i class="fa-solid fa-star text-[var(--amber)]"></i> FAVOURITES · ${S.favs.size}</span>`);
+    if (S.favs.size) parts.push(`<span><i class="fa-solid fa-star text-[var(--amber)]"></i> FAVORITES · ${S.favs.size}</span>`);
     const credits = Object.values(S.plays).reduce((a, b) => a + b, 0);
     if (credits) parts.push(`<span><i class="fa-solid fa-coins text-[var(--cyan)]"></i> TOTAL PLAYS · ${credits}</span>`);
     if (S.source && S.source !== "—") parts.push(`<span><i class="fa-solid fa-satellite text-[var(--ice)]"></i> SYNC · ${esc(S.source)}</span>`);
@@ -913,8 +993,17 @@ const ARCADE = (() => {
 
   /* ---------- launcher ---------- */
   let curFile = "", loadTimer = 0;
+  function openGameDirect(file) {
+    const g = S.games.find(x => x.file === file);
+    if (!g) return;
+    Snd.insert();
+    recordPlay(file);
+    render();
+    location.assign(fileURL(file));
+  }
   function launch(file) {
     const g = S.games.find(x => x.file === file); if (!g) return;
+    if (isDirectOpen(file)) { openGameDirect(file); return; }
     curFile = file;
     const url = fileURL(file);
     $("#m-title").textContent = g.title;
@@ -924,9 +1013,7 @@ const ARCADE = (() => {
     const fr = $("#m-frame");
     fr.src = url;
     Snd.insert();
-    const k = key(file);
-    S.plays[k] = (S.plays[k] || 0) + 1; save("arcade.plays", S.plays);
-    S.recent = [file, ...S.recent.filter(f => f !== file)].slice(0, 10); save("arcade.recent", S.recent);
+    recordPlay(file);
     render();
     $("#shell").classList.add("open");
     document.body.style.overflow = "hidden";
@@ -948,6 +1035,24 @@ const ARCADE = (() => {
     const k = key(file);
     S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
     save("arcade.favs", [...S.favs]); renderTags(); render();
+  }
+  function toggleDirect(file) {
+    const k = key(file);
+    if (S.directAll) {
+      S.directAll = false;
+      save("arcade.directAll", false);
+      syncDirectAllUI();
+      S.direct = new Set(S.games.map(g => key(g.file)).filter(x => x !== k));
+    } else {
+      S.direct.has(k) ? S.direct.delete(k) : S.direct.add(k);
+    }
+    save("arcade.direct", [...S.direct]);
+    Snd.click();
+    render();
+  }
+  function syncDirectAllUI() {
+    const el = $("#set-direct-all");
+    if (el) el.checked = S.directAll;
   }
 
   /* ==================== boot sequence ==================== */
@@ -1015,6 +1120,15 @@ const ARCADE = (() => {
     setView(load("arcade.view", "grid") || "grid");
 
     $("#btn-refresh").addEventListener("click", () => { Snd.click(); rescan(); });
+    $("#btn-settings").addEventListener("click", () => { Snd.click(); settings(true); });
+    syncDirectAllUI();
+    $("#set-direct-all").addEventListener("change", e => {
+      S.directAll = e.target.checked;
+      save("arcade.directAll", S.directAll);
+      Snd.click();
+      render();
+    });
+    $("#settingsshell").addEventListener("click", e => { if (e.target.id === "settingsshell") settings(false); });
     $("#btn-sound").addEventListener("click", e => {
       S.sound = !S.sound; save("arcade.sound", S.sound);
       e.currentTarget.setAttribute("aria-pressed", S.sound);
@@ -1037,7 +1151,11 @@ const ARCADE = (() => {
 
     /* [MK-0z5t2] KEYBOARD */
     addEventListener("keydown", e => {
-      if (e.key === "Escape") { $("#shell").classList.contains("open") ? closeGame() : help(false); }
+      if (e.key === "Escape") {
+        if ($("#shell").classList.contains("open")) closeGame();
+        else if ($("#settingsshell").classList.contains("open")) settings(false);
+        else help(false);
+      }
       if (e.key === "/" && document.activeElement !== $("#q")) { e.preventDefault(); $("#q").focus(); }
       const open = $("#shell").classList.contains("open");
       if (open && !/input|textarea/i.test(document.activeElement.tagName)) {
@@ -1056,8 +1174,23 @@ const ARCADE = (() => {
     document.fullscreenElement ? document.exitFullscreen() : (el.requestFullscreen?.() || el.webkitRequestFullscreen?.());
   }
   function reload() { const f = $("#m-frame"); const s = f.src; f.src = "about:blank"; $("#m-load").style.display = "grid"; setTimeout(() => f.src = s, 120); Snd.play(660, .07, "square", .04); }
-  function newtab() { if (curFile) window.open(fileURL(curFile), "_blank", "noopener"); }
-  function help(on) { $("#helpshell").classList.toggle("open", on !== false); document.body.style.overflow = on !== false ? "hidden" : ""; }
+  function newtab() {
+    if (!curFile) return;
+    window.open(fileURL(curFile), "_blank", "noopener");
+    closeGame();
+  }
+  function settings(on) {
+    const open = on !== false;
+    $("#settingsshell").classList.toggle("open", open);
+    if (open) { help(false); syncDirectAllUI(); }
+    document.body.style.overflow = open || $("#helpshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
+  }
+  function help(on) {
+    const open = on !== false;
+    $("#helpshell").classList.toggle("open", open);
+    if (open) settings(false);
+    document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
+  }
   function rescan() { setStatus("rescanning…"); S.source = "—"; build(true).catch(e => setStatus("scan failed: " + esc(e.message))); }
   function brokenThumb(img) {
     const g = S.games.find(x => fileURL(x.file) === img.src || x.thumb === img.src);
@@ -1078,7 +1211,7 @@ const ARCADE = (() => {
   }
 
   /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
-  return { boot, wire, stars, rescan, help, newtab, launch, closeGame, toggleFav, brokenThumb, iconsFallback, CFG, GAMES, key };
+  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, CFG, GAMES, key };
 })();
 
 document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
