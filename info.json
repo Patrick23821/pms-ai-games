@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "tesseract.html",
+      "title": "Tesseract WEB",
+      "tagline": "We must stand against this strict censorship.",
+      "tags": ["browser"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/tesseract.webp",
+      "hidden": false
+    },
+    {
       "file": "uno_arena.html",
       "title": "Uno Arena",
       "tagline": "Based off the original card game, Uno! (who would've guessed)",
