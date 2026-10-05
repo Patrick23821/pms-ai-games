@@ -20,7 +20,7 @@
     {
       "file": "tesseract.html",
       "title": "Tesseract WEB",
-      "tagline": "We must stand against this strict censorship.",
+      "tagline": "We must stand against this strict censorship. Quick note: Hook i'm using is weak (until I work out something better) which may cause issues with loading some sites.",
       "tags": ["browser"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/tesseract.webp",
       "hidden": false
