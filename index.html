@@ -248,7 +248,6 @@ pre.code s{color:#4f7386;text-decoration:none}
       <div class="flex flex-col items-end gap-3">
         <div class="flex items-center gap-2">
           <button class="btn notch-s" id="btn-refresh"><i class="fa-solid fa-rotate"></i>Rescan repo</button>
-          <button class="btn notch-s gold" id="btn-help"><i class="fa-solid fa-circle-question"></i>Setup</button>
           <button class="btn notch-s" id="btn-sound" aria-pressed="true" title="Toggle blips"><i class="fa-solid fa-volume-high"></i></button>
         </div>
       </div>
@@ -1006,7 +1005,6 @@ const ARCADE = (() => {
     setView(load("arcade.view", "grid") || "grid");
 
     $("#btn-refresh").addEventListener("click", () => { Snd.click(); rescan(); });
-    $("#btn-help").addEventListener("click", () => help(true));
     $("#btn-sound").addEventListener("click", e => {
       S.sound = !S.sound; save("arcade.sound", S.sound);
       e.currentTarget.setAttribute("aria-pressed", S.sound);
