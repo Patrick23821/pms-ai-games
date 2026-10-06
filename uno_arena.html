@@ -853,13 +853,14 @@ function createHostState(code,isOffline,roomType='public'){
   H.players.push(me);H.hostId=me.id;myId=me.id;return me;
 }
 /* ---- deck ---- */
+let nextCardId=1;
 function buildDeck(mode){
-  let id=0;const deck=[];const add=(c,v,n=1)=>{for(let i=0;i<n;i++)deck.push({id:id++,c,v});};
+  const deck=[];const add=(c,v,n=1)=>{for(let i=0;i<n;i++)deck.push({id:nextCardId++,c,v});};
   if(mode==='flip'){
     const mk=(cols,draw,skipv,wd)=>{const a=[];cols.forEach(c=>{for(let n=1;n<=9;n++)a.push([c,''+n],[c,''+n]);['reverse',skipv,draw,'flip'].forEach(v=>a.push([c,v],[c,v]));});for(let i=0;i<4;i++)a.push(['W','wild']);for(let i=0;i<4;i++)a.push(['W',wd]);return a;};
     const L=mk(COLORS_L,'draw1','skip','wilddraw2'),D=mk(COLORS_D,'draw5','skipall','wilddrawcolor');
     const dcol=shuffle(D.filter(x=>x[0]!=='W')),dw=shuffle(D.filter(x=>x[0]==='W'));
-    L.forEach(x=>{const d=x[0]==='W'?dw.pop():dcol.pop();deck.push({id:id++,c:x[0],v:x[1],dc:d[0],dv:d[1]});});
+    L.forEach(x=>{const d=x[0]==='W'?dw.pop():dcol.pop();deck.push({id:nextCardId++,c:x[0],v:x[1],dc:d[0],dv:d[1]});});
     return deck;
   }
   const nm=mode==='nomercy';
@@ -870,11 +871,11 @@ function buildDeck(mode){
 }
 /* ---- helpers ---- */
 function nextIdx(from,steps=1){const n=H.players.length;let i=from;for(let s=0;s<steps;s++){let g=0;do{i=(i+H.dir+n)%n;g++;}while(!active(H.players[i])&&g<=n);}return i;}
-function reshuffle(){if(H.discard.length<2)return;const t=H.discard.pop();H.draw=shuffle(H.discard);H.discard=[t];}
-function drawCards(p,n){const got=[];for(let i=0;i<n;i++){if(!H.draw.length)reshuffle();if(!H.draw.length)break;const c=H.draw.pop();p.hand.push(c);got.push(c);}
+function reshuffle(){if(H.discard.length>1){const t=H.discard.pop();H.draw=shuffle(H.discard);H.discard=[t];}if(!H.draw.length){H.draw=shuffle(buildDeck(H.settings.mode));}}
+function drawCards(p,n){const got=[];for(let i=0;i<n;i++){if(!H.draw.length)reshuffle();if(!H.draw.length)H.draw=shuffle(buildDeck(H.settings.mode));const c=H.draw.pop();if(c){p.hand.push(c);got.push(c);}}
   if(got.length){p.unoCalled=false;if(H.catchId===p.id)H.catchId=null;p.stats.draws+=got.length;}return got;}
 function penalty(v,amt){const got=drawCards(v,amt);event('draw',{pid:v.id,n:got.length,pen:amt});hostLog(`${v.name} draws ${got.length} card${got.length===1?'':'s'}`);if(amt>=4)botEmote(v,'😡',.5);return got;}
-function drawUntil(p,color){let n=0;while(n<80){if(!H.draw.length)reshuffle();if(!H.draw.length)break;const c=H.draw.pop();p.hand.push(c);n++;if(F(c).c===color)break;}
+function drawUntil(p,color){let n=0;while(n<80){if(!H.draw.length)reshuffle();if(!H.draw.length)H.draw=shuffle(buildDeck(H.settings.mode));const c=H.draw.pop();if(!c)break;p.hand.push(c);n++;if(F(c).c===color)break;}
   p.unoCalled=false;if(H.catchId===p.id)H.catchId=null;event('draw',{pid:p.id,n,pen:n});hostLog(`${p.name} draws ${n} until ${cName(color)}`);}
 function mercyAll(){if(!modeIs('nomercy'))return;H.players.forEach(p=>{if(active(p)&&p.hand.length>=25){p.out=true;H.draw=shuffle(H.draw.concat(p.hand));p.hand=[];if(H.catchId===p.id)H.catchId=null;event('mercy',{pid:p.id});hostLog(`💀 ${p.name} reached 25 cards and is eliminated!`);}});}
 function rotateHands(d){const act=actives(),order=d===1?act:act.slice().reverse(),hs=order.map(p=>p.hand);order.forEach((p,i)=>{p.hand=hs[(i-1+order.length)%order.length];});resetUno();}
@@ -915,9 +916,11 @@ function startGame(){
 function startRound(){
   clearTimeout(T.between);H.round++;
   H.players.forEach(p=>{p.hand=[];p.unoCalled=false;p.spectator=false;});
-  H.draw=shuffle(buildDeck(H.settings.mode));H.discard=[];H.side='l';H.dir=1;H.pending=0;H.pendingTop=0;H.pendingType=null;H.drawnId=null;H.chal=null;H.chal0=null;H.catchId=null;H.wildBan=0;H.chaosText='';H.result=null;
-  for(let k=0;k<R().handSize;k++)actives().forEach(p=>p.hand.push(H.draw.pop()));
-  let c;for(;;){c=H.draw.pop();if(c.c==='W'&&c.v!=='wild'){H.draw.splice(ri(0,H.draw.length),0,c);continue;}break;}
+  const numDecks=Math.max(1,Math.ceil((actives().length*(R().handSize||7))/60));
+  let startDeck=[];for(let m=0;m<numDecks;m++)startDeck.push(...buildDeck(H.settings.mode));
+  H.draw=shuffle(startDeck);H.discard=[];H.side='l';H.dir=1;H.pending=0;H.pendingTop=0;H.pendingType=null;H.drawnId=null;H.chal=null;H.chal0=null;H.catchId=null;H.wildBan=0;H.chaosText='';H.result=null;
+  for(let k=0;k<R().handSize;k++)actives().forEach(p=>{if(!H.draw.length)reshuffle();const cd=H.draw.pop();if(cd)p.hand.push(cd);});
+  let c;for(;;){if(!H.draw.length)reshuffle();c=H.draw.pop();if(c&&c.c==='W'&&c.v!=='wild'){H.draw.splice(ri(0,H.draw.length),0,c);continue;}break;}
   H.discard.push(c);const f=F(c);H.curColor=f.c==='W'?pick(COLORS_L):f.c;
   let i=(H.round-1)%H.players.length;while(!active(H.players[i]))i=(i+1)%H.players.length;
   H.turn=i;H.phase='play';
