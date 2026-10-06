@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "fotec.html",
+      "title": "Frontier of the Ember Crown",
+      "tagline": "Based off Age of Empires 4, i've actually never played that game i have no idea.",
+      "tags": ["strategy", "isometric"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fotec.webp",
+      "hidden": false
+    },
+    {
       "file": "tesseract.html",
       "title": "Tesseract WEB",
       "tagline": "We must stand against this strict censorship. Quick note: Hook i'm using is weak (until I work out something better) which may cause issues with loading some sites.",
