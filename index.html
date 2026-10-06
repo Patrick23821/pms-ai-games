@@ -295,12 +295,10 @@ pre.code s{color:#4f7386;text-decoration:none}
         <div class="text-4xl text-[var(--mag)] mb-4" id="emptyicon"><i class="fa-solid fa-ghost"></i></div>
         <div class="f-disp text-2xl font-bold text-[#eafcff]" id="emptytitle">NO GAMES</div>
         <p class="text-[#8fb2c4] mt-3 max-w-[58ch] mx-auto leading-relaxed" id="emptymsg">
-          No <span class="f-mono text-[var(--cyan)]">.html</span> games were found next to this file. Add a game to the repo,
-          or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).
+          No games found on the shelf.
         </p>
         <div class="flex flex-wrap gap-2 justify-center mt-6" id="emptyactions">
           <button class="btn notch-s" onclick="ARCADE.rescan()"><i class="fa-solid fa-rotate"></i>Rescan</button>
-          <button class="btn notch-s gold" onclick="ARCADE.help(true)"><i class="fa-solid fa-book-open"></i>Setup guide</button>
         </div>
       </div></div>
     </div>
@@ -499,7 +497,7 @@ const ARCADE = (() => {
     directAll: !!load("arcade.directAll", false),
     recent: load("arcade.recent", []),
     plays: load("arcade.plays", {}),
-    source: "—", ready: false, sound: load("arcade.sound", true),
+    source: "—", ready: false, loading: true, sound: load("arcade.sound", true),
     io: null,
   };
 
@@ -727,52 +725,59 @@ const ARCADE = (() => {
 
   /* ---------- merge repo listing with info.json + GAMES (metadata only; no phantom cards) ---------- */
   async function build(forceScan = false) {
-    setStatus("scanning repository…");
-    const repoInfo = await loadRepoInfo();
-    let found = await scanRepo(forceScan);
-    /* offline fallback: baked-in GAMES list still counts as “present” */
-    if (S.source === "LOCAL LIST") {
-      found = [...new Set([...found, ...GAMES.map(g => g.file).filter(isHtml)])];
-    }
-    const foundSet = new Set(found.map(f => key(f)));
-    const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
-    const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
-    const hiddenKeys = new Set(repoInfo.filter(g => g.hidden).map(g => key(g.file)));
-    const declaredOnly = [...repoInfo.map(g => g.file), ...GAMES.map(g => g.file)]
-      .filter(Boolean)
-      .filter(f => !foundSet.has(key(f)));
-    if (declaredOnly.length) {
-      const sample = declaredOnly.slice(0, 6).map(f => esc(f)).join(", ");
-      const more = declaredOnly.length > 6 ? ` … +${declaredOnly.length - 6}` : "";
-      log(`waiting for ${declaredOnly.length} file(s) in repo before showing shelf cards: ${sample}${more}`, "dim");
-    }
-
-    const all = [...new Set(found)]
-      .filter(f => /\.html?$/i.test(f))
-      .filter(f => !hiddenKeys.has(key(f)) || gamesMap.has(key(f)))
-      .sort((a, b) => a.localeCompare(b));
-
-    S.games = all.map(f => {
-      const merged = mergeCartridgeMeta(f, infoMap.get(key(f)), gamesMap.get(key(f)));
-      return { ...merged, found: true };
-    });
-    renderTags();
+    S.loading = true;
     render();
-    setStatus(`${S.games.length} game${S.games.length === 1 ? "" : "s"} on the shelf · source ${S.source}`);
-
-    if (CFG.scrapeTitles) {
-      const need = S.games.filter(g => g.titleSrc === "auto");
-      if (need.length && !location.protocol.startsWith("file")) {
-        setStatus("reading &lt;title&gt; tags from " + need.length + " file(s)…");
-        await pool(need, 6, async g => {
-          const t = await readTitle(g.file);
-          if (t) { g.title = t; g.titleSrc = "file"; }
-        });
-        renderTags(); render();
+    try {
+      setStatus("scanning repository…");
+      const repoInfo = await loadRepoInfo();
+      let found = await scanRepo(forceScan);
+      /* offline fallback: baked-in GAMES list still counts as “present” */
+      if (S.source === "LOCAL LIST") {
+        found = [...new Set([...found, ...GAMES.map(g => g.file).filter(isHtml)])];
       }
-      log("title scan complete", "dim");
+      const foundSet = new Set(found.map(f => key(f)));
+      const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
+      const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
+      const hiddenKeys = new Set(repoInfo.filter(g => g.hidden).map(g => key(g.file)));
+      const declaredOnly = [...repoInfo.map(g => g.file), ...GAMES.map(g => g.file)]
+        .filter(Boolean)
+        .filter(f => !foundSet.has(key(f)));
+      if (declaredOnly.length) {
+        const sample = declaredOnly.slice(0, 6).map(f => esc(f)).join(", ");
+        const more = declaredOnly.length > 6 ? ` … +${declaredOnly.length - 6}` : "";
+        log(`waiting for ${declaredOnly.length} file(s) in repo before showing shelf cards: ${sample}${more}`, "dim");
+      }
+
+      const all = [...new Set(found)]
+        .filter(f => /\.html?$/i.test(f))
+        .filter(f => !hiddenKeys.has(key(f)) || gamesMap.has(key(f)))
+        .sort((a, b) => a.localeCompare(b));
+
+      S.games = all.map(f => {
+        const merged = mergeCartridgeMeta(f, infoMap.get(key(f)), gamesMap.get(key(f)));
+        return { ...merged, found: true };
+      });
+      renderTags();
+      render();
+      setStatus(`${S.games.length} game${S.games.length === 1 ? "" : "s"} on the shelf · source ${S.source}`);
+
+      if (CFG.scrapeTitles) {
+        const need = S.games.filter(g => g.titleSrc === "auto");
+        if (need.length && !location.protocol.startsWith("file")) {
+          setStatus("reading &lt;title&gt; tags from " + need.length + " file(s)…");
+          await pool(need, 6, async g => {
+            const t = await readTitle(g.file);
+            if (t) { g.title = t; g.titleSrc = "file"; }
+          });
+          renderTags(); render();
+        }
+        log("title scan complete", "dim");
+      }
+    } finally {
+      S.loading = false;
+      finishSource();
+      render();
     }
-    finishSource();
   }
 
   /* [MK-t9c2r6] normalise a thumbnail value: link, dataURL, or nothing */
@@ -909,9 +914,15 @@ const ARCADE = (() => {
     const list = visible();
     const rack = $("#rack");
     rack.className = "rack" + (S.view === "list" ? " list" : "");
+    if (S.loading && !S.games.length) {
+      rack.innerHTML = `<div class="col-span-full py-20 text-center flex flex-col items-center justify-center gap-3"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-[var(--cyan)]"></i><div class="f-disp text-lg font-bold tracking-widest text-[#eafcff]">LOADING ARCADE...</div><p class="text-xs f-mono text-[var(--dim)]">Scanning cartridges…</p></div>`;
+      $("#empty").classList.add("hidden");
+      return;
+    }
     rack.innerHTML = list.map(card).join("");
-    $("#empty").classList.toggle("hidden", list.length > 0);
-    if (!list.length) {
+    const showEmpty = list.length === 0 && !S.loading;
+    $("#empty").classList.toggle("hidden", !showEmpty);
+    if (showEmpty) {
       const emptyFavs = S.tag === "__fav" && !S.favs.size;
       const noGames = !S.games.length;
       const actions = $("#emptyactions");
@@ -924,7 +935,7 @@ const ARCADE = (() => {
       } else if (noGames) {
         icon.innerHTML = `<i class="fa-solid fa-ghost"></i>`;
         $("#emptytitle").textContent = "NO GAMES";
-        $("#emptymsg").innerHTML = `No <span class="f-mono text-[var(--cyan)]">.html</span> games were found next to this file. Add a game to the repo, or declare it in the <span class="f-mono text-[var(--amber)]">GAMES</span> list (<span class="f-mono">MK-p3v7n5</span>).`;
+        $("#emptymsg").textContent = "No games found on the shelf.";
         actions.classList.remove("hidden");
       } else {
         icon.innerHTML = `<i class="fa-solid fa-filter"></i>`;
@@ -1064,8 +1075,12 @@ const ARCADE = (() => {
       [`local GAMES overrides: <span class="dim">${GAMES.length}</span> · metadata file: <span class="dim">${esc(CFG.infoFile || "info.json")}</span>`, 100],
     ];
     for (const [m, d] of steps) { log(m); await sleep(d); }
-    build().catch(e => log("build error: " + esc(e.message), "err"));
-    await sleep(280);
+    try {
+      await Promise.race([build(), sleep(3500)]);
+    } catch (e) {
+      log("build error: " + esc(e.message), "err");
+    }
+    await sleep(200);
     dismissBoot();
   }
   const dismissBoot = () => { const b = $("#boot"); if (b && !b.classList.contains("done")) { b.classList.add("done"); setTimeout(() => b.remove(), 600); } };
