@@ -5,7 +5,7 @@
       "file": "fishing.html",
       "title": "Deep Cast",
       "tagline": "",
-      "tags": ["arcade", "casual", "fishing"],
+      "tags": ["arcade", "casual", "fishing", "multiplayer"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fishing.webp",
       "hidden": false
     },
@@ -15,6 +15,14 @@
       "tagline": "Discord is being targetted by many districts, so heres an alt.",
       "tags": ["chatroom", "communication"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/orbit.webp",
+      "hidden": false
+    },
+    {
+      "file": "minesweeper_island.html",
+      "title": "Minesweeper Island",
+      "tagline": "Still buggy because a flash model took literally forever, oh the irony",
+      "tags": ["fun", "multiplayer"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/minesweeper_island.webp",
       "hidden": false
     },
     {
@@ -37,7 +45,7 @@
       "file": "uno_arena.html",
       "title": "Uno Arena",
       "tagline": "Based off the original card game, Uno! (who would've guessed)",
-      "tags": ["fun"],
+      "tags": ["fun", "multiplayer"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/uno_arena.webp",
       "hidden": false
     },
