@@ -359,13 +359,10 @@ pre.code s{color:#4f7386;text-decoration:none}
       <label class="setting-row notch-s" for="set-direct-all">
         <input type="checkbox" id="set-direct-all">
         <span>
-          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Open games directly</span>
-          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Skip the in-arcade player and go straight to the game when you click a card.</span>
+          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Open games in new tab</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Open clicked games directly in a new browser tab instead of the in-arcade player.</span>
         </span>
       </label>
-      <p class="mt-4 text-[13px] text-[#8fb2c4] leading-relaxed">
-        Per game: use the <i class="fa-solid fa-bolt text-[var(--cyan)]"></i> button on a card to toggle direct open for that game only (when the setting above is off).
-      </p>
     </div>
   </div>
 </div>
@@ -828,8 +825,7 @@ const ARCADE = (() => {
   }
 
   function isDirectOpen(file) {
-    const k = key(file);
-    return S.directAll || S.direct.has(k);
+    return !!S.directAll;
   }
 
   function recordPlay(file) {
@@ -842,7 +838,6 @@ const ARCADE = (() => {
 
   const card = g => {
     const fav = S.favs.has(key(g.file));
-    const direct = isDirectOpen(g.file);
     const plays = S.plays[key(g.file)] || 0;
     return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
               aria-label="Play ${esc(g.title)}">
@@ -860,9 +855,6 @@ const ARCADE = (() => {
             <div class="ghead">
               <h3 class="gtitle">${esc(g.title)}</h3>
               <div class="ghead-actions">
-                <button type="button" class="ico-btn direct notch-s ${direct ? "on" : ""}" data-direct="${esc(g.file)}"
-                  title="${direct ? "Opens game directly — click to use in-arcade player" : "Open this game directly (skip player)"}">
-                  <i class="fa-solid fa-bolt"></i></button>
                 <button type="button" class="ico-btn notch-s ${fav ? "on" : ""}" data-fav="${esc(g.file)}" title="Favorite">
                   <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
               </div>
@@ -959,10 +951,6 @@ const ARCADE = (() => {
       S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
       save("arcade.favs", [...S.favs]); Snd.click(); renderTags(); render();
     }));
-    $$("[data-direct]", rack).forEach(b => b.addEventListener("click", e => {
-      e.stopPropagation();
-      toggleDirect(b.dataset.direct);
-    }));
     revealObserve();
     renderTicker();
   }
@@ -1010,7 +998,7 @@ const ARCADE = (() => {
     Snd.insert();
     recordPlay(file);
     render();
-    location.assign(fileURL(file));
+    window.open(fileURL(file), "_blank", "noopener");
   }
   function launch(file) {
     const g = S.games.find(x => x.file === file); if (!g) return;
