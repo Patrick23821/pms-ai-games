@@ -37,7 +37,7 @@
       "file": "uno_arena.html",
       "title": "Uno Arena",
       "tagline": "Based off the original card game, Uno! (who would've guessed)",
-      "tags": ["game", "fun"],
+      "tags": ["fun"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/uno_arena.webp",
       "hidden": false
     },
@@ -47,6 +47,14 @@
       "tagline": "Make music (web)",
       "tags": ["daw", "music", "music_composition"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/fl_remake.webp",
+      "hidden": false
+    }
+    {
+      "file": "voxelcraft.html",
+      "title": "Voxelcraft",
+      "tagline": "Don't sue me mojang",
+      "tags": ["multiplayer", "fun"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/voxelcraft.webp",
       "hidden": false
     }
   ],
