@@ -456,6 +456,7 @@ const CFG = {
   pagesBase: "https://Patrick23821.github.io/pms-ai-games",
   token: "",                                   /* [MK-4t2kp6] private repo only */
   exclude: ["index.html", "arcade.html"],
+  hidden: [],                                  /* optional list of files to hide */
   manualFiles: [                               /* [MK-9f2m4x] used if the API fails */
     // "extra-game.html",
   ],
@@ -658,7 +659,7 @@ const ARCADE = (() => {
       tags: Array.isArray(g.tags) ? g.tags : (g.tags ? [g.tags] : []),
       thumb: g.thumb,
       hot: !!g.hot,
-      hidden: !!g.hidden,
+      hidden: g.hidden === true || g.hidden === "true" || g.hidden === 1,
     };
   }
 
@@ -675,11 +676,34 @@ const ARCADE = (() => {
     return [];
   }
 
+  function repoInfoCacheKey() {
+    return "arcade.repoInfo.v1:" + [CFG.owner, CFG.repo, CFG.branch || "main", CFG.infoFile || "info.json"].join("|");
+  }
+  function readRepoInfoCache() {
+    try {
+      const v = JSON.parse(localStorage.getItem(repoInfoCacheKey()));
+      if (!v || !Array.isArray(v.entries)) return null;
+      return v.entries;
+    } catch { return null; }
+  }
+  function writeRepoInfoCache(entries) {
+    try {
+      save(repoInfoCacheKey(), { at: Date.now(), entries });
+    } catch { }
+  }
+
   async function loadRepoInfo() {
     const name = (CFG.infoFile || "info.json").replace(/^\/+/, "");
     if (!name) return [];
     log(`fetch shelf metadata · ${name}`, "dim");
-    const urls = [rawURL(name), fileURL(name)];
+    const ts = Date.now();
+    const withTs = u => u + (u.includes("?") ? "&" : "?") + "_t=" + ts;
+    const urls = [
+      withTs(rawURL(name)),
+      withTs(fileURL(name)),
+      withTs("./" + encodeURIComponent(name)),
+      withTs(encodeURIComponent(name)),
+    ];
     for (const u of urls) {
       try {
         const ctrl = new AbortController();
@@ -689,11 +713,19 @@ const ARCADE = (() => {
         if (!r.ok) continue;
         const data = await r.json();
         const entries = parseInfoPayload(data);
-        log(`OK · ${entries.length} entr${entries.length === 1 ? "y" : "ies"} in ${name}`, "ok");
-        return entries;
+        if (entries.length) {
+          writeRepoInfoCache(entries);
+          log(`OK · ${entries.length} entr${entries.length === 1 ? "y" : "ies"} in ${name}`, "ok");
+          return entries;
+        }
       } catch (e) {
         log(`${name} via ${u.split("/").slice(-2).join("/")}: ${e.message}`, "dim");
       }
+    }
+    const cached = readRepoInfoCache();
+    if (cached && cached.length) {
+      log(`using cached ${name} metadata (${cached.length} entries)`, "dim");
+      return cached;
     }
     log(`no ${name} — titles/thumbs from file scrape + GAMES only`, "warn");
     return [];
@@ -708,6 +740,16 @@ const ARCADE = (() => {
     if (titleFromGames) titleSrc = "config";
     else if (titleFromInfo) titleSrc = "info";
     else if (titleFromCfg) titleSrc = "config";
+
+    let isHidden = false;
+    if (CFG.hidden && Array.isArray(CFG.hidden) && CFG.hidden.some(x => key(x) === key(file))) {
+      isHidden = true;
+    } else if (gamesEntry && gamesEntry.hidden !== undefined) {
+      isHidden = gamesEntry.hidden === true || gamesEntry.hidden === "true" || gamesEntry.hidden === 1;
+    } else if (infoEntry && infoEntry.hidden !== undefined) {
+      isHidden = infoEntry.hidden === true || infoEntry.hidden === "true" || infoEntry.hidden === 1;
+    }
+
     return {
       file,
       title: c.title || CFG.titles[file] || CFG.titles[key(file)] || pretty(file),
@@ -716,7 +758,7 @@ const ARCADE = (() => {
       tagline: c.tagline || "",
       tags: Array.isArray(c.tags) ? c.tags : (c.tags ? [c.tags] : []),
       hot: !!c.hot,
-      hidden: !!c.hidden,
+      hidden: isHidden,
     };
   }
 
@@ -735,8 +777,7 @@ const ARCADE = (() => {
       const foundSet = new Set(found.map(f => key(f)));
       const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
       const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
-      const hiddenKeys = new Set(repoInfo.filter(g => g.hidden).map(g => key(g.file)));
-      const declaredOnly = [...repoInfo.map(g => g.file), ...GAMES.map(g => g.file)]
+      const declaredOnly = [...repoInfo.filter(g => !g.hidden).map(g => g.file), ...GAMES.filter(g => !g.hidden).map(g => g.file)]
         .filter(Boolean)
         .filter(f => !foundSet.has(key(f)));
       if (declaredOnly.length) {
@@ -747,13 +788,14 @@ const ARCADE = (() => {
 
       const all = [...new Set(found)]
         .filter(f => /\.html?$/i.test(f))
-        .filter(f => !hiddenKeys.has(key(f)) || gamesMap.has(key(f)))
         .sort((a, b) => a.localeCompare(b));
 
-      S.games = all.map(f => {
+      const mergedList = all.map(f => {
         const merged = mergeCartridgeMeta(f, infoMap.get(key(f)), gamesMap.get(key(f)));
         return { ...merged, found: true };
       });
+
+      S.games = mergedList.filter(g => !g.hidden);
       renderTags();
       render();
       setStatus(`${S.games.length} game${S.games.length === 1 ? "" : "s"} on the shelf · source ${S.source}`);
@@ -876,17 +918,19 @@ const ARCADE = (() => {
   };
 
   function renderTags() {
-    const all = [...new Set(S.games.flatMap(g => g.tags).map(t => t.toLowerCase()))].sort();
+    const vis = S.games.filter(g => !g.hidden);
+    const all = [...new Set(vis.flatMap(g => g.tags).map(t => t.toLowerCase()))].sort();
     $("#tags").innerHTML =
-      `<button class="chip notch-s" data-tag="ALL" aria-pressed="${S.tag === "ALL"}">all · ${S.games.length}</button>` +
+      `<button class="chip notch-s" data-tag="ALL" aria-pressed="${S.tag === "ALL"}">all · ${vis.length}</button>` +
       `<button class="chip notch-s" data-tag="__fav" aria-pressed="${S.tag === "__fav"}">
          <i class="fa-solid fa-star"></i> Favorites · ${S.favs.size}</button>` +
-      all.map(t => `<button class="chip notch-s" data-tag="${esc(t)}" aria-pressed="${S.tag === t}">${esc(t)} · ${S.games.filter(g => g.tags.map(x => x.toLowerCase()).includes(t)).length}</button>`).join("");
+      all.map(t => `<button class="chip notch-s" data-tag="${esc(t)}" aria-pressed="${S.tag === t}">${esc(t)} · ${vis.filter(g => g.tags.map(x => x.toLowerCase()).includes(t)).length}</button>`).join("");
   }
 
   function visible() {
     const q = S.query.trim().toLowerCase();
     let out = S.games.filter(g => {
+      if (g.hidden) return false;
       if (S.tag === "__fav" && !S.favs.has(key(g.file))) return false;
       if (S.tag !== "ALL" && S.tag !== "__fav" && !g.tags.map(t => t.toLowerCase()).includes(S.tag)) return false;
       if (!q) return true;
@@ -966,18 +1010,19 @@ const ARCADE = (() => {
 
   function renderTicker() {
     const parts = [];
+    const vis = S.games.filter(g => !g.hidden);
     S.recent.slice(0, 4).forEach(f => {
-      const g = S.games.find(x => x.file === f);
+      const g = vis.find(x => x.file === f);
       if (g) parts.push(`<span><i class="fa-solid fa-clock-rotate-left text-[var(--mag)]"></i> LAST PLAYED · ${esc(g.title)}</span>`);
     });
-    [...S.games]
+    [...vis]
       .filter(g => (S.plays[key(g.file)] || 0) > 0)
       .sort((a, b) => (S.plays[key(b.file)] || 0) - (S.plays[key(a.file)] || 0))
       .slice(0, 3)
       .forEach(g => parts.push(`<span><i class="fa-solid fa-ranking-star text-[var(--amber)]"></i> MOST PLAYED · ${esc(g.title.toUpperCase())} ×${S.plays[key(g.file)]}</span>`));
-    if (S.games.length) {
-      parts.push(`<span><i class="fa-solid fa-layer-group text-[var(--cyan)]"></i> VAULT · ${S.games.length} GAME${S.games.length === 1 ? "" : "S"}</span>`);
-      S.games.forEach(g => parts.push(`<span><i class="fa-solid fa-gamepad text-[var(--ice)]"></i> ${esc(g.title.toUpperCase())} <span class="text-[var(--dim)]">· ${esc(g.file)}</span></span>`));
+    if (vis.length) {
+      parts.push(`<span><i class="fa-solid fa-layer-group text-[var(--cyan)]"></i> VAULT · ${vis.length} GAME${vis.length === 1 ? "" : "S"}</span>`);
+      vis.forEach(g => parts.push(`<span><i class="fa-solid fa-gamepad text-[var(--ice)]"></i> ${esc(g.title.toUpperCase())} <span class="text-[var(--dim)]">· ${esc(g.file)}</span></span>`));
     } else if (S.ready || S.source !== "—") {
       parts.push(`<span><i class="fa-solid fa-box-open text-[var(--amber)]"></i> NO GAMES IN REPO — ADD .HTML FILES OR RESCAN</span>`);
     }
@@ -1194,9 +1239,16 @@ const ARCADE = (() => {
     if (open) settings(false);
     document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
   }
-  function rescan() { setStatus("rescanning…"); S.source = "—"; build(true).catch(e => setStatus("scan failed: " + esc(e.message))); }
+  function rescan() {
+    setStatus("rescanning…");
+    S.source = "—";
+    try {
+      localStorage.removeItem(repoCacheKey());
+      localStorage.removeItem(repoInfoCacheKey());
+    } catch {}
+    build(true).catch(e => setStatus("scan failed: " + esc(e.message)));
+  }
   function brokenThumb(img) {
-    const g = S.games.find(x => fileURL(x.file) === img.src || x.thumb === img.src);
     const holder = img.closest(".gthumb"); if (!holder) return;
     holder.innerHTML = (g ? initialsPlate(g) : `<div class="ginit" style="background:linear-gradient(160deg,#070c16,#0d1626)"><b>?</b></div>`) +
       `<span class="crn tl"></span><span class="crn tr"></span><span class="crn bl"></span><span class="crn br"></span>
@@ -1214,7 +1266,7 @@ const ARCADE = (() => {
   }
 
   /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
-  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, CFG, GAMES, key };
+  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, CFG, GAMES, key, S };
 })();
 
 document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
