@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "infodeck.html",
+      "title": "Info Deck",
+      "tagline": "No clue why you would even NEED this.",
+      "tags": ["information"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/infodeck.webp",
+      "hidden": false
+    },
+    {
       "file": "driftwake.html",
       "title": "Driftwake",
       "tagline": "fortnite ripoff ahah",
