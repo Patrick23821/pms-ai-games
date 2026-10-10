@@ -32378,7 +32378,7 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
     walkSpeed: 5.4,
     sprintSpeed: 9.84,
     staminaMax: 100,
-    staminaDrain: 17,
+    staminaDrain: 13.6,
     staminaRegen: 24,
     staminaDelay: 0.9,
     crouchSpeed: 3,
@@ -32875,6 +32875,127 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       adsSpeed: 1.3,
       idealRange: [12, 60],
       projectile: { speed: 40, gravity: 15, radius: 5.5, structureDamage: 360 },
+      recoil: 0.08,
+    },
+    dud: {
+      id: "dud",
+      name: "The Dud",
+      archetype: "shotgun",
+      ammoType: "heavy",
+      damage: 185,
+      pellets: 1,
+      fireInterval: 0.95,
+      magSize: 2,
+      reloadTime: 2.9,
+      spread: 14.5,
+      adsSpread: 10.0,
+      bloomPerShot: 3.5,
+      range: 60,
+      maxRange: 220,
+      headshotMult: 6.0,
+      auto: !1,
+      zoomFov: 62,
+      scope: !1,
+      color: "#ff3b30",
+      adsSpeed: 0.7,
+      idealRange: [2, 30],
+      recoil: 0.14,
+    },
+    plasma: {
+      id: "plasma",
+      name: "Plasma Carbine",
+      archetype: "rifle",
+      ammoType: "medium",
+      damage: 28,
+      pellets: 1,
+      fireInterval: 0.115,
+      magSize: 36,
+      reloadTime: 1.85,
+      spread: 1.15,
+      adsSpread: 0.38,
+      bloomPerShot: 0.28,
+      range: 120,
+      maxRange: 320,
+      headshotMult: 1.65,
+      auto: !0,
+      zoomFov: 50,
+      scope: !1,
+      color: "#00f0ff",
+      adsSpeed: 1.1,
+      idealRange: [10, 85],
+      recoil: 0.032,
+    },
+    burstsmg: {
+      id: "burstsmg",
+      name: "Vortex Burst SMG",
+      archetype: "smg",
+      ammoType: "light",
+      damage: 22,
+      pellets: 1,
+      fireInterval: 0.068,
+      magSize: 36,
+      reloadTime: 1.65,
+      spread: 1.7,
+      adsSpread: 0.85,
+      bloomPerShot: 0.18,
+      range: 50,
+      maxRange: 180,
+      headshotMult: 1.6,
+      auto: !0,
+      zoomFov: 58,
+      scope: !1,
+      color: "#39ff14",
+      adsSpeed: 0.95,
+      idealRange: [4, 35],
+      recoil: 0.038,
+    },
+    widowmaker: {
+      id: "widowmaker",
+      name: "Widowmaker .50",
+      archetype: "sniper",
+      ammoType: "heavy",
+      damage: 135,
+      pellets: 1,
+      fireInterval: 1.35,
+      magSize: 4,
+      reloadTime: 3.1,
+      spread: 5.2,
+      adsSpread: 0.04,
+      bloomPerShot: 2.2,
+      range: 240,
+      maxRange: 500,
+      headshotMult: 2.4,
+      auto: !1,
+      zoomFov: 24,
+      scope: !0,
+      color: "#9b5de5",
+      adsSpeed: 1.4,
+      idealRange: [30, 250],
+      recoil: 0.095,
+    },
+    dragon: {
+      id: "dragon",
+      name: "Dragonbreath Spitter",
+      archetype: "shotgun",
+      ammoType: "shells",
+      damage: 15,
+      pellets: 9,
+      fireInterval: 0.38,
+      magSize: 8,
+      reloadTime: 2.3,
+      spread: 4.6,
+      adsSpread: 3.1,
+      bloomPerShot: 0.8,
+      range: 35,
+      maxRange: 130,
+      headshotMult: 1.55,
+      auto: !0,
+      zoomFov: 62,
+      scope: !1,
+      color: "#ff8c00",
+      adsSpeed: 0.85,
+      idealRange: [2, 22],
+      recoil: 0.07,
     },
   },
   e0 = {
@@ -32945,6 +33066,19 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       color: "#9cff5a",
       throwable: !0,
     },
+    shockwave: {
+      id: "shockwave",
+      name: "Shockwave Orb",
+      heal: 0,
+      healCap: 0,
+      shield: 0,
+      shieldCap: 0,
+      useTime: 0,
+      maxStack: 6,
+      color: "#29b6f6",
+      throwable: !0,
+      shockwave: !0,
+    },
   },
   Cn = {
     cost: 10,
@@ -32973,29 +33107,30 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
   B_ = 1380,
   GC = 12,
   yn = [
-    { id: "downtown", name: "Meridian Heights", x: 16, z: 752, radius: 62, height: 4, kind: "downtown", tier: 3 },
-    { id: "city", name: "Verdigris Cross", x: -744, z: -384, radius: 56, height: 8, kind: "city", tier: 3 },
+    { id: "megacity", name: "Apex Megacity", x: -60, z: -40, radius: 95, height: 40, kind: "megacity", tier: 3 },
+    { id: "downtown", name: "Meridian Heights", x: 16, z: 752, radius: 64, height: 16, kind: "downtown", tier: 3 },
+    { id: "city", name: "Verdigris Cross", x: -744, z: -384, radius: 56, height: 24, kind: "city", tier: 3 },
     { id: "harbor", name: "Saltwick Harbor", x: -608, z: 488, radius: 44, height: 0, kind: "harbor", tier: 2 },
-    { id: "forest", name: "Pinecrest Lookout", x: 536, z: 528, radius: 40, height: 8, kind: "forest", tier: 2 },
-    { id: "quarry", name: "Rustfall Quarry", x: 368, z: -608, radius: 44, height: 4, kind: "quarry", tier: 2 },
-    { id: "factory", name: "Copperline Yards", x: 784, z: -88, radius: 42, height: 4, kind: "factory", tier: 3 },
-    { id: "station", name: "Nimbus Station", x: -928, z: 96, radius: 38, height: 4, kind: "station", tier: 2 },
-    { id: "farm", name: "Willow Hollow", x: -448, z: 64, radius: 40, height: 4, kind: "farm", tier: 1 },
-    { id: "ruins", name: "Ember Ridge", x: 496, z: 88, radius: 36, height: 12, kind: "ruins", tier: 2 },
+    { id: "forest", name: "Pinecrest Lookout", x: 536, z: 528, radius: 42, height: 32, kind: "forest", tier: 2 },
+    { id: "quarry", name: "Rustfall Quarry", x: 368, z: -608, radius: 44, height: 40, kind: "quarry", tier: 2 },
+    { id: "factory", name: "Copperline Yards", x: 784, z: -88, radius: 42, height: 44, kind: "factory", tier: 3 },
+    { id: "station", name: "Nimbus Station", x: -928, z: 96, radius: 38, height: 28, kind: "station", tier: 2 },
+    { id: "farm", name: "Willow Hollow", x: -448, z: 64, radius: 40, height: 56, kind: "farm", tier: 1 },
+    { id: "ruins", name: "Ember Ridge", x: 496, z: 88, radius: 38, height: 52, kind: "ruins", tier: 2 },
     { id: "marina", name: "Tidepool Flats", x: 832, z: 512, radius: 34, height: 0, kind: "marina", tier: 1 },
-    { id: "beacon", name: "Beacon Hill", x: -176, z: -176, radius: 30, height: 16, kind: "beacon", tier: 2 },
-    { id: "hollow", name: "Cinder Hollow", x: -240, z: -792, radius: 34, height: 4, kind: "ruins", tier: 2 },
-    { id: "citadel", name: "Thornwall Citadel", x: 80, z: -440, radius: 46, height: 12, kind: "castle", tier: 3 },
-    { id: "spire", name: "Skyline Spire", x: -220, z: 392, radius: 40, height: 4, kind: "skyscraper", tier: 3 },
-    { id: "observatory", name: "Starfall Observatory", x: 880, z: -500, radius: 34, height: 24, kind: "observatory", tier: 2 },
-    { id: "temple", name: "Sunken Temple", x: -600, z: -780, radius: 40, height: 4, kind: "temple", tier: 2 },
-    { id: "arena", name: "Riptide Arena", x: 220, z: 260, radius: 40, height: 4, kind: "stadium", tier: 2 },
-    { id: "airfield", name: "Gullpoint Airfield", x: -120, z: 1040, radius: 48, height: 4, kind: "airfield", tier: 2 },
+    { id: "beacon", name: "Beacon Hill", x: -176, z: -176, radius: 34, height: 64, kind: "beacon", tier: 2 },
+    { id: "hollow", name: "Cinder Hollow", x: -240, z: -792, radius: 34, height: 36, kind: "ruins", tier: 2 },
+    { id: "citadel", name: "Thornwall Citadel", x: 80, z: -440, radius: 48, height: 48, kind: "castle", tier: 3 },
+    { id: "spire", name: "Skyline Spire", x: -220, z: 392, radius: 42, height: 48, kind: "skyscraper", tier: 3 },
+    { id: "observatory", name: "Starfall Observatory", x: 880, z: -500, radius: 36, height: 28, kind: "observatory", tier: 2 },
+    { id: "temple", name: "Sunken Temple", x: -600, z: -780, radius: 40, height: 16, kind: "temple", tier: 2 },
+    { id: "arena", name: "Riptide Arena", x: 220, z: 260, radius: 40, height: 32, kind: "stadium", tier: 2 },
+    { id: "airfield", name: "Gullpoint Airfield", x: -120, z: 1040, radius: 48, height: 0, kind: "airfield", tier: 2 },
     { id: "wreck", name: "Leviathan Wreck", x: 1096, z: 180, radius: 36, height: 0, kind: "wreck", tier: 2 },
     { id: "echo", name: "Echo Array", x: -540, z: 840, radius: 34, height: 16, kind: "radio", tier: 1 },
-    { id: "mines", name: "Glimmer Mines", x: -420, z: -500, radius: 36, height: 8, kind: "mine", tier: 2 },
-    { id: "mosswood", name: "Mosswood Village", x: 580, z: -300, radius: 38, height: 4, kind: "village", tier: 1 },
-    { id: "prism", name: "Prism Grove", x: -860, z: -660, radius: 34, height: 4, kind: "crystal", tier: 2 },
+    { id: "mines", name: "Glimmer Mines", x: -420, z: -500, radius: 36, height: 36, kind: "mine", tier: 2 },
+    { id: "mosswood", name: "Mosswood Village", x: 580, z: -300, radius: 38, height: 24, kind: "village", tier: 1 },
+    { id: "prism", name: "Prism Grove", x: -860, z: -660, radius: 34, height: 8, kind: "crystal", tier: 2 },
   ],
   is = {
     viewDistance: 70,
@@ -33302,24 +33437,68 @@ function _t(r, e) {
 function _tRaw(r, e) {
   const t = Math.hypot(r, e) / xt.islandRadius,
     n = 1 - lc(0.55, 1, t);
-  let o = (0.3 + 0.7 * WC(r / 90 + 13.7, e / 90 + 4.2, 3)) * n * 17;
-  for (const g of yn) {
-    const v = Math.hypot(r - g.x, e - g.z);
-    if (v > g.radius + 22) continue;
-    const y = 1 - lc(g.radius, g.radius + 22, v);
-    o = Rr(o, g.height, y);
+
+  // 1. Macro mountains: amplified 56m alpine peaks
+  const macro = WC(r / 290 + 7.1, e / 290 + 11.4, 3);
+  const mountain = Math.pow(Math.max(0, macro), 1.4) * 56;
+
+  // Local mountain peak for Starfall Observatory (880, -500)
+  const obsDist = Math.hypot(r - 880, e + 500);
+  const obsPeak = Math.pow(Math.max(0, 1 - obsDist / 340), 1.6) * 38;
+
+  // Local hill for Beacon Hill (-176, -176)
+  const beaconDist = Math.hypot(r + 176, e + 176);
+  const beaconPeak = Math.pow(Math.max(0, 1 - beaconDist / 260), 1.6) * 15;
+
+  // Coastal harbor bay opening (gently lowers terrain into the bay at Saltwick Harbor)
+  const harborDist = Math.hypot(r + 608, e - 488);
+  const harborRelief = 1 - Math.pow(Math.max(0, 1 - harborDist / 220), 1.5) * 0.75;
+
+  // 2. Rolling hills: amplified 27m waves
+  const hills = (WC(r / 130 + 23.5, e / 130 + 41.2, 3) - 0.4) * 27;
+
+  // 3. High alpine ridges: amplified 22m sharp ridges
+  const rawRidge = Math.max(0, 1 - Math.abs(WC(r / 190 + 3.8, e / 190 + 9.2, 2) * 2 - 1));
+  const ridge = Math.pow(rawRidge, 2) * 22;
+
+  // 4. Natural river valleys
+  const valley = Math.sin(r * 0.007 + e * 0.005) * Math.cos(r * 0.004 - e * 0.008) * 8.5;
+
+  let base = 5 + (mountain * harborRelief + obsPeak + beaconPeak + hills + ridge + valley) * n;
+  if (base < 0.5) base = 0.5;
+
+  let o = base;
+  for (const p of yn) {
+    const dist = Math.hypot(r - p.x, e - p.z);
+    const isCoastal = p.height === 0;
+    const blendR = p.radius + (isCoastal ? 110 : 65);
+    if (dist > blendR) continue;
+    const y = 1 - lc(p.radius, blendR, dist);
+    o = Rr(o, p.height, y);
   }
+
+  for (const p of yn) {
+    const dist = Math.hypot(r - p.x, e - p.z);
+    if (dist <= p.radius) {
+      o = p.height;
+      break;
+    }
+  }
+
   const c = xt.terraceHeight,
     h = Math.floor(o / c),
     f = (o - h * c) / c,
-    d = lc(0.42, 0.78, f);
-  let m = (h + d) * c;
-  return ((m -= 5 * lc(0.96, 1.12, t)), m < 0.35 && (m -= 1.3 * lc(0.35, -0.7, m)), m);
+    d = lc(0.35, 0.85, f);
+  const stepped = (h + d) * c;
+  let m = o * 0.8 + stepped * 0.2;
+
+  return ((m -= 6 * lc(0.92, 1.08, t)), m < 0.35 && (m -= 1.3 * lc(0.35, -0.7, m)), m);
 }
 function ra(r, e) {
   return _t(r, e) > xt.waterLevel + 0.3;
 }
 const GROUND_TINTS = {
+    megacity: [0.1, 0.12, 0.16],
     mine: [0.46, 0.42, 0.4],
     crystal: [0.52, 0.42, 0.72],
     temple: [0.36, 0.52, 0.4],
@@ -33334,12 +33513,20 @@ function uS(r, e, t, n, a) {
   const o = oS(r / 9, e / 9),
     c = yn.find((g) => g.kind === "quarry"),
     h = Math.hypot(r - c.x, e - c.z);
-  if (t < xt.waterLevel + 0.2) {
-    a.setRGB(0.25, 0.45, 0.6);
-    return;
-  }
   if (t < 1) {
-    a.setRGB(0.93, 0.85, 0.6).offsetHSL(0, 0, (o - 0.5) * 0.06);
+    const sNoise = (o - 0.5) * 0.06;
+    if (t >= xt.waterLevel + 0.1) {
+      a.setRGB(0.93, 0.86, 0.62).offsetHSL(0, 0, sNoise);
+    } else {
+      const depth = (xt.waterLevel + 0.1) - t;
+      if (depth < 2.2) {
+        const k = depth / 2.2;
+        a.setRGB(0.87 * (1 - k) + 0.42 * k, 0.77 * (1 - k) + 0.74 * k, 0.52 * (1 - k) + 0.68 * k).offsetHSL(0, 0, sNoise);
+      } else {
+        const k = Math.min(1, (depth - 2.2) / 5.5);
+        a.setRGB(0.42 * (1 - k) + 0.16 * k, 0.74 * (1 - k) + 0.36 * k, 0.68 * (1 - k) + 0.52 * k).offsetHSL(0, 0, sNoise);
+      }
+    }
     return;
   }
   if (h < c.radius + 10) {
@@ -33416,7 +33603,7 @@ function ZC() {
   return ((group.name = "terrain"), group);
 }
 function $C() {
-  const r = new Ja(9e3, 9e3, 1, 1);
+  const r = new Ja(9e3, 9e3, 64, 64);
   r.rotateX(-Math.PI / 2);
   const n = document.createElement("canvas");
   n.width = n.height = 256;
@@ -33446,9 +33633,6 @@ function $C() {
       transparent: !0,
       opacity: 0.94,
       depthWrite: !0,
-      polygonOffset: !0,
-      polygonOffsetFactor: 1,
-      polygonOffsetUnits: 4,
     }),
     t = new je(r, e);
   return ((t.position.y = xt.waterLevel), (t.receiveShadow = !1), (t.name = "water"), t);
@@ -33466,7 +33650,7 @@ function hS(r = 256) {
         d = _t(h, f),
         m = _t(h + 2, f + 2),
         g = Math.abs(m - d) / 2;
-      (uS(h, f, d, g, a), d < xt.waterLevel + 0.2 && a.setRGB(0.18, 0.5, 0.75));
+      (uS(h, f, d, g, a), d < xt.waterLevel && a.setRGB(0.18, 0.5, 0.75));
       const v = (o * r + c) * 4;
       ((n.data[v] = a.r * 255), (n.data[v + 1] = a.g * 255), (n.data[v + 2] = a.b * 255), (n.data[v + 3] = 255));
     }
@@ -33848,7 +34032,7 @@ class JC {
         (n.button < 3 && ((this.mouseDown[n.button] = !0), (this.mousePressed[n.button] = !0)), n.preventDefault());
       }),
       t(window, "mouseup", (n) => {
-        n.button < 3 && (this.mouseDown[n.button] = !1);
+        n.button < 3 && ((this.mouseDown[n.button] = !1), (this.mouseReleased[n.button] = !0));
       }),
       t(e, "contextmenu", (n) => n.preventDefault()),
       t(window, "mousemove", (n) => {
@@ -33868,6 +34052,7 @@ class JC {
   pressedThisFrame = new Set();
   mouseDown = [!1, !1, !1];
   mousePressed = [!1, !1, !1];
+  mouseReleased = [!1, !1, !1];
   dx = 0;
   dy = 0;
   wheel = 0;
@@ -33890,8 +34075,11 @@ class JC {
   clicked(e) {
     return this.mousePressed[e];
   }
+  released(e) {
+    return this.mouseReleased[e];
+  }
   endFrame() {
-    (this.pressedThisFrame.clear(), (this.mousePressed = [!1, !1, !1]), (this.dx = 0), (this.dy = 0), (this.wheel = 0));
+    (this.pressedThisFrame.clear(), (this.mousePressed = [!1, !1, !1]), (this.mouseReleased = [!1, !1, !1]), (this.dx = 0), (this.dy = 0), (this.wheel = 0));
   }
   dispose() {
     for (const [e, t, n] of this.handlers) e.removeEventListener(t, n);
@@ -34689,6 +34877,37 @@ function dS(r) {
       ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.08, 0.3), e.add(a));
       break;
     }
+    case "dud": {
+      const a = Ar(0.11, 0.07, 0.45, n, 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.06, 0.22), e.add(a));
+      e.add(Rt(0.09, 0.14, 0.18, "#1a1a1a", 0, -0.04, -0.06));
+      e.add(Rt(0.12, 0.08, 0.12, "#ffcc00", 0, 0.06, 0.38));
+      break;
+    }
+    case "plasma": {
+      e.add(Rt(0.06, 0.08, 0.56, "#152238", 0, 0.05, 0.18));
+      const a = Ar(0.04, 0.04, 0.24, n, 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.09, 0.2), e.add(a));
+      break;
+    }
+    case "burstsmg": {
+      e.add(Rt(0.065, 0.11, 0.36, "#1f2421", 0, 0.04, 0.1));
+      e.add(Rt(0.05, 0.16, 0.08, n, 0, -0.08, 0.06));
+      break;
+    }
+    case "widowmaker": {
+      const a = Ar(0.04, 0.04, 0.85, "#1c1b29", 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.07, 0.35), e.add(a));
+      const o = Ar(0.032, 0.032, 0.28, n, 8);
+      ((o.rotation.x = Math.PI / 2), o.position.set(0, 0.15, 0.12), e.add(o));
+      break;
+    }
+    case "dragon": {
+      const a = Ar(0.08, 0.12, 0.48, n, 6);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.05, 0.2), e.add(a));
+      e.add(Rt(0.08, 0.14, 0.12, "#3a1505", 0, -0.04, 0.08));
+      break;
+    }
   }
   return e;
 }
@@ -34715,9 +34934,17 @@ function aR(r) {
     (e.add(Rt(0.3, 0.14, 0.3, "#f4f4f4", 0, 0.1, 0)), e.add(Rt(0.32, 0.05, 0.1, "#ff5f6d", 0, 0.12, 0)));
   else if (r.id === "medkit")
     (e.add(Rt(0.5, 0.3, 0.3, "#ff5f6d", 0, 0.15, 0)),
-      e.add(Rt(0.1, 0.32, 0.26, "#ffffff", 0, 0.15, 0)),
-      e.add(Rt(0.3, 0.32, 0.1, "#ffffff", 0, 0.15, 0)));
-  else {
+      e.add(Rt(0.1, 0.32, 0.26, "#ffffff", 0, 0.15, 0)));
+  else if (r.id === "shockwave") {
+    const a = new je(new Qa(0.22, 16, 12), new Wn({ color: "#00b4d8", emissive: "#00e5ff", emissiveIntensity: 1.6, roughness: 0.1 }));
+    a.position.y = 0.22;
+    e.add(a);
+    const ring = new je(new C0(0.28, 0.33, 24), new Wn({ color: "#e0f7fa", emissive: "#80deea", emissiveIntensity: 1.2, roughness: 0.2, side: Di }));
+    ring.rotation.x = Math.PI / 3;
+    ring.position.y = 0.22;
+    e.add(ring);
+    e.scale.setScalar(1.2);
+  } else {
     const t = Ar(0.11, 0.13, 0.4, r.color, 8);
     ((t.position.y = 0.2), e.add(t));
     const n = Ar(0.06, 0.06, 0.1, "#ffffff", 8);
@@ -35510,7 +35737,7 @@ class xR {
     }
     if (e && ((this.cullTimer -= t), this.cullTimer <= 0)) {
       this.cullTimer = 0.35;
-      const n = e.y > 80 ? 1750 : 820,
+      const n = e.y > 80 ? 1500 : 520,
         a = n * n;
       for (const o of this.buildings) {
         o.cx === void 0 && ((o.cx = (o.bounds.minX + o.bounds.maxX) / 2), (o.cz = (o.bounds.minZ + o.bounds.maxZ) / 2));
@@ -36012,6 +36239,7 @@ class L0 {
 }
 class _R {
   items = [];
+  animating = [];
   root = new ut();
   cullTimer = 0;
   constructor(e) {
@@ -36038,19 +36266,38 @@ class _R {
     let a = this.grid.get(n.gkey);
     return (a || ((a = []), this.grid.set(n.gkey, a)), a.push(n), n);
   }
-  remove(e) {
+  remove(e, collector = null) {
     const t = this.items.indexOf(e);
-    (t >= 0 && this.items.splice(t, 1),
-      this.root.remove(e.group),
-      e.group.traverse((n) => {
-        n instanceof je && !n.userData.shared && n.geometry.dispose();
-      }));
+    (t >= 0 && this.items.splice(t, 1));
     const n = this.grid.get(e.gkey);
     if (n) {
       const a = n.indexOf(e);
       (a >= 0 && n.splice(a, 1), n.length || this.grid.delete(e.gkey));
     }
     t >= 0 && e.nid && GAME?.session && GAME.session.sendGame("take", { nid: e.nid });
+    if (collector && collector.alive && (e.payload?.kind === "weapon" || e.payload?.kind === "consumable")) {
+      if (e.beacon) {
+        e.group.remove(e.beacon.beam);
+        e.group.remove(e.beacon.ring);
+        e.group.remove(e.beacon.glow);
+      }
+      const r = e.group.getObjectByName("ring");
+      if (r) e.group.remove(r);
+      this.animating.push({
+        group: e.group,
+        startPos: e.group.position.clone(),
+        collector,
+        elapsed: 0,
+        duration: 0.42,
+        rarity: e.payload?.rarity || "common",
+        startScale: e.group.scale.x || 1.7,
+      });
+    } else {
+      this.root.remove(e.group);
+      e.group.traverse((n) => {
+        n instanceof je && !n.userData.shared && n.geometry.dispose();
+      });
+    }
   }
   nearest(e, t, n) {
     let a = null,
@@ -36090,6 +36337,46 @@ class _R {
       }
     }
     for (const a of this.items) a.group.visible && a.update(e);
+    for (let i = this.animating.length - 1; i >= 0; i--) {
+      const a = this.animating[i];
+      a.elapsed += n;
+      const colLiving = a.collector && a.collector.alive;
+      const bodyPos = colLiving ? new H(a.collector.pos.x, a.collector.pos.y + 0.9, a.collector.pos.z) : a.startPos;
+      const abovePos = colLiving ? new H(a.collector.pos.x, a.collector.pos.y + 2.3, a.collector.pos.z) : a.startPos;
+      let s = 1;
+      if (a.elapsed <= 0.22) {
+        const p1 = Math.min(1, a.elapsed / 0.22);
+        const midX = (a.startPos.x + abovePos.x) * 0.5;
+        const midY = Math.max(a.startPos.y, abovePos.y) + 1.2;
+        const midZ = (a.startPos.z + abovePos.z) * 0.5;
+        const inv = 1 - p1;
+        a.group.position.set(
+          inv * inv * a.startPos.x + 2 * inv * p1 * midX + p1 * p1 * abovePos.x,
+          inv * inv * a.startPos.y + 2 * inv * p1 * midY + p1 * p1 * abovePos.y,
+          inv * inv * a.startPos.z + 2 * inv * p1 * midZ + p1 * p1 * abovePos.z
+        );
+        s = p1 < 0.3 ? 1 + p1 * 0.5 : 1.15;
+      } else if (a.elapsed <= 0.32) {
+        a.group.position.copy(abovePos);
+        s = 1.15;
+      } else {
+        const p3 = Math.min(1, (a.elapsed - 0.32) / 0.1);
+        a.group.position.lerpVectors(abovePos, bodyPos, p3);
+        s = Math.max(0, 1.15 * (1 - p3) * (1 - p3));
+      }
+      a.group.rotation.y += n * 20;
+      a.group.rotation.x += n * 10;
+      a.group.scale.setScalar(a.startScale * s);
+      if (a.elapsed >= a.duration) {
+        const col = Qm[a.rarity] || "#ffffff";
+        GAME?.effects?.burst?.(bodyPos, col, 9, 4, 0.35);
+        this.root.remove(a.group);
+        a.group.traverse((m) => {
+          m instanceof je && !m.userData.shared && m.geometry.dispose();
+        });
+        this.animating.splice(i, 1);
+      }
+    }
   }
 }
 const bR = [
@@ -36112,16 +36399,22 @@ const bR = [
     ["minigun", 3],
     ["heavysniper", 2.5],
     ["launcher", 2],
+    ["dud", 5],
+    ["plasma", 8],
+    ["burstsmg", 8],
+    ["widowmaker", 4],
+    ["dragon", 7],
   ],
   SR = [
-    ["bandage", 32],
+    ["bandage", 30],
     ["medkit", 14],
-    ["minifizz", 34],
+    ["minifizz", 32],
     ["shieldfizz", 20],
     ["tideflask", 3],
     ["grenade", 18],
+    ["shockwave", 20],
   ],
-  MR = { light: [30, 60], medium: [20, 40], shells: [6, 12], heavy: [3, 6], rockets: [2, 4] };
+  MR = { light: [30, 60], medium: [20, 40], shells: [6, 12], heavy: [8, 16], rockets: [2, 4] };
 function P0(r, e) {
   let t = 0;
   for (const a of e) t += a[1];
@@ -36171,18 +36464,18 @@ function Ih(r, e) {
   const t =
       e ??
       P0(r, [
-        ["light", 35],
-        ["medium", 32],
+        ["light", 30],
+        ["medium", 30],
+        ["heavy", 30],
         ["shells", 22],
-        ["heavy", 11],
-        ["rockets", 12],
+        ["rockets", 10],
       ]),
     [n, a] = MR[t];
   return { kind: "ammo", ammoType: t, amount: r.int(n, a) };
 }
 function kh(r) {
   const e = e0[P0(r, SR)],
-    t = e.id === "bandage" ? r.int(3, 5) : e.id === "minifizz" || e.id === "grenade" ? r.int(2, 3) : 1;
+    t = e.id === "bandage" ? r.int(3, 5) : e.id === "minifizz" || e.id === "grenade" || e.id === "shockwave" ? r.int(2, 3) : 1;
   return { kind: "consumable", def: e, count: t };
 }
 function mS(r) {
@@ -36200,6 +36493,10 @@ function wR(r) {
 }
 const Ye = xt.cell,
   q_ = {
+    megacity: {
+      materials: ["metal", "stone"],
+      tints: ["#0b1017", "#0f1622", "#131a26", "#0c131d", "#182230", "#111823"],
+    },
     downtown: {
       materials: ["stone", "metal"],
       tints: ["#dfe4ea", "#c9d6e4", "#efe3d2", "#b9c6d4", "#e7d7cf", "#cfd8dc"],
@@ -36362,6 +36659,183 @@ void main(){
     (this.props.add(h, { material: "metal", hp: 650, yield: 14, label: "Plane", boxes: f }),
       this.lootSpots.push(new H(e + (a ? 0 : 0.6), t + 2.25, n - (a ? 0.6 : 0) + 5)));
   }
+  poiMegacity(e, a, o, n) {
+    // 14 distinct skyscrapers and high-rises forming avenues and alleys
+    const bDefs = [
+      { ox: a - 3, oz: o - 4, w: 6, d: 8, floors: 22, mat: "metal", tint: "#0b1017", door: 2, tower: !0, neon: "#00f0ff" },
+      { ox: a - 2, oz: o + 7, w: 5, d: 6, floors: 18, mat: "metal", tint: "#0f1622", door: 3, tower: !0, neon: "#ff007f" },
+      { ox: a - 11, oz: o + 6, w: 5, d: 6, floors: 16, mat: "metal", tint: "#141a24", door: 0, tower: !0, neon: "#9b5de5" },
+      { ox: a + 6, oz: o + 6, w: 5, d: 5, floors: 15, mat: "stone", tint: "#1a2230", door: 1, tower: !0, neon: "#ffe600" },
+      { ox: a + 7, oz: o - 3, w: 6, d: 6, floors: 17, mat: "metal", tint: "#0d131d", door: 2, tower: !0, neon: "#00f0ff" },
+      { ox: a - 12, oz: o - 3, w: 5, d: 6, floors: 14, mat: "metal", tint: "#111720", door: 0, tower: !0, neon: "#39ff14" },
+      { ox: a - 11, oz: o - 11, w: 5, d: 5, floors: 12, mat: "stone", tint: "#161d28", door: 2, roof: !0, neon: "#ff007f" },
+      { ox: a - 2, oz: o - 12, w: 5, d: 6, floors: 13, mat: "metal", tint: "#0e1520", door: 1, tower: !0, neon: "#00f0ff" },
+      { ox: a + 6, oz: o - 11, w: 5, d: 5, floors: 11, mat: "metal", tint: "#131b26", door: 3, roof: !0, neon: "#a855f7" },
+      { ox: a - 8, oz: o + 15, w: 4, d: 5, floors: 8, mat: "stone", tint: "#151d29", door: 0, roof: !0, neon: "#ffe600" },
+      { ox: a - 18, oz: o - 2, w: 4, d: 5, floors: 7, mat: "stone", tint: "#18202c", door: 2, roof: !0, neon: "#00f0ff" },
+      { ox: a + 1, oz: o - 18, w: 6, d: 4, floors: 6, mat: "metal", tint: "#101620", door: 1, roof: !0, neon: "#ff007f" },
+      { ox: a + 15, oz: o - 2, w: 4, d: 5, floors: 8, mat: "metal", tint: "#121924", door: 3, roof: !0, neon: "#39ff14" },
+      { ox: a + 5, oz: o - 17, w: 5, d: 4, floors: 5, mat: "stone", tint: "#161e2b", door: 2, roof: !0, neon: "#9b5de5" },
+    ];
+    for (const b of bDefs) {
+      const bRes = this.building({ ox: b.ox, oz: b.oz, w: b.w, d: b.d, floors: b.floors, level: n, material: b.mat, tint: b.tint, door: b.door, tower: b.tower, roof: b.roof });
+      const bLvl = bRes?.level ?? n,
+        baseM = bLvl * Ye,
+        bH = b.floors * Ye,
+        x0 = b.ox * Ye,
+        x1 = (b.ox + b.w) * Ye,
+        z0 = b.oz * Ye,
+        z1 = (b.oz + b.d) * Ye,
+        cx = (x0 + x1) / 2,
+        cz = (z0 + z1) / 2,
+        wM = b.w * Ye,
+        dM = b.d * Ye,
+        nMat = this.glow(b.neon, 2.6, 0.2);
+
+      // 1. Sleek vertical neon corner LED strips (0.12m thin channel)
+      for (const [px, pz] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1]]) {
+        const strip = new je(new Ht(0.12, bH, 0.12), nMat);
+        strip.position.set(px, baseM + bH / 2, pz);
+        this.props.decor(strip);
+      }
+
+      // 2. Thin perimeter roof LED strip ONLY along the outer parapet lip (NOT the whole roof!)
+      for (const pz of [z0, z1]) {
+        const stripZ = new je(new Ht(wM, 0.08, 0.1), nMat);
+        stripZ.position.set(cx, baseM + bH + 0.05, pz);
+        this.props.decor(stripZ);
+      }
+      for (const px of [x0, x1]) {
+        const stripX = new je(new Ht(0.1, 0.08, dM), nMat);
+        stripX.position.set(px, baseM + bH + 0.05, cz);
+        this.props.decor(stripX);
+      }
+
+      // 3. Horizontal facade neon LED accent bands wrapping the skyscraper every 4 floors
+      const bandStep = b.floors >= 14 ? 4 : 3;
+      for (let fl = bandStep; fl < b.floors; fl += bandStep) {
+        const bandY = baseM + fl * Ye + 0.04;
+        for (const pz of [z0 - 0.02, z1 + 0.02]) {
+          const hLine = new je(new Ht(wM + 0.08, 0.08, 0.08), nMat);
+          hLine.position.set(cx, bandY, pz);
+          this.props.decor(hLine);
+        }
+        for (const px of [x0 - 0.02, x1 + 0.02]) {
+          const hLine = new je(new Ht(0.08, 0.08, dM + 0.08), nMat);
+          hLine.position.set(px, bandY, cz);
+          this.props.decor(hLine);
+        }
+      }
+
+      // 4. Center vertical LED runner strip on main facade of tall skyscrapers
+      if (b.floors >= 12) {
+        const vSpine = new je(new Ht(0.14, bH * 0.9, 0.08), nMat);
+        vSpine.position.set(cx, baseM + bH * 0.45, z1 + 0.04);
+        this.props.decor(vSpine);
+      }
+    }
+    // Sky-Bridges linking adjacent skyscrapers high above the avenues
+    const bMat = new Wn({ color: "#111822", roughness: 0.2, metalness: 0.8 });
+    // Skybridge 1: Apex (center) to Neo Tokyo (north) at floor 10
+    const sb1Y = (n + 10) * Ye;
+    const sb1 = new je(new Ht(3.2, 0.4, 12), bMat);
+    sb1.position.set((a) * Ye, sb1Y, (o + 5.5) * Ye);
+    this.props.decor(sb1);
+    for (const sx of [-1.5, 1.5]) {
+      const rail = new je(new Ht(0.18, 1.1, 12), this.glow("#00f0ff", 2.6));
+      rail.position.set((a) * Ye + sx, sb1Y + 0.75, (o + 5.5) * Ye);
+      this.props.decor(rail);
+    }
+    // Skybridge 2: Apex to Kuroshio (east) at floor 8
+    const sb2Y = (n + 8) * Ye;
+    const sb2 = new je(new Ht(16, 0.4, 3.2), bMat);
+    sb2.position.set((a + 5) * Ye, sb2Y, (o - 0.5) * Ye);
+    this.props.decor(sb2);
+    for (const sz of [-1.5, 1.5]) {
+      const rail = new je(new Ht(16, 0.18, 1.1), this.glow("#ff007f", 2.6));
+      rail.position.set((a + 5) * Ye, sb2Y + 0.75, (o - 0.5) * Ye + sz);
+      this.props.decor(rail);
+    }
+    // Floating Holographic Rings atop the Apex Pinnacle and Neo Tokyo
+    const cx = a * Ye, cz = o * Ye, topY = (n + 23) * Ye;
+    const ring1 = new je(new R0(11, 0.45, 8, 48), this.glow("#00f0ff", 3.2, 0.1));
+    ring1.position.set(cx, topY + 4, cz);
+    ring1.rotation.x = Math.PI / 2;
+    this.scene.add(ring1);
+    this.rotators.push({ obj: ring1, axis: "z", speed: 0.55 });
+    const ring2 = new je(new R0(9, 0.4, 8, 48), this.glow("#ff007f", 3.2, 0.1));
+    ring2.position.set((a - 2) * Ye, (n + 19) * Ye + 4, (o + 7) * Ye);
+    ring2.rotation.x = Math.PI / 2 + 0.3;
+    this.scene.add(ring2);
+    this.rotators.push({ obj: ring2, axis: "y", speed: -0.45 });
+    // Neon Beacons on highest spires
+    this.addBeacon(cx, topY + 8, cz, "#00f0ff");
+    this.addBeacon((a - 2) * Ye, (n + 19) * Ye + 8, (o + 7) * Ye, "#ff007f");
+    this.addBeacon((a - 11) * Ye, (n + 17) * Ye, (o + 6) * Ye, "#9b5de5");
+    // Massive Glowing Neon Hologram Billboards
+    this.billboard(e.x + 28, e.height, e.z + 24, "APEX MEGACITY", "#00f0ff");
+    this.billboard(e.x - 30, e.height, e.z - 20, "NEO DRIFT", "#ff007f");
+    this.billboard(e.x + 38, e.height, e.z - 18, "CYBERDYNE", "#9b5de5");
+    this.billboard(e.x - 38, e.height, e.z + 28, "OVERDRIVE", "#ffe600");
+    this.billboard(e.x - 4, e.height, e.z - 46, "NIGHT RUNNER", "#00ffcc");
+    this.billboard(e.x + 24, e.height, e.z + 46, "SYNTHWAVE", "#ff00aa");
+    // Rain Puddles: glossy, reflective wet puddles across avenues and plazas
+    const pudMat = new Wn({
+      color: 0x081018,
+      roughness: 0.05,
+      metalness: 0.88,
+      transparent: !0,
+      opacity: 0.88,
+      polygonOffset: !0,
+      polygonOffsetFactor: -2,
+      polygonOffsetUnits: -2,
+    });
+    for (let pi = 0; pi < 24; pi++) {
+      const pAng = this.rng.range(0, Math.PI * 2),
+        pDist = this.rng.range(14, 78),
+        px = e.x + Math.cos(pAng) * pDist,
+        pz = e.z + Math.sin(pAng) * pDist,
+        rX = this.rng.range(2.6, 5.8),
+        rZ = this.rng.range(2.6, 5.8);
+      const pud = new je(new fa(rX, rZ, 0.02, 16), pudMat);
+      pud.position.set(px, e.height + 0.03, pz);
+      pud.rotation.y = this.rng.range(0, Math.PI * 2);
+      this.props.decor(pud);
+      // Neon specular ripple rim reflecting city lights
+      const rimCol = this.rng.pick(["#00f0ff", "#ff007f", "#39ff14"]);
+      const rim = new je(new R0(Math.max(rX, rZ) * 0.95, 0.05, 6, 24), this.glow(rimCol, 1.4, 0.3));
+      rim.position.set(px, e.height + 0.04, pz);
+      rim.rotation.x = Math.PI / 2;
+      this.props.decor(rim);
+    }
+    // Megacity rain particles removed per request - wet streets and glossy puddles preserved
+    // Launch Vents for rapid rooftop ascents
+    this.addVent(e.x + 22, e.height, e.z - 10);
+    this.addVent(e.x - 22, e.height, e.z + 16);
+    this.addVent(e.x + 8, e.height, e.z - 34);
+    this.addVent(e.x - 8, e.height, e.z + 34);
+    // Glowing Streetlamps along avenues
+    for (let s = 0; s < 18; s++) {
+      const ang = (s / 18) * Math.PI * 2,
+        lx = e.x + Math.cos(ang) * 52,
+        lz = e.z + Math.sin(ang) * 52;
+      this.isFree(lx, lz, 2) && this.props.lamp(lx, _t(lx, lz), lz);
+    }
+    // Cyber vehicles
+    const carColors = ["#00f0ff", "#ff007f", "#ffe600", "#111111", "#9b5de5"];
+    for (let s = 0; s < 10; s++) {
+      const ang = this.rng.range(0, Math.PI * 2),
+        dist = this.rng.range(20, 60),
+        px = e.x + Math.cos(ang) * dist,
+        pz = e.z + Math.sin(ang) * dist;
+      this.isFree(px, pz, 4) && this.props.car(px, _t(px, pz), pz, this.rng.range(0, 6.28), this.rng.pick(carColors));
+    }
+    // Weapon caches on rooftop helipads
+    this.cacheSpots.push(new H(cx, topY, cz));
+    this.cacheSpots.push(new H((a - 2) * Ye, (n + 19) * Ye, (o + 7) * Ye));
+    this.cacheSpots.push(new H((a - 11) * Ye, (n + 17) * Ye, (o + 6) * Ye));
+    this.cacheSpots.push(new H(cx + 10 * Ye, e.height, cz + 10 * Ye));
+  }
   poiCastle(e, a, o, n) {
     const t = this.rng,
       T = "#cbbfa8",
@@ -36422,12 +36896,12 @@ void main(){
     }
   }
   poiSpire(e, a, o, n) {
-    (this.building({ ox: a - 2, oz: o - 5, w: 5, d: 10, floors: 10, level: n, material: "metal", tint: "#a9c8e8", door: 3, tower: !0, lootDensity: 0.32 }),
-      this.building({ ox: a - 9, oz: o - 3, w: 4, d: 6, floors: 6, level: n, material: "stone", tint: "#d9dfe6", door: 0, roof: !0, lootDensity: 0.4 }),
-      this.building({ ox: a + 5, oz: o - 3, w: 4, d: 6, floors: 6, level: n, material: "stone", tint: "#e6dcd0", door: 2, roof: !0, lootDensity: 0.4 }));
+    (this.building({ ox: a - 2, oz: o - 5, w: 5, d: 8, floors: 20, level: n, material: "metal", tint: "#a9c8e8", door: 3, tower: !0, lootDensity: 0.45 }),
+      this.building({ ox: a - 9, oz: o - 3, w: 4, d: 6, floors: 14, level: n, material: "stone", tint: "#d9dfe6", door: 0, roof: !0, lootDensity: 0.45 }),
+      this.building({ ox: a + 5, oz: o - 3, w: 4, d: 6, floors: 12, level: n, material: "stone", tint: "#e6dcd0", door: 2, roof: !0, lootDensity: 0.45 }));
     const t = (a + 0.5) * Ye,
       c = o * Ye,
-      h = (n + 11) * Ye,
+      h = (n + 21) * Ye,
       f = new An();
     f.cyl(0.25, 0.5, 16, "#d7dee8", 0, 8, 0, 8);
     const d = f.build();
@@ -36938,6 +37412,7 @@ void main(){
     if (((this.elapsed += e), this.cloudRoot))
       for (const t of this.cloudRoot.children)
         ((t.position.x += e * 0.8), t.position.x > xt.half + 220 && (t.position.x = -(xt.half + 220)));
+
     for (const t of this.spinners) t.group.rotation.z += e * t.speed;
     for (const t of this.rotators) t.obj.rotation[t.axis] += e * t.speed;
     for (const t of this.floaters) t.obj.position.y = t.base + Math.sin(this.elapsed * 0.7 + t.phase) * t.amp;
@@ -37056,27 +37531,69 @@ void main(){
     }
   }
   building(e) {
-    const { ox: t, oz: n, w: a, level: o, material: c, tint: h } = e,
-      f = 1.6,
-      d = Math.max(1, Math.min(e.floors, 10)),
-      m = d > 1 ? Math.max(e.d, d) : e.d;
+    let { ox: t, oz: n, w: a, level: o, material: c, tint: h } = e;
+    const f = 1.6,
+      d = Math.max(1, Math.min(e.floors, 22)),
+      m = Math.max(e.d, Math.min(d, 8));
     this.reserve({ minX: t * Ye, maxX: (t + a) * Ye, minZ: n * Ye, maxZ: (n + m) * Ye });
     const g = this.statics.create(c, h),
       v = (_) => g.add(_),
       y = new Set();
-    if (d > 1)
-      for (let _ = 0; _ < d - 1; _++)
-        (y.add(`${_}:${_}`), v({ type: "ramp", ix: t, iy: o + _, iz: n + _, dir: 1, material: c, tint: h, hpMult: f }));
+
+    // Densely sample terrain across entire building footprint
+    const gPts = [];
+    for (let ix = 0; ix <= a; ix += 0.5) {
+      for (let iz = 0; iz <= m; iz += 0.5) {
+        gPts.push(_t((t + ix) * Ye, (n + iz) * Ye));
+      }
+    }
+    const maxG = Math.max(...gPts);
+    const minG = Math.min(...gPts);
+
+    // Compute base floor level: ensure building floor sits cleanly on top of terrain, never sunken or intersecting
+    if (o === void 0) {
+      o = Math.ceil((maxG + 0.1) / Ye);
+    } else {
+      o = Math.round(o);
+      if (o * Ye < maxG + 0.1) {
+        o = Math.ceil((maxG + 0.1) / Ye);
+      }
+    }
+
+    // Foundation skirt: seal any gaps underneath the building down to the lowest terrain point
+    const foundationLvl = Math.floor((minG - 0.2) / Ye);
+    for (let fy = foundationLvl; fy < o; fy++) {
+      for (let D = 0; D < m; D++) {
+        v({ type: "wall", axis: "x", ix: t, iy: fy, iz: n + D, variant: "solid", material: c, tint: h, hpMult: f });
+        v({ type: "wall", axis: "x", ix: t + a, iy: fy, iz: n + D, variant: "solid", material: c, tint: h, hpMult: f });
+      }
+      for (let D = 0; D < a; D++) {
+        v({ type: "wall", axis: "z", ix: t + D, iy: fy, iz: n, variant: "solid", material: c, tint: h, hpMult: f });
+        v({ type: "wall", axis: "z", ix: t + D, iy: fy, iz: n + m, variant: "solid", material: c, tint: h, hpMult: f });
+      }
+    }
+
+    if (d > 1) {
+      const span = Math.max(2, m - 1);
+      for (let _ = 0; _ < d - 1; _++) {
+        const flight = Math.floor(_ / span);
+        const step = _ % span;
+        const rx = flight % 2 === 0 ? t : (a > 1 ? t + 1 : t);
+        const rz = flight % 2 === 0 ? n + step : n + (span - 1 - step);
+        const rDir = flight % 2 === 0 ? 1 : 3;
+        y.add(`${rx - t}:${rz - n}`);
+        v({ type: "ramp", ix: rx, iy: o + _, iz: rz, dir: rDir, material: c, tint: h, hpMult: f });
+      }
+    }
     const b = o + d,
       A = e.roof || e.tower;
     for (let _ = 0; _ <= d; _++) {
       const T = o + _,
         R = _ === d;
-      if (_ > 0)
-        for (let D = 0; D < a; D++)
-          for (let N = 0; N < m; N++)
-            (D === 0 && y.has(`${N}:${_ - 1}`)) ||
-              v({ type: "floor", ix: t + D, iy: T, iz: n + N, material: c, tint: h, hpMult: f });
+      for (let D = 0; D < a; D++)
+        for (let N = 0; N < m; N++)
+          (_ === 0 || !y.has(`${D}:${N}`)) &&
+            v({ type: "floor", ix: t + D, iy: T, iz: n + N, material: c, tint: h, hpMult: f });
       if (R && !A) break;
       const w = (D, N, O) =>
         R
@@ -37119,9 +37636,13 @@ void main(){
       if (R) break;
     }
     this.statics.finalize(g);
-    const S = e.lootDensity ?? 0.4;
+    let spawnedLoot = 0;
     for (let _ = 0; _ < d + (A ? 1 : 0); _++) {
-      const T = _ === 0 ? _t((t + a / 2) * Ye, (n + m / 2) * Ye) : (o + _) * Ye,
+      const isGround = _ === 0;
+      const isRoof = _ === d && A;
+      const shouldSpawn = isGround || isRoof || this.rng.chance(0.68);
+      if (!shouldSpawn) continue;
+      const T = (o + _) * Ye,
         R = [];
       for (let D = 0; D < a; D++)
         for (let N = 0; N < m; N++)
@@ -37129,8 +37650,14 @@ void main(){
             R.push(
               new H((t + D + 0.5) * Ye + this.rng.range(-0.8, 0.8), T, (n + N + 0.5) * Ye + this.rng.range(-0.8, 0.8)),
             );
-      const w = Math.max(1, Math.round(R.length * S));
-      for (let D = 0; D < w && R.length; D++) this.lootSpots.push(R.splice(this.rng.int(0, R.length - 1), 1)[0]);
+      if (!R.length) continue;
+      const roll = this.rng.next();
+      const count = isRoof || isGround ? (roll < 0.35 ? 3 : 2) : (roll < 0.22 ? 3 : roll < 0.65 ? 2 : 1);
+      const floorCount = Math.min(count, R.length);
+      for (let D = 0; D < floorCount && R.length; D++) {
+        this.lootSpots.push(R.splice(this.rng.int(0, R.length - 1), 1)[0]);
+        spawnedLoot++;
+      }
     }
     if (e.tower) {
       const _ = new An();
@@ -37141,7 +37668,7 @@ void main(){
         this.addBeacon((t + a / 2) * Ye + 1.5, b * Ye + 3.4, (n + m / 2) * Ye, "#ffe59a"),
         this.cacheSpots.push(new H((t + a - 0.5) * Ye, b * Ye, (n + 0.5) * Ye)));
     }
-    return { ox: t, oz: n, w: a, d: m, floors: d };
+    return { ox: t, oz: n, w: a, d: m, floors: d, level: o };
   }
   addBeacon(e, t, n, a) {
     const o = new Wn({ color: a, emissive: new nt(a), emissiveIntensity: 1.6, roughness: 0.3 }),
@@ -37150,7 +37677,7 @@ void main(){
   }
   cityDistrict(e, t, n, a, o, c) {
     const h = q_[e.kind],
-      f = e.height / Ye,
+      f = Math.round(e.height / Ye),
       d = Math.round(e.x / Ye),
       m = Math.round(e.z / Ye),
       g = Math.floor(t / 2),
@@ -37209,22 +37736,39 @@ void main(){
       o = Math.round(e.z / Ye),
       c = q_[e.kind];
     switch (e.kind) {
+      case "megacity":
+        this.poiMegacity(e, a, o, n);
+        break;
       case "downtown": {
-        (this.cityDistrict(e, 5, 5, 7, 2, 4),
+        (this.cityDistrict(e, 5, 5, 7, 3, 6),
           this.building({
             ox: a - 2,
             oz: o + 10,
-            w: 4,
+            w: 5,
             d: 6,
-            floors: 6,
+            floors: 16,
             level: n,
             material: "metal",
             tint: "#b6c7d6",
             door: 3,
             tower: !0,
+            lootDensity: 0.6,
+          }),
+          this.building({
+            ox: a + 8,
+            oz: o - 4,
+            w: 4,
+            d: 5,
+            floors: 12,
+            level: n,
+            material: "stone",
+            tint: "#cfd8dc",
+            door: 1,
+            tower: !0,
             lootDensity: 0.55,
           }),
-          this.billboard(e.x + 26, e.height, e.z + 30, "MERIDIAN", "#ff6b6b"));
+          this.billboard(e.x + 26, e.height, e.z + 30, "MERIDIAN", "#ff6b6b"),
+          this.addVent(e.x + 2, e.height, e.z + 8));
         break;
       }
       case "city": {
@@ -37715,6 +38259,8 @@ void main(){
     }
   }
   ruinShell(e, t, n, a, o, c) {
+    const maxG = Math.max(_t(e * Ye, t * Ye), _t((e + a) * Ye, t * Ye), _t(e * Ye, (t + o) * Ye), _t((e + a) * Ye, (t + o) * Ye));
+    n = Math.max(Math.round(n ?? 0), Math.ceil((maxG + 0.1) / Ye));
     const h = this.statics.create("stone", c),
       f = this.rng;
     this.reserve({ minX: e * Ye, maxX: (e + a) * Ye, minZ: t * Ye, maxZ: (t + o) * Ye });
@@ -38094,8 +38640,10 @@ void main(){
     c.add(h);
     const f = new Wn({ color: "#fff0ce", roughness: 0.8, side: Di });
     for (let d = 0; d < 4; d++) {
+      const arm = new ut();
+      arm.rotation.z = (d * Math.PI) / 2;
       const m = new je(new Ht(0.24, 4.2, 0.12), f);
-      ((m.position.y = 2.2), (m.rotation.z = (d * Math.PI) / 2), (m.castShadow = !0), c.add(m));
+      ((m.position.y = 2.1), (m.castShadow = !0), arm.add(m), c.add(arm));
     }
     (this.props.decor(c),
       this.spinners.push({ group: c, speed: this.rng.range(0.8, 1.6) }),
@@ -38179,14 +38727,14 @@ void main(){
   }
   addGroundDetail() {
     const t = new Wo(0.09, 0.7, 3, 1),
-      n = new Wn({ color: 16777215, roughness: 1, flatShading: !0 }),
-      a = new o_(t, n, 6e4);
+      n = new Wn({ color: 16777215, roughness: 1 }),
+      a = new o_(t, n, 16000);
     ((a.name = "grass"), (a.castShadow = !1), (a.receiveShadow = !1));
     const o = new Nn(),
       c = new nt();
     let h = 0,
       f = 0;
-    for (; h < 6e4 && f++ < 6e4 * 3;) {
+    for (; h < 16000 && f++ < 48000;) {
       const d = this.rng.range(0, Math.PI * 2),
         m = Math.sqrt(this.rng.next()) * 1170,
         g = Math.cos(d) * m,
@@ -38738,6 +39286,13 @@ class RR {
       case "deploy":
         (g(0.5, 0.4, 1200, 0.5, "bandpass"), m(300, "sine", 0.4, 0.15, 600));
         break;
+      case "shockwave":
+        (m(300, "sine", 0.35, 0.26, 40),
+          m(580, "triangle", 0.22, 0.15, 68),
+          m(920, "sine", 0.26, 0.09, 310, 0.02),
+          g(0.34, 0.2, 1300, 1.8, "bandpass"),
+          g(0.25, 0.14, 550, 0.8, "lowpass"));
+        break;
       case "empty":
         m(1e3, "square", 0.03, 0.1);
         break;
@@ -39017,6 +39572,7 @@ float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); 
 float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }
 void main(){
+  if (vW.y < -0.55) discard;
   float u = vUv.x * radius * 6.2831853 / 28.0;
   float y = vW.y;
   float n = vn(vec2(u * 0.7, y * 0.035 - time * 0.3)) * 0.6 + vn(vec2(u * 2.1 + time * 0.25, y * 0.1 - time * 0.8)) * 0.4;
@@ -39025,7 +39581,7 @@ void main(){
   vec3 col = mix(vec3(0.42, 0.08, 0.95), vec3(1.0, 0.22, 0.72), n);
   col = mix(col, vec3(0.35, 0.95, 1.0), b * 0.55);
   col *= 1.2 + b * 2.2 + s * 4.0;
-  float a = opacity * (0.45 + 0.55 * n + b * 0.4) * (1.0 - smoothstep(220.0, 470.0, y));
+  float a = opacity * (0.45 + 0.55 * n + b * 0.4) * (1.0 - smoothstep(220.0, 470.0, y)) * smoothstep(-0.55, 1.2, y);
   gl_FragColor = vec4(col, clamp(a, 0.0, 0.92));
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -40044,14 +40600,17 @@ class dc {
     }
     const a = this.moveDir.lengthSq() > 0.001;
     let o = Ct.walkSpeed;
-    const s = !this.crouching && this.wantSprint && !this.aiming && !this.reload && !this.using && a && !this.exhausted;
+    if (!this.wantSprint) {
+      this.sprintNeedsRelease = !1;
+    }
+    const s = !this.crouching && this.wantSprint && !this.sprintNeedsRelease && !this.aiming && !this.reload && !this.using && a && !this.exhausted;
     (s
       ? ((this.stamina = Math.max(0, this.stamina - Ct.staminaDrain * e)),
         (this.staminaWait = Ct.staminaDelay),
-        this.stamina <= 0 && (this.exhausted = !0))
+        this.stamina <= 0 && ((this.exhausted = !0), (this.sprintNeedsRelease = !0)))
       : (this.staminaWait -= e) <= 0 &&
         ((this.stamina = Math.min(Ct.staminaMax, this.stamina + Ct.staminaRegen * e)),
-        this.exhausted && this.stamina >= 30 && (this.exhausted = !1)),
+        this.exhausted && (this.stamina >= 15 || this.staminaWait <= 0) && (this.exhausted = !1)),
       (this.sprinting = s));
     if (
       (this.crouching
@@ -40081,8 +40640,11 @@ class dc {
     else if (a) {
       ((this.vel.x += this.moveDir.x * Ct.airAccel * e), (this.vel.z += this.moveDir.z * Ct.airAccel * e));
       const c = Math.hypot(this.vel.x, this.vel.z),
-        h = Math.max(o, Ct.walkSpeed);
+        h = this.noFallDamage ? Math.max(c, o) : Math.max(o, Ct.walkSpeed);
       c > h && ((this.vel.x *= h / c), (this.vel.z *= h / c));
+    }
+    if (this.noFallDamage && !this.grounded && Math.random() < 0.25) {
+      t.effects?.burst?.(this.pos, "#00e5ff", 1, 1, 0.2);
     }
     if (
       (this.wantJump &&
@@ -40097,10 +40659,16 @@ class dc {
       t.physics.moveBody(this, e),
       this.grounded && !this.wasGrounded)
     ) {
-      const c = -this.lastFallSpeed;
-      if ((c > 6 && t.audio.play("land", this.isPlayer ? void 0 : this.pos, Math.min(1, c / 15)), c > 22 && ROOM.fallDamage)) {
-        const h = Math.round((c - 22) * 3);
-        h > 0 && this.applyRawDamage(h, null, !1, this.pos, t, "a hard landing", !0);
+      if (this.noFallDamage) {
+        this.noFallDamage = !1;
+        t.audio.play("land", this.isPlayer ? void 0 : this.pos, 0.4);
+      } else {
+        const c = -this.lastFallSpeed;
+        if ((c > 6 && t.audio.play("land", this.isPlayer ? void 0 : this.pos, Math.min(1, c / 15)), c > 20 && ROOM.fallDamage)) {
+          const excess = c - 20;
+          const h = Math.round(excess * 3.5 + Math.pow(Math.max(0, excess - 5), 1.7) * 4.2);
+          h > 0 && this.applyRawDamage(h, null, !1, this.pos, t, "a hard landing", !0);
+        }
       }
     }
   }
@@ -40147,7 +40715,12 @@ class dc {
       v = g.length();
     (g.normalize(), v < 1 && g.copy(n));
     const y = (c * Math.PI) / 180;
-    if (o.def.projectile && e.spawnProjectile)
+    if (o.def.projectile && e.spawnProjectile) {
+      if (this.isPlayer && GAME?.controller) {
+        const rk = (o.def.recoil ?? 0.08) * (this.aiming ? 0.65 : 1.0);
+        GAME.controller.applyRecoil(rk, (Math.random() - 0.5) * rk * 0.35);
+        GAME.shake = Math.min(1.2, GAME.shake + rk * 3.2);
+      }
       return (
         e.spawnProjectile(this, m.clone(), cS(g, y * 0.5, OR).clone(), o.def, weaponDamage(o.def, o.rarity) / o.def.damage),
         e.effects.muzzleFlash(m, o.def.color),
@@ -40155,12 +40728,18 @@ class dc {
         e.onShotFired(this),
         !0
       );
+    }
     const k = this.isPlayer || !!GAME?.session;
     k && (this.shotDirs = []);
     for (let b = 0; b < o.def.pellets; b++) {
       const S = cS(g, y, OR);
       (k && this.shotDirs.push(+S.x.toFixed(4), +S.y.toFixed(4), +S.z.toFixed(4)),
         e.spawnBullet(this, m, S, o.def, weaponDamage(o.def, o.rarity) / o.def.damage));
+    }
+    if (this.isPlayer && GAME?.controller) {
+      const rk = (o.def.recoil ?? (o.def.archetype === "shotgun" || o.def.archetype === "sniper" ? 0.08 : 0.035)) * (this.aiming ? 0.65 : 1.0);
+      GAME.controller.applyRecoil(rk, (Math.random() - 0.5) * rk * 0.35);
+      GAME.shake = Math.min(1.2, GAME.shake + rk * 3.2);
     }
     return (
       e.effects.muzzleFlash(m, o.def.color),
@@ -40189,7 +40768,7 @@ class dc {
       n = Math.min(t, this.inventory.ammo[e.def.ammoType]);
     ((e.ammo += n), (this.inventory.ammo[e.def.ammoType] -= n));
   }
-  startUse(e) {
+  startUse(e, aimOrigin, aimDir) {
     const t = this.inventory.activeItem;
     if (!t || t.kind !== "consumable" || this.using || this.mode !== "ground") return !1;
     const n = t.def;
@@ -40197,7 +40776,7 @@ class dc {
       if ((this.throwCd ?? 0) > e.time || !e.throwGrenade) return !1;
       return (
         (this.throwCd = e.time + 0.7),
-        e.throwGrenade(this),
+        e.throwGrenade(this, n, aimOrigin, aimDir),
         t.count--,
         t.count <= 0 && ((this.inventory.slots[this.inventory.active] = null), this.refreshHeld()),
         !0
@@ -40484,19 +41063,14 @@ class IR {
     this.jumpAt = Math.min(0.95, Math.max(0.08, m - 0.08 + (e.rng() - 0.5) * 0.1));
   }
   onDamaged(e, t) {
-    if (!e || !e.alive) return;
+    if (!this.ch.alive || !e || !e.alive) return;
     (this.enemy !== e &&
       ((this.enemy = e),
       (this.reactionTimer = Math.min(this.reactionTimer || 1, 0.15 + (1 - this.skill) * 0.4)),
       (this.timeOnTarget = 0)),
       this.enemyLastSeen.copy(e.pos),
       (this.enemyLastSeenTime = t.ctx.time),
-      (this.desiredYaw = Math.atan2(e.pos.x - this.ch.pos.x, e.pos.z - this.ch.pos.z)),
-      e.pos.distanceTo(this.ch.pos) > 9 &&
-        this.buildCooldown <= 0 &&
-        this.skill > 0.35 &&
-        this.ch.mode === "ground" &&
-        this.tryBuildWall(t));
+      (this.desiredYaw = Math.atan2(e.pos.x - this.ch.pos.x, e.pos.z - this.ch.pos.z)));
   }
   onHeardShot(e, t) {
     this.state === "combat" ||
@@ -40533,7 +41107,7 @@ class IR {
         const c = this.worstWeaponSlot();
         c >= 0 && n.selectSlot(c);
       }
-      (n.pickUp(a, t.ctx) ? t.pickups.remove(a) : this.ignored.add(a),
+      (n.pickUp(a, t.ctx) ? t.pickups.remove(a, n) : this.ignored.add(a),
         a === this.targetPickup && (this.targetPickup = null));
     }
   }
@@ -40867,7 +41441,7 @@ class IR {
   }
   tryBuildWall(e, t) {
     const n = this.ch;
-    if (n.mode !== "ground") return;
+    if (!n || !n.alive || n.mode !== "ground") return;
     const o = ["wood", "stone", "metal"].find((d) => n.inventory.materials[d] >= Cn.cost);
     if (!o) return;
     const c = t ?? (this.enemy ? Math.atan2(this.enemy.pos.x - n.pos.x, this.enemy.pos.z - n.pos.z) : n.yaw),
@@ -40960,6 +41534,12 @@ class FR {
   fov = _n.fov;
   aimOrigin = new H();
   aimDir = new H(0, 0, 1);
+  throwPrepared = !1;
+  applyRecoil(p, y = 0) {
+    this.pitch = Math.min(_n.maxPitch, this.pitch + p);
+    if (y) this.yaw += y;
+    this.ch && ((this.ch.pitch = this.pitch), (this.ch.yaw = this.yaw));
+  }
   get aiming() {
     return this.ch.aiming;
   }
@@ -40970,7 +41550,11 @@ class FR {
     const n = this.ch,
       a = this.input,
       o = n.inventory.activeWeapon,
-      c = !!o && a.mouseDown[2] && n.mode === "ground" && !this.build.active && n.alive,
+      activeItem = n.inventory.activeItem,
+      isThrowable = activeItem?.kind === "consumable" && !!activeItem.def?.throwable,
+      autoAds = !!Et?.state?.settings?.autoAdsCrouch && (n.crouching || a.down.has("KeyC") || a.down.has("ControlLeft")),
+      isAimingThrowable = isThrowable && (a.mouseDown[2] || a.mouseDown[0] || autoAds) && n.mode === "ground" && !this.build.active && n.alive,
+      c = (!!o && (a.mouseDown[2] || autoAds) || isAimingThrowable) && n.mode === "ground" && !this.build.active && n.alive,
       h = o ? Math.max(0.35, o.def.adsSpeed) : 1,
       f = 1 / Math.max(0.04, _n.adsInTime * h),
       d = 1 / Math.max(0.04, _n.adsOutTime * h);
@@ -40988,7 +41572,7 @@ class FR {
       A = J_.set(-Math.cos(this.yaw), 0, Math.sin(this.yaw));
     let S = 0,
       _ = 0;
-    if ((a.pressed("Tab") && t.toggleInventory?.(), (a.locked || t.invOpen?.()) && n.alive)) {
+    if ((a.pressed("Tab") && (this.throwPrepared = !1, t.toggleInventory?.()), (a.locked || t.invOpen?.()) && n.alive)) {
       const R = (a.down.has("KeyW") ? 1 : 0) - (a.down.has("KeyS") ? 1 : 0),
         w = (a.down.has("KeyD") ? 1 : 0) - (a.down.has("KeyA") ? 1 : 0);
       ((S = b.x * R + A.x * w), (_ = b.z * R + A.z * w));
@@ -41008,24 +41592,26 @@ class FR {
       a.pressed("KeyM") && (this.mapOpen = !this.mapOpen),
       !n.alive || !a.locked)
     ) {
+      t.setTrajectory?.(null, !1);
       this.updateCamera(e, t);
       return;
     }
     const T = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6"];
     for (let R = 0; R < T.length; R++)
-      a.pressed(T[R]) && (this.build.setActive(!1), n.selectSlot(R - 1), t.ctx.audio.play("ui", void 0, 0.4));
+      a.pressed(T[R]) && ((this.throwPrepared = !1), this.build.setActive(!1), n.selectSlot(R - 1), t.ctx.audio.play("ui", void 0, 0.4));
     if (a.wheel !== 0) {
       const R = [-1, ...n.inventory.slots.map((D, N) => (D ? N : -2)).filter((D) => D >= 0)];
       let w = R.indexOf(n.inventory.active);
       (w < 0 && (w = 0),
         (w = (w + (a.wheel > 0 ? 1 : -1) + R.length) % R.length),
+        (this.throwPrepared = !1),
         this.build.setActive(!1),
         n.selectSlot(R[w]));
     }
     if (
       (a.pressed("KeyQ") &&
         (ROOM.building || this.build.active
-          ? (this.build.setActive(!this.build.active), t.ctx.audio.play("ui", void 0, 0.4))
+          ? ((this.throwPrepared = !1), this.build.setActive(!this.build.active), t.ctx.audio.play("ui", void 0, 0.4))
           : t.notify?.("Building is disabled in this room", "warn")),
       a.pressed("KeyZ") && this.build.setPiece("wall"),
       a.pressed("KeyX") && this.build.setPiece("floor"),
@@ -41035,6 +41621,9 @@ class FR {
       a.pressed("KeyG") && !this.build.active && t.dropActive?.(),
       this.camera.getWorldDirection(this.aimDir),
       this.aimOrigin.copy(this.camera.position),
+      isAimingThrowable && t.computeTrajectory && t.setTrajectory
+        ? t.setTrajectory(t.computeTrajectory(n, activeItem.def, this.aimOrigin, this.aimDir), !0)
+        : t.setTrajectory?.(null, !1),
       a.pressed("KeyF") && n.alive && n.mode === "ground" && t.editBuild?.(this.aimOrigin, this.aimDir),
       (this.placeTimer -= e),
       n.mode === "ground")
@@ -41049,11 +41638,21 @@ class FR {
           ? a.mouseDown[0] && n.swingTool(t.ctx, this.aimOrigin, this.aimDir)
           : o
             ? (a.mouseDown[0] || a.clicked(0)) && n.tryFire(t.ctx, this.aimOrigin, this.aimDir, a.clicked(0))
-            : n.inventory.activeItem?.kind === "consumable" && a.clicked(0) && n.startUse(t.ctx);
+            : isThrowable
+              ? (() => {
+                  const throwNow = (a.mouseDown[2] && a.clicked(0)) || (this.throwPrepared && (a.released(0) || !a.mouseDown[0]));
+                  a.clicked(0) && (this.throwPrepared = !0);
+                  this.throwPrepared && a.clicked(2) && (this.throwPrepared = !1);
+                  if (throwNow) {
+                    this.throwPrepared = !1;
+                    n.startUse(t.ctx, this.aimOrigin, this.aimDir);
+                  }
+                })()
+              : activeItem?.kind === "consumable" && a.clicked(0) && n.startUse(t.ctx);
     if (((this.nearPickup = null), (this.prompt = null), n.mode === "ground")) {
       const R = t.pickups.within(n.pos, 1.6);
       for (const D of R)
-        D.needsInteract || D.lockFor === n || Math.abs(D.pos.y - n.pos.y) > 2 || (n.pickUp(D, t.ctx) && t.pickups.remove(D));
+        D.needsInteract || D.lockFor === n || Math.abs(D.pos.y - n.pos.y) > 2 || (n.pickUp(D, t.ctx) && t.pickups.remove(D, n));
       const w = t.pickups.nearest(
         Q_.set(n.pos.x, n.pos.y + 0.5, n.pos.z),
         2.8,
@@ -41062,7 +41661,7 @@ class FR {
       w &&
         ((this.nearPickup = w),
         (this.prompt = w.payload.kind === "cache" ? `[E] Open ${w.label}` : `[E] Pick up ${w.label}`),
-        a.pressed("KeyE") && n.pickUp(w, t.ctx) && t.pickups.remove(w));
+        a.pressed("KeyE") && n.pickUp(w, t.ctx) && t.pickups.remove(w, n));
       if (!this.prompt && n.alive) {
         const D = t.editTarget?.(this.aimOrigin, this.aimDir);
         D && (this.prompt = `[F] Edit ${D.spec.type} - ${D.spec.type === "ramp" ? "rotate" : D.spec.type === "floor" ? (D.spec.variant === "hole" ? "close hole" : "cut hole") : { solid: "door", door: "window", window: "solid" }[D.spec.variant ?? "solid"]}`);
@@ -41145,7 +41744,7 @@ function cc(r) {
 class VR {
   state = {
     screen: "home",
-      settings: { bots: 24, sensitivity: 1, muted: !1, shadows: !0, rtx: !0, playerName: GR() },
+      settings: { bots: 24, sensitivity: 1, muted: !1, shadows: !0, rtx: !0, playerName: GR(), autoAdsCrouch: (() => { try { return localStorage.getItem("driftwake.autoAdsCrouch") === "1"; } catch { return !1; } })() },
     loadout: zR(),
     hud: null,
     result: null,
@@ -41178,6 +41777,9 @@ class VR {
     for (const t of this.listeners) t();
   }
   setSettings(e) {
+    if (e.autoAdsCrouch !== void 0) {
+      try { localStorage.setItem("driftwake.autoAdsCrouch", e.autoAdsCrouch ? "1" : "0"); } catch {}
+    }
     this.set({ settings: { ...this.state.settings, ...e } });
   }
   setLoadout(e) {
@@ -41246,6 +41848,7 @@ const ROOM_MODES = [
       { id: "speed", label: "Move speed", opts: [0.8, 1, 1.25, 1.5], fmt: xMult, def: 1 },
     ],
     br: [
+      { id: "stormDamage", label: "Storm damage", opts: [1, 1.5, 2, 3], fmt: xMult, def: 1.5 },
       { id: "bots", label: "AI opponents", opts: [0, 10, 25, 50, 99], names: ["None", "10", "25", "50", "Fill to 100"], def: 99 },
       { id: "stormSpeed", label: "Storm speed", opts: [0.5, 1, 1.5, 2], fmt: xMult, def: 1 },
       { id: "supply", label: "Supply drops", def: !0 },
@@ -41553,7 +42156,7 @@ void main(){
       depthWrite: !1,
       fog: !1,
     })),
-      (this.mesh = new je(new Qa(3e3, 48, 24), this.material)),
+      (this.mesh = new je(new Qa(2200, 48, 24), this.material)),
       (this.mesh.frustumCulled = !1),
       (this.mesh.renderOrder = -10),
       (this.mesh.name = "sky-dome"));
@@ -41731,7 +42334,7 @@ class XR {
       (this.seed = n.seed ?? (Date.now() % 1e5) + 17),
       (this.rng = new F_(this.seed)),
       (this.session = n.session ?? null),
-      (this.camera = new Vi(74, e.clientWidth / Math.max(1, e.clientHeight), 0.2, 5200)),
+      (this.camera = new Vi(74, e.clientWidth / Math.max(1, e.clientHeight), 0.35, 5200)),
       (this.scene.background = new nt(12104424)),
       (this.scene.fog = new E0(12104424, 320, 1900)));
     const o = new jb(13626111, 6261316, 0.85);
@@ -41740,7 +42343,7 @@ class XR {
       (this.sun = new $m(16773590, 1.7)),
       this.sun.position.set(60, 90, 40),
       (this.sun.castShadow = n.shadows),
-      this.sun.shadow.mapSize.set(2048, 2048),
+      this.sun.shadow.mapSize.set(1024, 1024),
       (this.sun.shadow.camera.near = 10),
       (this.sun.shadow.camera.far = 340),
       (this.sun.shadow.camera.left = -75),
@@ -41822,7 +42425,11 @@ class XR {
       m = new H(-d.z, 0, d.x),
       g = m.clone().multiplyScalar(f).addScaledVector(d, -Ci.ferryStartDistance).setY(Ci.ferryAltitude),
       v = m.clone().multiplyScalar(f).addScaledVector(d, Ci.ferryStartDistance).setY(Ci.ferryAltitude);
-    ((this.ferry = { start: g, end: v, progress: 0, mesh: this.makeFerry(), len: g.distanceTo(v) }),
+    const islandR = xt.islandRadius * 0.98,
+      pathChord = Math.sqrt(Math.max(0, islandR * islandR - f * f)),
+      p1 = { x: m.x * f - d.x * pathChord, z: m.z * f - d.z * pathChord },
+      p2 = { x: m.x * f + d.x * pathChord, z: m.z * f + d.z * pathChord };
+    ((this.ferry = { start: g, end: v, p1, p2, progress: 0, mesh: this.makeFerry(), len: g.distanceTo(v) }),
       this.ferry.mesh.position.copy(g),
       (this.ferry.mesh.rotation.y = Math.atan2(d.x, d.z)),
       this.scene.add(this.ferry.mesh),
@@ -41862,7 +42469,7 @@ class XR {
       spawnBullet: (T, R, w, D, N) => this.spawnBullet(T, R, w, D, N),
       weakHit: (T, R) => this.weakHit(T, R),
       explode: (T, R, w, D, N) => this.explode(T, R, w, D, N),
-      throwGrenade: (T) => this.throwGrenade(T),
+      throwGrenade: (T, R, O, D) => this.throwGrenade(T, R, O, D),
       dropItem: (T, R) => this.dropItem(T, R),
       openCache: (T, S) => {
         const R = S ? supplyLoot(this.rng) : wR(this.rng);
@@ -41903,6 +42510,8 @@ class XR {
         placeFeedback: (T, R) => {
           T ? this.audio.play("build") : this.time - (this.deniedAt ?? -1) > 0.45 && ((this.deniedAt = this.time), this.audio.play("denied"));
         },
+        computeTrajectory: (T, R, O, D) => this.computeThrowableTrajectory(T, R, O, D),
+        setTrajectory: (T, R) => this.setTrajectoryVisual(T, R),
       }));
     const S = Math.max(0, Math.min(Ci.maxBots, n.session ? n.bots : Ci.soloBots));
     for (let T = 0; T < S; T++) {
@@ -42060,6 +42669,48 @@ class XR {
   lastKillTime = -99;
   shake = 0;
   rtx = !0;
+  bulletHoles = [];
+  spawnBulletHole(p, coll, vel) {
+    if (!p) return;
+    if (!this.bHoleGeom) {
+      this.bHoleGeom = new fa(0.075, 0.075, 0.01, 8);
+      this.bHoleMat = new Wn({
+        color: 1381653,
+        roughness: 0.95,
+        metalness: 0.1,
+        polygonOffset: !0,
+        polygonOffsetFactor: -3,
+        polygonOffsetUnits: -3,
+      });
+    }
+    const nrm = new H(0, 1, 0);
+    if (coll?.box) {
+      const b = coll.box, eps = 0.12;
+      if (Math.abs(p.x - b.minX) < eps) nrm.set(-1, 0, 0);
+      else if (Math.abs(p.x - b.maxX) < eps) nrm.set(1, 0, 0);
+      else if (Math.abs(p.y - b.minY) < eps) nrm.set(0, -1, 0);
+      else if (Math.abs(p.y - b.maxY) < eps) nrm.set(0, 1, 0);
+      else if (Math.abs(p.z - b.minZ) < eps) nrm.set(0, 0, -1);
+      else if (Math.abs(p.z - b.maxZ) < eps) nrm.set(0, 0, 1);
+    } else if (vel) {
+      const v = vel.clone().negate().normalize();
+      const ax = Math.abs(v.x), ay = Math.abs(v.y), az = Math.abs(v.z);
+      if (ax > ay && ax > az) nrm.set(Math.sign(v.x), 0, 0);
+      else if (ay > ax && ay > az) nrm.set(0, Math.sign(v.y), 0);
+      else nrm.set(0, 0, Math.sign(v.z));
+    }
+    let m;
+    if (this.bulletHoles.length >= 80) {
+      m = this.bulletHoles.shift();
+    } else {
+      m = new je(this.bHoleGeom, this.bHoleMat);
+    }
+    m.position.copy(p).addScaledVector(nrm, 0.015);
+    m.quaternion.setFromUnitVectors(new H(0, 1, 0), nrm);
+    m.rotateY(Math.random() * Math.PI * 2);
+    this.scene.add(m);
+    this.bulletHoles.push(m);
+  }
   sky;
   postfx;
   hemi;
@@ -42073,7 +42724,7 @@ class XR {
       }
     ((this.postfx.enabled = e && this.postfx.supported),
       (FX_HDR = e ? 2.6 : 1),
-      (this.scene.environment = this.envMap),
+      (this.scene.environment = e ? this.envMap : null),
       (this.scene.environmentIntensity = e ? 0.62 : 0.4),
       (this.sun.intensity = e ? 2.5 : 1.8),
       this.sun.color.set(e ? 16767426 : 16773590),
@@ -42188,7 +42839,7 @@ class XR {
       t.copy(o.vel).normalize();
       const h = this.physics.raycast(o.pos, t, c, o.visual ? null : n, o.owner);
       if (h || o.dist + c > o.def.maxRange || o.pos.y < xt.waterLevel - 0.5) {
-        (h && (o.visual ? this.effects.burst(h.point, "#d9c9a0", 3, 2.5, 0.3) : this.bulletHit(o, h, o.dist + h.dist)),
+        (h && (o.visual ? (this.effects.burst(h.point, "#d9c9a0", 3, 2.5, 0.3), this.spawnBulletHole(h.point, h.collider, o.vel)) : this.bulletHit(o, h, o.dist + h.dist)),
           this.scene.remove(o.mesh),
           this.bulletPool.length < 200 && this.bulletPool.push(o.mesh),
           this.bullets.splice(a, 1));
@@ -42214,8 +42865,12 @@ class XR {
       const f = t.collider.owner,
         d = t0[f.material];
       (this.effects.burst(t.point, d ?? "#d9c9a0", 4, 3, 0.35),
+        this.spawnBulletHole(t.point, t.collider, e.vel),
         f.takeDamage(Math.round(h), t.point, o) && (this.effects.burst(t.point, d, 18, 6, 0.7), this.audio.play("destroy", t.point)));
-    } else this.effects.burst(t.point, "#d9c9a0", 3, 2.5, 0.3);
+    } else {
+      this.effects.burst(t.point, "#d9c9a0", 3, 2.5, 0.3);
+      this.spawnBulletHole(t.point, t.collider, e.vel);
+    }
   }
   updateRockets(e) {
     const t = this.tmpDir;
@@ -42295,22 +42950,235 @@ class XR {
     return ((o.mine = a), n < 1 && o.takeDamage(o.maxHp * (1 - n), null, null), o);
   }
   grenades = [];
-  throwGrenade(e) {
-    const t = e.aimDirection(new H()),
-      n = e.eyePos(new H()).addScaledVector(t, 0.7),
-      a = t.clone().multiplyScalar(22);
-    ((a.y += 4.5),
-      a.addScaledVector(e.vel, 0.5),
-      this.spawnGrenade(e, n, a, !1),
+  computeThrowableTrajectory(e, def, aimOrigin, aimDir) {
+    const isShockwave = def?.id === "shockwave" || !!def?.shockwave;
+    let t, n;
+    if (aimDir && aimOrigin) {
+      n = e.eyePos(new H()).addScaledVector(aimDir, 0.4);
+      const rayHit = this.physics.raycast(aimOrigin, aimDir, 120, this.rayTargets?.(), e);
+      const targetPoint = rayHit ? rayHit.point : new H().copy(aimOrigin).addScaledVector(aimDir, 120);
+      t = new H().subVectors(targetPoint, n);
+      if (t.length() < 0.8) t.copy(aimDir);
+      else t.normalize();
+    } else {
+      t = e.aimDirection(new H());
+      n = e.eyePos(new H()).addScaledVector(t, 0.7);
+    }
+    const speed = isShockwave ? 27 : 23;
+    const a = t.clone().multiplyScalar(speed);
+    a.addScaledVector(e.vel, 0.25);
+    if (e.isBot) a.y += isShockwave ? 2.8 : 3.8;
+
+    const points = [n.clone()];
+    const bounces = [];
+    const dt = 0.03;
+    const maxFuse = isShockwave ? 1.35 : 3.0;
+    const simPos = n.clone();
+    const simVel = a.clone();
+    const tmpDir = new H();
+    let timeLeft = maxFuse;
+
+    for (let step = 0; step < 85 && timeLeft > 0; step++) {
+      timeLeft -= dt;
+      simVel.y -= 22 * dt;
+      const stepDist = simVel.length() * dt;
+      if (stepDist > 1e-4) {
+        tmpDir.copy(simVel).normalize();
+        const hit = this.physics.raycast(simPos, tmpDir, stepDist + 0.16, null, e);
+        if (hit) {
+          simPos.copy(hit.point).addScaledVector(tmpDir, -0.16);
+          bounces.push(simPos.clone());
+          if (Math.abs(tmpDir.y) > 0.7) {
+            simVel.y *= -0.35;
+            simVel.x *= 0.6;
+            simVel.z *= 0.6;
+          } else {
+            simVel.x *= -0.4;
+            simVel.z *= -0.4;
+            simVel.y *= 0.6;
+          }
+        } else {
+          simPos.addScaledVector(tmpDir, stepDist);
+        }
+      }
+      const groundY = Math.max(_t(simPos.x, simPos.z), this.physics.groundHeight(simPos.x, simPos.z, simPos.y + 0.3));
+      if (simPos.y < groundY + 0.16) {
+        simPos.y = groundY + 0.16;
+        if (simVel.y < 0) {
+          if (simVel.y < -2) bounces.push(simPos.clone());
+          simVel.y = simVel.y > -2 ? 0 : -simVel.y * 0.35;
+        }
+        simVel.x *= (1 - Math.min(1, dt * 6));
+        simVel.z *= (1 - Math.min(1, dt * 6));
+      }
+      points.push(simPos.clone());
+      if (simVel.length() < 0.6 && Math.abs(simPos.y - (groundY + 0.16)) < 0.05) break;
+    }
+    return { points, bounces, endPos: simPos.clone(), isShockwave };
+  }
+  initTrajectoryVisual() {
+    if (this.trajectoryVisual) return;
+    const maxPoints = 120;
+    const geom = new Gn();
+    const posAttr = new Kn(new Float32Array(maxPoints * 3), 3);
+    const colAttr = new Kn(new Float32Array(maxPoints * 3), 3);
+    posAttr.setUsage(By);
+    colAttr.setUsage(By);
+    geom.setAttribute("position", posAttr);
+    geom.setAttribute("color", colAttr);
+    geom.setDrawRange(0, 0);
+
+    const pointsMat = new Vb({
+      size: 0.26,
+      vertexColors: !0,
+      sizeAttenuation: !0,
+      depthWrite: !1,
+      transparent: !0,
+      opacity: 0.95,
+      blending: Ch,
+    });
+    const pointsMesh = new RT(geom, pointsMat);
+    pointsMesh.frustumCulled = !1;
+
+    const landingGroup = new ut();
+    const ringMesh = new je(
+      new fa(0.65, 0.65, 0.03, 24),
+      new zs({ color: 0x00e5ff, transparent: !0, opacity: 0.75, depthWrite: !1, blending: Ch })
+    );
+    const coreMesh = new je(
+      new Qa(0.2, 12, 8),
+      new zs({ color: 0xffffff, transparent: !0, opacity: 0.9, depthWrite: !1 })
+    );
+    const beamMesh = new je(
+      new fa(0.04, 0.04, 1.4, 8),
+      new zs({ color: 0x00e5ff, transparent: !0, opacity: 0.65, depthWrite: !1, blending: Ch })
+    );
+    beamMesh.position.y = 0.7;
+    landingGroup.add(ringMesh, coreMesh, beamMesh);
+
+    const bounceGroup = new ut();
+    const bounceMeshes = [];
+    for (let i = 0; i < 4; i++) {
+      const bm = new je(
+        new Qa(0.14, 8, 6),
+        new zs({ color: 0x00e5ff, transparent: !0, opacity: 0.85, depthWrite: !1, blending: Ch })
+      );
+      bm.visible = !1;
+      bounceGroup.add(bm);
+      bounceMeshes.push(bm);
+    }
+
+    const group = new ut();
+    group.add(pointsMesh, landingGroup, bounceGroup);
+    group.visible = !1;
+    this.scene.add(group);
+
+    this.trajectoryVisual = {
+      group,
+      geom,
+      posAttr,
+      colAttr,
+      pointsMesh,
+      landingGroup,
+      ringMesh,
+      coreMesh,
+      beamMesh,
+      bounceMeshes,
+      maxPoints,
+    };
+  }
+  setTrajectoryVisual(traj, visible) {
+    this.initTrajectoryVisual();
+    const v = this.trajectoryVisual;
+    if (!visible || !traj || !traj.points || traj.points.length < 2) {
+      v.group.visible = !1;
+      return;
+    }
+    v.group.visible = !0;
+    const isShockwave = traj.isShockwave;
+    const pts = traj.points;
+    const count = Math.min(pts.length, v.maxPoints);
+
+    const rBase = isShockwave ? 0.0 : 1.0;
+    const gBase = isShockwave ? 0.9 : 0.83;
+    const bBase = isShockwave ? 1.0 : 0.42;
+
+    const colHex = isShockwave ? 0x00e5ff : 0xffd46b;
+    v.ringMesh.material.color.setHex(colHex);
+    v.beamMesh.material.color.setHex(colHex);
+    for (const bm of v.bounceMeshes) bm.material.color.setHex(colHex);
+
+    const posArr = v.posAttr.array;
+    const colArr = v.colAttr.array;
+
+    for (let i = 0; i < count; i++) {
+      const p = pts[i];
+      const i3 = i * 3;
+      posArr[i3] = p.x;
+      posArr[i3 + 1] = p.y;
+      posArr[i3 + 2] = p.z;
+
+      const progress = i / count;
+      const fade = 1 - progress * 0.35;
+      colArr[i3] = (rBase + (1 - rBase) * (1 - progress) * 0.4) * fade;
+      colArr[i3 + 1] = (gBase + (1 - gBase) * (1 - progress) * 0.4) * fade;
+      colArr[i3 + 2] = (bBase + (1 - bBase) * (1 - progress) * 0.4) * fade;
+    }
+
+    v.geom.setDrawRange(0, count);
+    v.posAttr.needsUpdate = !0;
+    v.colAttr.needsUpdate = !0;
+
+    v.landingGroup.position.copy(traj.endPos);
+    v.ringMesh.rotation.y = this.time * 3.5;
+    const pulse = 1 + 0.12 * Math.sin(this.time * 12);
+    v.coreMesh.scale.set(pulse, pulse, pulse);
+
+    const bounces = traj.bounces || [];
+    for (let i = 0; i < v.bounceMeshes.length; i++) {
+      const bm = v.bounceMeshes[i];
+      if (i < bounces.length) {
+        bm.position.copy(bounces[i]);
+        bm.visible = !0;
+      } else {
+        bm.visible = !1;
+      }
+    }
+  }
+  throwGrenade(e, def, aimOrigin, aimDir) {
+    const isShockwave = def?.id === "shockwave" || !!def?.shockwave;
+    let t, n;
+    if (aimDir && aimOrigin) {
+      n = e.eyePos(new H()).addScaledVector(aimDir, 0.4);
+      const rayHit = this.physics.raycast(aimOrigin, aimDir, 120, this.rayTargets?.(), e);
+      const targetPoint = rayHit ? rayHit.point : new H().copy(aimOrigin).addScaledVector(aimDir, 120);
+      t = new H().subVectors(targetPoint, n);
+      if (t.length() < 0.8) t.copy(aimDir);
+      else t.normalize();
+    } else {
+      t = e.aimDirection(new H());
+      n = e.eyePos(new H()).addScaledVector(t, 0.7);
+    }
+    const speed = isShockwave ? 27 : 23;
+    const a = t.clone().multiplyScalar(speed);
+    a.addScaledVector(e.vel, 0.25);
+    if (e.isBot) a.y += isShockwave ? 2.8 : 3.8;
+    (this.spawnGrenade(e, n, a, !1, isShockwave),
       this.audio.play("ui", e.isPlayer ? void 0 : e.pos, 0.5),
       this.session &&
         this.isAuthor(e) &&
-        this.session.sendGame("nade", { x: n.x, y: n.y, z: n.z, vx: a.x, vy: a.y, vz: a.z, by: e.botIndex }));
+        this.session.sendGame("nade", { x: n.x, y: n.y, z: n.z, vx: a.x, vy: a.y, vz: a.z, by: e.botIndex, sw: isShockwave ? 1 : 0 }));
   }
-  spawnGrenade(e, t, n, a) {
-    ROCKET_ASSETS.nade ||= new Qa(0.16, 10, 8);
-    const o = new je(ROCKET_ASSETS.nade, new Wn({ color: "#2f4a2a", emissive: new nt("#9cff5a"), emissiveIntensity: 0.6, roughness: 0.4 }));
-    (o.position.copy(t), this.scene.add(o), this.grenades.push({ mesh: o, pos: t.clone(), vel: n.clone(), owner: e, fuse: 3, visual: a }));
+  spawnGrenade(e, t, n, a, isShockwave = !1) {
+    let o;
+    if (isShockwave) {
+      ROCKET_ASSETS.shockwave ||= new Qa(0.2, 14, 10);
+      o = new je(ROCKET_ASSETS.shockwave, new Wn({ color: "#00b4d8", emissive: new nt("#00e5ff"), emissiveIntensity: 1.8, roughness: 0.1 }));
+    } else {
+      ROCKET_ASSETS.nade ||= new Qa(0.16, 10, 8);
+      o = new je(ROCKET_ASSETS.nade, new Wn({ color: "#2f4a2a", emissive: new nt("#9cff5a"), emissiveIntensity: 0.6, roughness: 0.4 }));
+    }
+    (o.position.copy(t), this.scene.add(o), this.grenades.push({ mesh: o, pos: t.clone(), vel: n.clone(), owner: e, fuse: isShockwave ? 1.35 : 3, visual: a, isShockwave }));
   }
   updateGrenades(e) {
     for (let t = this.grenades.length - 1; t >= 0; t--) {
@@ -42336,15 +43204,85 @@ class XR {
           (n.vel.z *= 1 - Math.min(1, e * 6))),
         n.mesh.position.copy(n.pos),
         (n.mesh.rotation.x += e * 8),
-        (n.mesh.material.emissiveIntensity = Math.sin(this.time * (n.fuse < 1 ? 40 : 14)) > 0 ? 2.5 : 0.3),
+        (n.mesh.rotation.y += e * (n.isShockwave ? 12 : 0)),
+        (n.mesh.material.emissiveIntensity = Math.sin(this.time * (n.fuse < 1 ? 40 : 14)) > 0 ? (n.isShockwave ? 3 : 2.5) : 0.4),
+        n.isShockwave && Math.random() < 0.25 && this.effects.burst(n.pos, "#00e5ff", 1, 0.6, 0.2),
         n.fuse <= 0 || n.pos.y < xt.waterLevel - 1)
       ) {
-        (this.explode(n.pos.clone(), n.owner, 75, 5.5, 240, n.visual, "a Surge Grenade", !0),
+        (n.isShockwave
+          ? this.explodeShockwave(n.pos.clone(), n.owner, n.visual)
+          : this.explode(n.pos.clone(), n.owner, 75, 5.5, 240, n.visual, "a Surge Grenade", !0),
           this.scene.remove(n.mesh),
           n.mesh.material.dispose(),
           this.grenades.splice(t, 1));
       }
     }
+  }
+  explodeShockwave(e, t, visual = !1) {
+    (this.spawnShockwaveBall(e, 8.5),
+      this.effects.burst(e, "#ffffff", 35, 18, 0.5),
+      this.effects.burst(e, "#00e5ff", 50, 16, 0.8),
+      this.effects.burst(e, "#29b6f6", 36, 12, 1),
+      this.effects.burst(e, "#0288d1", 24, 7, 1.4),
+      this.audio.play("shockwave", e, 0.75));
+    const f = this.camera.position.distanceTo(e);
+    if (((this.shake = Math.max(this.shake, Math.max(0, 1 - f / 120) * 1.5)), visual)) return;
+    const radius = 9.5;
+    const d = this.tmpV2;
+    for (const g of this.characters) {
+      if (!g.alive) continue;
+      d.set(g.pos.x, g.pos.y + 0.8, g.pos.z);
+      const v = d.distanceTo(e);
+      if (v > radius) continue;
+      const y = this.tmpDir.subVectors(d, e);
+      y.y = 0;
+      let len = y.length();
+      if (len < 0.05) {
+        g.aimDirection(y);
+        y.y = 0;
+        len = y.length();
+        if (len < 0.05) y.set(1, 0, 0);
+      }
+      y.normalize();
+      const A = Math.max(0.15, 1 - v / radius);
+      const horizSpeed = 24 + 12 * A;
+      const vertSpeed = 16 + 8 * A;
+      if (!g.remotePeerId) {
+        g.vel.x = y.x * horizSpeed;
+        g.vel.z = y.z * horizSpeed;
+        g.vel.y = Math.max(g.vel.y, 0) + vertSpeed;
+        g.grounded = !1;
+        g.noFallDamage = !0;
+        this.audio.play("jump", g.isPlayer ? void 0 : g.pos, 0.8);
+      }
+    }
+    const m = new Set();
+    for (const g of this.physics.query(
+      { minX: e.x - 8, maxX: e.x + 8, minY: e.y - 8, maxY: e.y + 8, minZ: e.z - 8, maxZ: e.z + 8 },
+      []
+    ))
+      g.owner && typeof g.owner.takeDamage == "function" && m.add(g.owner);
+    for (const g of m) {
+      const v = g.colliders?.[0]?.box;
+      if (!v) continue;
+      const y = Math.max(v.minX - e.x, 0, e.x - v.maxX),
+        b = Math.max(v.minY - e.y, 0, e.y - v.maxY),
+        A = Math.max(v.minZ - e.z, 0, e.z - v.maxZ),
+        S = Math.hypot(y, b, A);
+      if (S > 8) continue;
+      g.takeDamage(500, e, t) &&
+        this.effects.burst(this.tmpV.set((v.minX + v.maxX) / 2, (v.minY + v.maxY) / 2, (v.minZ + v.maxZ) / 2), "#00e5ff", 14, 6, 0.7);
+    }
+  }
+  spawnShockwaveBall(e, t) {
+    ROCKET_ASSETS.swBall ||= new Qa(1, 18, 12);
+    ROCKET_ASSETS.swRing ||= new C0(0.85, 1, 40);
+    const n = new zs({ color: new nt(0.1, 1.8, 3.8), transparent: !0, opacity: 0.9, blending: Ch, depthWrite: !1, fog: !1 }),
+      a = new je(ROCKET_ASSETS.swBall, n);
+    (a.position.copy(e), this.scene.add(a));
+    const o = new zs({ color: new nt(0.5, 3.2, 5.2), transparent: !0, opacity: 0.9, blending: Ch, depthWrite: !1, side: Di, fog: !1 }),
+      c = new je(ROCKET_ASSETS.swRing, o);
+    ((c.rotation.x = -Math.PI / 2), c.position.copy(e), this.scene.add(c), this.fireballs.push({ ball: a, ring: c, t: 0, r: t }));
   }
   explode(e, t, n, a, o, c = !1, h = "an explosion", s = !1) {
     (this.spawnFireball(e, a),
@@ -42759,7 +43697,7 @@ class XR {
       const n = typeof t?.by == "number" ? (fromHost ? this.bots[t.by]?.ch : null) : this.remotePlayers.get(e.from);
       n &&
         [t.x, t.y, t.z, t.vx, t.vy, t.vz].every((a) => typeof a == "number" && Number.isFinite(a)) &&
-        this.spawnGrenade(n, new H(t.x, t.y, t.z), new H(t.vx, t.vy, t.vz).clampLength(0, 60), !0);
+        this.spawnGrenade(n, new H(t.x, t.y, t.z), new H(t.vx, t.vy, t.vz).clampLength(0, 60), !0, !!t.sw);
       return;
     }
     if (e.event === "respawn" || e.event === "brespawn") {
@@ -42851,7 +43789,7 @@ class XR {
       const n = Math.min(0.05, Math.max(0, (t - this.lastFrame) / 1e3));
       if (((this.lastFrame = t), this.paused && this.session)) {
         const a = this.input;
-        (a.down.clear(), a.pressedThisFrame.clear(), (a.mouseDown = [!1, !1, !1]), (a.mousePressed = [!1, !1, !1]), (a.dx = a.dy = a.wheel = 0));
+        (a.down.clear(), a.pressedThisFrame.clear(), (a.mouseDown = [!1, !1, !1]), (a.mousePressed = [!1, !1, !1]), (a.mouseReleased = [!1, !1, !1]), (a.dx = a.dy = a.wheel = 0));
       }
       ((!this.paused || this.session) && this.update(n), this.render(), this.input.endFrame());
     };
@@ -42954,13 +43892,18 @@ class XR {
       this.updateVents(),
       HB?.update(e, this.camera),
       (this.stormTick -= e));
-    for (const o of this.characters)
-      !o.alive ||
-        o.mode === "ferry" ||
-        o.remotePeerId ||
-        this.zone.isInside(o.pos.x, o.pos.z) ||
-        (o.stormDamage(this.zone.dps * e, this.ctx),
-        o.isPlayer && this.stormTick <= 0 && ((this.stormTick = 1), this.audio.play("storm_tick")));
+    if (this.stormTick <= 0) {
+      this.stormTick = 1;
+      let played = !1;
+      const sMult = ROOM.stormDamage ?? 1.5;
+      for (const o of this.characters)
+        !o.alive ||
+          o.mode === "ferry" ||
+          o.remotePeerId ||
+          this.zone.isInside(o.pos.x, o.pos.z) ||
+          (o.stormDamage(Math.max(2, Math.round(this.zone.dps * sMult)), this.ctx),
+          o.isPlayer && !played && ((played = !0), this.audio.play("storm_tick")));
+    }
     const a = !this.zone.isInside(this.player.pos.x, this.player.pos.z) && this.player.mode !== "ferry";
     (a && !this.lastOutside && this.player.alive && this.notify("You are outside the safe zone!", "warn"),
       (this.lastOutside = a),
@@ -43279,7 +44222,7 @@ class XR {
       t === this.player &&
       this.session &&
       this.session.sendGame("bhit", { i: e.botIndex, amount: n, headshot: a, x: o.x, y: o.y, z: o.z, cause: t.inventory.activeWeapon?.def.name ?? "a Breaker" });
-    !e.isPlayer && !e.remotePeerId && !e.puppet && !e.dummy && this.bots.find((h) => h.ch === e)?.onDamaged(t, this.botWorld);
+    !e.isPlayer && !e.remotePeerId && !e.puppet && !e.dummy && e.alive && this.bots.find((h) => h.ch === e)?.onDamaged(t, this.botWorld);
   }
   isAuthor(e) {
     return !!e && (e === this.player || (e.botIndex !== void 0 && !e.puppet && !!this.session));
@@ -43764,7 +44707,7 @@ class XR {
         player: { x: e.pos.x, z: e.pos.z, yaw: this.controller.yaw },
         ferry:
           !n && this.ferry.progress < 1
-            ? { x: this.ferry.mesh.position.x, z: this.ferry.mesh.position.z, dx: y.x, dz: y.z }
+            ? { x: this.ferry.mesh.position.x, z: this.ferry.mesh.position.z, dx: y.x, dz: y.z, x1: this.ferry.p1.x, z1: this.ferry.p1.z, x2: this.ferry.p2.x, z2: this.ferry.p2.z }
             : null,
         banner: this.banner && d - this.banner.t < 4 ? this.banner : null,
         notifications: this.notifications,
@@ -43827,6 +44770,7 @@ class XR {
     ((this.rockets.length = 0),
       (this.fireballs.length = 0),
       (this.supply.length = 0),
+      this.trajectoryVisual && (this.scene.remove(this.trajectoryVisual.group), this.trajectoryVisual.geom.dispose(), (this.trajectoryVisual = null)),
       HB?.dispose(),
       (HB = null),
       GAME === this && (GAME = null),
@@ -48504,6 +49448,18 @@ function bD(r) {
                                 "Shadows",
                               ],
                             }),
+                            z.jsxs("label", {
+                              className: "flex cursor-pointer items-center gap-2",
+                              children: [
+                                z.jsx("input", {
+                                  type: "checkbox",
+                                  checked: !!e.autoAdsCrouch,
+                                  onChange: (R) => Et.setSettings({ autoAdsCrouch: R.target.checked }),
+                                  className: "accent-amber-300",
+                                }),
+                                "Auto ADS on Crouch",
+                              ],
+                            }),
                           ],
                         }),
                       ],
@@ -48957,8 +49913,8 @@ function pb({ hud: r, mapImage: e, pois: t, size: n, labels: a = !1 }) {
               h.setLineDash([5, 4]),
               (h.lineWidth = 1.5),
               h.beginPath(),
-              h.moveTo(d(b.x - b.dx * 900), d(b.z - b.dz * 900)),
-              h.lineTo(d(b.x + b.dx * 900), d(b.z + b.dz * 900)),
+              h.moveTo(d(b.x1 ?? (b.x - b.dx * 900)), d(b.z1 ?? (b.z - b.dz * 900))),
+              h.lineTo(d(b.x2 ?? (b.x + b.dx * 900)), d(b.z2 ?? (b.z + b.dz * 900))),
               h.stroke(),
               h.restore(),
               h.save(),
@@ -50158,6 +51114,20 @@ function ED({ onResume: r, onRestart: e, onQuit: t, onSettings: n, onLeaveParty:
                     "RTX visuals",
                   ],
                 }),
+                z.jsxs("label", {
+                  className: "flex cursor-pointer items-center gap-2",
+                  children: [
+                    z.jsx("input", {
+                      type: "checkbox",
+                      checked: !!a.autoAdsCrouch,
+                      className: "accent-amber-400",
+                      onChange: (o) => {
+                        (Et.setSettings({ autoAdsCrouch: o.target.checked }), n({ autoAdsCrouch: o.target.checked }));
+                      },
+                    }),
+                    "Auto ADS on Crouch",
+                  ],
+                }),
               ],
             }),
           ],
@@ -50252,9 +51222,9 @@ function AD() {
   Xt.useEffect(() => {
     const T = e.current;
     if (!T) return;
-    const R = new sS({ canvas: T, antialias: !0, powerPreference: "high-performance" });
+    const R = new sS({ canvas: T, antialias: !0, powerPreference: "high-performance", logarithmicDepthBuffer: !0 });
     return (
-      R.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)),
+      R.setPixelRatio(1),
       (R.outputColorSpace = Hn),
       (R.toneMapping = jh),
       (R.toneMappingExposure = 1.05),
