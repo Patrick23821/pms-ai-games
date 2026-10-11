@@ -311,7 +311,7 @@ input[type=text]:disabled{color:#aaa;background:#1a1a1a;border-color:#555;cursor
       <label for="worldName">World name</label>
       <input id="worldName" type="text" maxlength="32" spellcheck="false" placeholder="My Survival World">
       <div class="world-mp-opts">
-        <div class="toggle">Multiplayer enabled<input type="checkbox" id="wMpEnabled" checked></div>
+        <div class="toggle">Multiplayer enabled<input type="checkbox" id="wMpEnabled" autocomplete="off"></div>
         <div class="toggle" id="wPublicWrap">Public listing<input type="checkbox" id="wPublic"></div>
         <div class="world-mp-field"><label for="wPublicRole">Public join role</label><select id="wPublicRole"><option value="visitor">Visitor</option><option value="operator">Operator</option></select></div>
         <div class="world-mp-field"><label for="wRoomCode">Room code (host)</label><input id="wRoomCode" type="text" maxlength="9" placeholder="Auto" spellcheck="false"></div>
@@ -658,7 +658,7 @@ const NetRoles = { HOST: 'host', OPERATOR: 'operator', VISITOR: 'visitor' };
 function defaultWorldMeta(displayName) {
   return {
     displayName: String(displayName || 'New World').slice(0, 32),
-    mpEnabled: true,
+    mpEnabled: false,
     roomCode: null,
     isPublic: false,
     publicDefaultRole: NetRoles.VISITOR,
@@ -668,7 +668,7 @@ function defaultWorldMeta(displayName) {
 function normalizeWorldMeta(m, fallbackName) {
   const o = Object.assign(defaultWorldMeta(fallbackName), m || {});
   o.displayName = String(o.displayName || fallbackName || 'World').slice(0, 32);
-  o.mpEnabled = o.mpEnabled !== false;
+  o.mpEnabled = o.mpEnabled === true;
   o.isPublic = !!o.isPublic;
   o.publicDefaultRole = o.publicDefaultRole === NetRoles.OPERATOR ? NetRoles.OPERATOR : NetRoles.VISITOR;
   o.operators = (o.operators || []).map(x => typeof x === 'string' ? { name: x, canKick: true } : { name: String(x.name || ''), canKick: x.canKick !== false }).filter(x => x.name);
@@ -3604,12 +3604,13 @@ class Mob extends Entity {
   }
   hitBox() { return this.box(); }
   hurt(amount, src, opts, g) {
-    if (this.dead || this.invT > 0) return false;
     opts = opts || {};
+    if (this.dead || (this.invT > 0 && !opts.dot)) return false;
     if (this.cfg.invuln) { this.hurtT = 0.25; g.fx('resin', this.x, this.y + 1.5, this.z); g.audio.mob('creaking'); return false; }
     if (this.type === 'armadillo' && this.rolled > 0) amount = Math.max(0, amount - 4);
     if (this.type === 'enderman' && opts.proj) { this.teleport(g); return false; }
-    this.hp -= amount; this.hurtT = 0.35; this.invT = 0.45;
+    this.hp -= amount; this.hurtT = 0.35;
+    if (!opts.dot) this.invT = 0.45;
     if (opts.kb) { const k = 1 - (this.cfg.kbRes || 0); this.vx += opts.kb[0] * 8 * k; this.vy = Math.max(this.vy, (opts.kb[1] * 8 + 2) * k); this.vz += opts.kb[2] * 8 * k; }
     if (this.cfg.golem && src && (src === g.player || src instanceof RemotePlayer || (src.owner && (src.owner === g.player || src.owner instanceof RemotePlayer)))) { this.angry = 30; this.angryAt = src.owner || src; }
     if (opts.fire && !this.cfg.fireImmune) this.fireT = Math.max(this.fireT, opts.fire);
@@ -3655,9 +3656,17 @@ class Mob extends Entity {
     if (this.dead) { this.deathT += dt; this.vy -= GRAV * dt; this.vx *= 0.9; this.vz *= 0.9; moveEntity(W, this, dt); if (this.deathT > 0.7) { this.remove = true; g.fx('poof', this.x, this.y + this.h / 2, this.z); } return; }
     if (this.soundT < 0) { this.soundT = 6 + Math.random() * 14; const d = g.player.dist3(this.x, this.y, this.z); if (d < 16) g.audio.mob(this.type, (1 - d / 16) * 0.8); }
     liquidState(W, this);
-    if (this.inLava && !c.fireImmune) { this.fireT = 8; if (this.age % 0.5 < dt) this.hurt(4, null, {}, g); }
+    if (this.inLava && !c.fireImmune) { this.fireT = 8; if (this.age % 0.5 < dt) this.hurt(4, null, { dot: true }, g); }
     if (!c.fireImmune && touchingBlock(W, this, id => id === B.fire)) this.fireT = Math.max(this.fireT, 8);
-    if (this.fireT > 0) { this.fireT -= dt; if (this.inWater) this.fireT = 0; if (!c.fireImmune && Math.floor(this.fireT) !== Math.floor(this.fireT + dt)) this.hurt(1, null, {}, g); if (Math.random() < 0.3) g.fx('flame', this.x, this.y + Math.random() * this.h, this.z); }
+    if (this.fireT > 0) {
+      this.fireT -= dt;
+      if (this.inWater) { this.fireT = 0; this.fireDmgT = 0; }
+      if (!c.fireImmune) {
+        this.fireDmgT = (this.fireDmgT || 0) - dt;
+        if (this.fireDmgT <= 0) { this.fireDmgT = 1; this.hurt(1, null, { dot: true, fire: true }, g); }
+      }
+      if (Math.random() < 0.3) g.fx('flame', this.x, this.y + Math.random() * this.h, this.z);
+    } else this.fireDmgT = 0;
     if (c.burns && !this.inWater && g.sunBurnActive() && g.entityInDirectSun(W, this.x, this.y, this.z, this.h)) this.fireT = Math.max(this.fireT, 1.5);
     if (this.type === 'creaking') { if (g.isDay() || !this.heart || !W.hearts.has(this.heart)) { this.dieCrumble(g); return; } }
     // target selection
@@ -6372,7 +6381,13 @@ class Menu {
     name.addEventListener('input', validate);
     name.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter' && validate()) $('btnPlay').click(); });
     validate();
-    $('btnPlay').onclick = () => { if (!validate()) return; g.audio.init(); g.audio.click(); g.username = name.value; Store.set(USER_KEY, g.username); g.color = Menu.colorFor(g.username); this.showMenu(); };
+    $('btnPlay').onclick = () => {
+      if (!validate()) return;
+      g.audio.init(); g.audio.click();
+      g.username = name.value; Store.set(USER_KEY, g.username); g.color = Menu.colorFor(g.username);
+      this.worldTab = 'create'; this.closeWorldEdit(); this.pendingHostSaveId = null;
+      this.resetCreateForm(); this.showMenu();
+    };
     $('btnBackTitle').onclick = () => { g.audio.click(); this.showTitle(); };
     $('btnDice').onclick = () => { g.audio.click(); $('seed').value = String(Math.floor(Math.random() * 2 ** 31) - 2 ** 30); };
     $('seed').addEventListener('keydown', e => e.stopPropagation());
@@ -6380,14 +6395,18 @@ class Menu {
     $('btnCreatePlay').onclick = () => {
       g.audio.init(); g.audio.click();
       const c = this.config(); c.worldMeta = this.menuWorldMeta(c.seedStr);
-      if (c.worldMeta.mpEnabled !== false) {
+      if (c.worldMeta.mpEnabled === true) {
         g.ui.show('scr-mp'); $('mpStatus').textContent = window.Peer ? 'PeerJS ready.' : (window.__peerFailed ? 'PeerJS failed to load — multiplayer unavailable offline.' : 'Loading PeerJS...'); $('mpStatus').className = 'msg';
         $('hostBox').classList.add('hidden'); $('btnStartHost').disabled = true; $('codeBox').textContent = '----';
         return;
       }
       g.startWorld(c);
     };
-    $('tabCreate').onclick = () => { g.audio.click(); this.worldTab = 'create'; this.closeWorldEdit(); this.mountWorldForm('create'); this.showMenu(); };
+    $('tabCreate').onclick = () => {
+      g.audio.click(); this.worldTab = 'create'; this.closeWorldEdit();
+      if (!this.pendingHostSaveId) this.resetCreateForm();
+      this.showMenu();
+    };
     $('tabMyWorlds').onclick = () => { g.audio.click(); this.worldTab = 'worlds'; this.closeWorldEdit(); this.showMenu(); };
     $('tabPublicWorlds').onclick = () => { g.audio.click(); this.worldTab = 'public'; this.closeWorldEdit(); this.refreshPublicWorlds(() => this.showMenu()); };
     $('btnSaveWorldEdit').onclick = () => { g.audio.click(); this.saveEditedWorld(); };
@@ -6403,7 +6422,7 @@ class Menu {
       const idx = WorldSaves.list().find(w => w.id === id);
       const worldMeta = normalizeWorldMeta(Object.assign({}, s.worldMeta, {
         displayName: (s.worldMeta && s.worldMeta.displayName) || (idx && idx.name),
-        mpEnabled: idx && idx.mpEnabled, isPublic: idx && idx.isPublic, roomCode: idx && idx.roomCode
+        mpEnabled: idx && idx.mpEnabled === true, isPublic: !!(idx && idx.isPublic), roomCode: idx && idx.roomCode
       }), (idx && idx.name) || s.seedStr);
       g.startWorld({
         save: s, saveId: id, seed: s.seed, seedStr: s.seedStr, difficulty: s.difficulty ?? 2,
@@ -6427,7 +6446,7 @@ class Menu {
         const idx = WorldSaves.list().find(w => w.id === id);
         const worldMeta = normalizeWorldMeta(Object.assign({}, s.worldMeta, {
           displayName: (s.worldMeta && s.worldMeta.displayName) || (idx && idx.name),
-          mpEnabled: idx && idx.mpEnabled, isPublic: idx && idx.isPublic, roomCode: g.net.code || (idx && idx.roomCode)
+          mpEnabled: idx && idx.mpEnabled === true, isPublic: !!(idx && idx.isPublic), roomCode: g.net.code || (idx && idx.roomCode)
         }), (idx && idx.name) || s.seedStr);
         worldMeta.roomCode = g.net.code;
         g.startWorld({
@@ -6517,7 +6536,7 @@ class Menu {
   }
   resetCreateForm() {
     $('worldName').value = '';
-    $('wMpEnabled').checked = true;
+    $('wMpEnabled').checked = false;
     $('wPublic').checked = false;
     $('wPublicRole').value = NetRoles.VISITOR;
     $('wRoomCode').value = '';
@@ -6530,10 +6549,13 @@ class Menu {
     this.syncMpDependentControls();
   }
   worldMetaFromEntry(w, s) {
-    return normalizeWorldMeta(Object.assign({}, s && s.worldMeta, {
+    const patch = {
       displayName: (s && s.worldMeta && s.worldMeta.displayName) || w.name,
-      mpEnabled: w.mpEnabled, isPublic: w.isPublic, roomCode: w.roomCode
-    }), w.name || w.seedStr || (s && s.seedStr));
+      isPublic: w.isPublic, roomCode: w.roomCode
+    };
+    if (w.mpEnabled === true || w.mpEnabled === false) patch.mpEnabled = w.mpEnabled;
+    else if (s && s.worldMeta && (s.worldMeta.mpEnabled === true || s.worldMeta.mpEnabled === false)) patch.mpEnabled = s.worldMeta.mpEnabled;
+    return normalizeWorldMeta(Object.assign({}, s && s.worldMeta, patch), w.name || w.seedStr || (s && s.seedStr));
   }
   loadWorldIntoForm(w, s) {
     const meta = this.worldMetaFromEntry(w, s);
@@ -6589,7 +6611,7 @@ class Menu {
   applyWorldMetaToForm(meta) {
     meta = normalizeWorldMeta(meta, '');
     $('worldName').value = meta.displayName || '';
-    const mpOn = meta.mpEnabled !== false;
+    const mpOn = meta.mpEnabled === true;
     $('wMpEnabled').checked = mpOn;
     $('wPublic').checked = mpOn && !!meta.isPublic;
     $('wPublicRole').value = meta.publicDefaultRole === NetRoles.OPERATOR ? NetRoles.OPERATOR : NetRoles.VISITOR;
@@ -6617,7 +6639,7 @@ class Menu {
   }
   hostSavedWorld(w) {
     const g = this.g;
-    if (w.mpEnabled === false) { g.toast('Multiplayer disabled', 'Edit the world and enable multiplayer first.', null, 'warn'); return; }
+    if (w.mpEnabled !== true) { g.toast('Multiplayer disabled', 'Edit the world and enable multiplayer first.', null, 'warn'); return; }
     g.audio.init(); g.audio.click();
     this.pendingHostSaveId = w.id;
     const s = WorldSaves.get(w.id);
@@ -6693,12 +6715,12 @@ class Menu {
       const row = mkEl('div', 'world-row');
       const info = mkEl('div', 'world-row-info');
       const kb = w.size ? (w.size / 1024).toFixed(0) + ' KB · ' : '';
-      const mp = w.mpEnabled === false ? ' · SP only' : ' · MP';
+      const mp = w.mpEnabled === true ? ' · MP' : ' · SP only';
       const pub = w.isPublic ? ' · Public' : '';
       info.innerHTML = `<div class="world-row-title">${w.name || w.seedStr || 'World'}</div><div class="world-row-meta">${w.mode || 'Survival'} · ${w.dim || 'overworld'}${mp}${pub} · ${kb}${w.savedAt ? new Date(w.savedAt).toLocaleString() : ''}</div>`;
       const play = mkEl('button', 'small', 'Play');
       const host = mkEl('button', 'small', w.mpEnabled === false ? 'Host' : 'Host');
-      if (w.mpEnabled === false) { host.disabled = true; host.title = 'Multiplayer disabled'; }
+      if (w.mpEnabled !== true) { host.disabled = true; host.title = 'Multiplayer disabled'; }
       const edit = mkEl('button', 'small', 'Edit');
       const del = mkEl('button', 'small', 'Delete');
       play.onclick = e => { e.stopPropagation(); this.loadWorld(w.id); };
