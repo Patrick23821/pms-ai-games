@@ -3658,7 +3658,7 @@ class Mob extends Entity {
     if (this.inLava && !c.fireImmune) { this.fireT = 8; if (this.age % 0.5 < dt) this.hurt(4, null, {}, g); }
     if (!c.fireImmune && touchingBlock(W, this, id => id === B.fire)) this.fireT = Math.max(this.fireT, 8);
     if (this.fireT > 0) { this.fireT -= dt; if (this.inWater) this.fireT = 0; if (!c.fireImmune && Math.floor(this.fireT) !== Math.floor(this.fireT + dt)) this.hurt(1, null, {}, g); if (Math.random() < 0.3) g.fx('flame', this.x, this.y + Math.random() * this.h, this.z); }
-    if (c.burns && g.isDay() && W.sky && !this.inWater && this.y >= W.height(Math.floor(this.x), Math.floor(this.z))) this.fireT = Math.max(this.fireT, 1.5);
+    if (c.burns && !this.inWater && g.sunBurnActive() && g.entityInDirectSun(W, this.x, this.y, this.z, this.h)) this.fireT = Math.max(this.fireT, 1.5);
     if (this.type === 'creaking') { if (g.isDay() || !this.heart || !W.hearts.has(this.heart)) { this.dieCrumble(g); return; } }
     // target selection
     let tgt = g.nearestTarget(this, 24);
@@ -5145,6 +5145,15 @@ class Game {
   dimMismatch() { if (!this.net.isClient) return false; const hostEnt = [...this.net.players.values()].find(p => p.id === 'host'); return hostEnt ? hostEnt.ent.dim !== this.dimName : false; }
   getDim(name) { if (!this.dims[name]) this.dims[name] = new World(name, this.seed, this); return this.dims[name]; }
   isDay() { const t = this.time % 24000; return t < 12600 || t > 23400; }
+  /** Sun height -1..1; burn only when clearly above the horizon (dawn) and before dusk. */
+  sunElevation() { return Math.sin(((this.time % 24000) / 24000) * TAU); }
+  sunBurnActive() { return !!(this.world && this.world.sky && this.sunElevation() > 0.12); }
+  entityInDirectSun(W, x, y, z, h = 1.8) {
+    if (!W || !W.sky) return false;
+    const fx = Math.floor(x), fz = Math.floor(z);
+    if (y < W.height(fx, fz)) return false;
+    return W.skyLightAt(fx, Math.floor(y + h * 0.45), fz) >= 11;
+  }
 
   /* ---------------------- world lifecycle ---------------------- */
   async startWorld(cfg) {
@@ -6580,8 +6589,9 @@ class Menu {
   applyWorldMetaToForm(meta) {
     meta = normalizeWorldMeta(meta, '');
     $('worldName').value = meta.displayName || '';
-    $('wMpEnabled').checked = meta.mpEnabled !== false;
-    $('wPublic').checked = !!meta.isPublic;
+    const mpOn = meta.mpEnabled !== false;
+    $('wMpEnabled').checked = mpOn;
+    $('wPublic').checked = mpOn && !!meta.isPublic;
     $('wPublicRole').value = meta.publicDefaultRole === NetRoles.OPERATOR ? NetRoles.OPERATOR : NetRoles.VISITOR;
     $('wRoomCode').value = meta.roomCode || '';
     this.syncMpDependentControls();
