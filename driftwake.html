@@ -32543,7 +32543,7 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       maxRange: 520,
       headshotMult: 2,
       auto: !1,
-      zoomFov: 20,
+      zoomFov: 24,
       scope: !0,
       color: "#b48cff",
       adsSpeed: 1.6,
@@ -32612,8 +32612,8 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       maxRange: 390,
       headshotMult: 1.75,
       auto: !1,
-      zoomFov: 38,
-      scope: !1,
+      zoomFov: 30,
+      scope: !0,
       color: "#7db8ff",
       adsSpeed: 1.2,
       idealRange: [30, 145],
@@ -32846,7 +32846,7 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       maxRange: 560,
       headshotMult: 2,
       auto: !1,
-      zoomFov: 16,
+      zoomFov: 20,
       scope: !0,
       color: "#2c3346",
       adsSpeed: 1.75,
@@ -32966,7 +32966,7 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       maxRange: 500,
       headshotMult: 2.4,
       auto: !1,
-      zoomFov: 24,
+      zoomFov: 28,
       scope: !0,
       color: "#9b5de5",
       adsSpeed: 1.4,
@@ -32996,6 +32996,175 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       adsSpeed: 0.85,
       idealRange: [2, 22],
       recoil: 0.07,
+    },
+    railgun: {
+      id: "railgun",
+      name: "Ion Railgun",
+      archetype: "sniper",
+      ammoType: "heavy",
+      damage: 115,
+      pellets: 1,
+      fireInterval: 1.5,
+      magSize: 3,
+      reloadTime: 2.8,
+      spread: 3.2,
+      adsSpread: 0.01,
+      bloomPerShot: 0,
+      range: 300,
+      maxRange: 600,
+      headshotMult: 2.2,
+      auto: !1,
+      zoomFov: 14,
+      scope: !0,
+      color: "#00e5ff",
+      adsSpeed: 1.5,
+      idealRange: [40, 280],
+      recoil: 0.08,
+    },
+    slugger: {
+      id: "slugger",
+      name: "Tsunami Slug Shotgun",
+      archetype: "shotgun",
+      ammoType: "shells",
+      damage: 88,
+      pellets: 1,
+      fireInterval: 0.72,
+      magSize: 5,
+      reloadTime: 2.4,
+      spread: 2.2,
+      adsSpread: 0.35,
+      bloomPerShot: 0.4,
+      range: 48,
+      maxRange: 120,
+      headshotMult: 1.85,
+      auto: !1,
+      zoomFov: 58,
+      scope: !1,
+      color: "#ffaa00",
+      adsSpeed: 1.1,
+      idealRange: [5, 45],
+      recoil: 0.075,
+    },
+    phantom: {
+      id: "phantom",
+      name: "Phantom Suppressed AR",
+      archetype: "rifle",
+      ammoType: "medium",
+      damage: 27,
+      pellets: 1,
+      fireInterval: 0.125,
+      magSize: 32,
+      reloadTime: 1.7,
+      spread: 0.95,
+      adsSpread: 0.28,
+      bloomPerShot: 0.18,
+      range: 130,
+      maxRange: 320,
+      headshotMult: 1.65,
+      auto: !0,
+      zoomFov: 48,
+      scope: !1,
+      color: "#4a5d6e",
+      adsSpeed: 0.95,
+      idealRange: [10, 95],
+      recoil: 0.028,
+    },
+    dualies: {
+      id: "dualies",
+      name: "Twin Torrent Dual Pistols",
+      archetype: "pistol",
+      ammoType: "light",
+      damage: 36,
+      pellets: 2,
+      fireInterval: 0.22,
+      magSize: 24,
+      reloadTime: 1.5,
+      spread: 1.8,
+      adsSpread: 0.75,
+      bloomPerShot: 0.4,
+      range: 65,
+      maxRange: 190,
+      headshotMult: 1.75,
+      auto: !1,
+      zoomFov: 58,
+      scope: !1,
+      color: "#e63946",
+      adsSpeed: 0.8,
+      idealRange: [4, 45],
+      recoil: 0.035,
+    },
+    blaster: {
+      id: "blaster",
+      name: "Volcano Cluster Launcher",
+      archetype: "rocket",
+      ammoType: "rockets",
+      damage: 95,
+      pellets: 1,
+      fireInterval: 1.25,
+      magSize: 2,
+      reloadTime: 3.0,
+      spread: 1.3,
+      adsSpread: 0.4,
+      bloomPerShot: 0,
+      range: 110,
+      maxRange: 220,
+      headshotMult: 1,
+      auto: !1,
+      zoomFov: 55,
+      scope: !1,
+      color: "#ff4500",
+      adsSpeed: 1.35,
+      idealRange: [15, 75],
+      projectile: { speed: 52, gravity: 6, radius: 6.5, structureDamage: 520 },
+      recoil: 0.09,
+    },
+    hyperburst: {
+      id: "hyperburst",
+      name: "Tempest Burst Rifle",
+      archetype: "rifle",
+      ammoType: "medium",
+      damage: 34,
+      pellets: 1,
+      fireInterval: 0.08,
+      magSize: 30,
+      reloadTime: 2.1,
+      spread: 1.2,
+      adsSpread: 0.18,
+      bloomPerShot: 0.15,
+      range: 140,
+      maxRange: 340,
+      headshotMult: 1.8,
+      auto: !0,
+      zoomFov: 45,
+      scope: !1,
+      color: "#9d4edd",
+      adsSpeed: 1.05,
+      idealRange: [15, 110],
+      recoil: 0.032,
+    },
+    compactpdw: {
+      id: "compactpdw",
+      name: "Neon Stinger PDW",
+      archetype: "smg",
+      ammoType: "light",
+      damage: 14,
+      pellets: 1,
+      fireInterval: 0.052,
+      magSize: 45,
+      reloadTime: 1.6,
+      spread: 2.2,
+      adsSpread: 1.1,
+      bloomPerShot: 0.14,
+      range: 35,
+      maxRange: 125,
+      headshotMult: 1.45,
+      auto: !0,
+      zoomFov: 60,
+      scope: !1,
+      color: "#f72585",
+      adsSpeed: 0.7,
+      idealRange: [2, 28],
+      recoil: 0.025,
     },
   },
   e0 = {
@@ -33803,27 +33972,38 @@ class KC {
           K = H_(e.x, e.y, e.z, t.x, t.y, t.z, j, h);
         K >= 0 && K < h && ((h = K), (d = O), (f = null), (N = e.y + t.y * K > O.pos.y + O.height - 0.32));
       }
-    if (!(t.y >= 0 && e.y > 20)) {
+    if (!(t.y > 0.85 && e.y > 150)) {
       let E = 0,
-        P = e.y - _t(e.x, e.z) > 0;
-      for (let k = 1.25; k <= h + 1.25; k += 1.25) {
-        const G = Math.min(k, h),
-          X = e.x + t.x * G,
-          ee = e.y + t.y * G,
-          j = e.z + t.z * G,
-          K = ee - _t(X, j) > 0;
-        if (P && !K) {
-          let F = E,
-            W = G;
-          for (let se = 0; se < 7; se++) {
-            const le = (F + W) / 2;
-            e.y + t.y * le - _t(e.x + t.x * le, e.z + t.z * le) > 0 ? (F = le) : (W = le);
+        P = e.y - _t(e.x, e.z) > 0.02;
+      if (!P && e.y - _t(e.x, e.z) >= -1.0) {
+        h = 0.05;
+        f = null;
+        d = null;
+        m = !0;
+        N = !1;
+      } else {
+        const step = Math.min(0.8, Math.max(0.25, h / 70));
+        for (let k = step; k <= h + step; k += step) {
+          const G = Math.min(k, h),
+            X = e.x + t.x * G,
+            ee = e.y + t.y * G,
+            j = e.z + t.z * G,
+            K = ee - _t(X, j) > 0;
+          if (P && !K) {
+            let F = E,
+              W = G;
+            for (let se = 0; se < 8; se++) {
+              const le = (F + W) / 2;
+              e.y + t.y * le - _t(e.x + t.x * le, e.z + t.z * le) > 0 ? (F = le) : (W = le);
+            }
+            const ue = (F + W) / 2;
+            ue < h && ((h = ue), (f = null), (d = null), (m = !0), (N = !1));
+            break;
           }
-          const ue = (F + W) / 2;
-          ue < h && ((h = ue), (f = null), (d = null), (m = !0), (N = !1));
-          break;
+          if (G >= h) break;
+          P = K;
+          E = G;
         }
-        if ((!K && !P && k > 1.25) || ((P = K), (E = G), G >= h)) break;
       }
     }
     return !f && !d && !m
@@ -34477,11 +34657,13 @@ class tR {
         c.visible = h * h + f * f <= o;
       }
     }
-    for (const a of this.windTrees)
-      !a.mesh.parent ||
-        !a.mesh.visible ||
-        ((a.mesh.rotation.z = Math.sin(e * 0.72 + a.phase) * 0.018),
-        (a.mesh.rotation.x = Math.cos(e * 0.58 + a.phase * 1.7) * 0.012));
+    for (let i = 0; i < this.windTrees.length; i++) {
+      const a = this.windTrees[i];
+      if (a.mesh.parent && a.mesh.visible) {
+        a.mesh.rotation.z = Math.sin(e * 0.72 + a.phase) * 0.018;
+        a.mesh.rotation.x = Math.cos(e * 0.58 + a.phase * 1.7) * 0.012;
+      }
+    }
   }
   remove(e) {
     if (!this.props.has(e)) return;
@@ -34908,6 +35090,45 @@ function dS(r) {
       e.add(Rt(0.08, 0.14, 0.12, "#3a1505", 0, -0.04, 0.08));
       break;
     }
+    case "railgun": {
+      const a = Ar(0.048, 0.048, 0.52, "#00e5ff", 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.07, 0.42), e.add(a));
+      e.add(Rt(0.08, 0.08, 0.16, "#0a2540", 0, 0.05, 0.15));
+      break;
+    }
+    case "slugger": {
+      const a = Ar(0.052, 0.052, 0.36, "#f59e0b", 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.06, 0.3), e.add(a));
+      e.add(Rt(0.09, 0.1, 0.18, "#2d1600", 0, -0.02, 0.08));
+      break;
+    }
+    case "phantom": {
+      const a = Ar(0.038, 0.038, 0.34, "#1e293b", 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.05, 0.5), e.add(a));
+      e.add(Rt(0.065, 0.055, 0.16, "#334155", 0, 0.1, 0.18));
+      break;
+    }
+    case "dualies": {
+      e.add(Rt(0.05, 0.16, 0.06, "#dc2626", 0.08, -0.06, 0.08));
+      e.add(Rt(0.05, 0.16, 0.06, "#dc2626", -0.08, -0.06, 0.08));
+      break;
+    }
+    case "blaster": {
+      const a = Ar(0.12, 0.12, 0.42, "#ea580c", 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.09, 0.35), e.add(a));
+      e.add(Rt(0.14, 0.1, 0.16, "#431407", 0, 0.09, 0.12));
+      break;
+    }
+    case "hyperburst": {
+      e.add(Rt(0.07, 0.08, 0.28, "#7c3aed", 0, 0.11, 0.12));
+      e.add(Rt(0.05, 0.14, 0.05, "#4c1d95", 0, -0.07, 0.18));
+      break;
+    }
+    case "compactpdw": {
+      e.add(Rt(0.065, 0.12, 0.14, "#db2777", 0, -0.08, 0.2));
+      e.add(Rt(0.07, 0.05, 0.22, "#831843", 0, 0.09, 0.08));
+      break;
+    }
   }
   return e;
 }
@@ -35261,13 +35482,27 @@ class dR {
   chainSeq = 0;
   chainClock = new Map();
   schedule(e, t) {
-    const n = Math.max(this.time, this.chainClock.get(t) ?? 0) + 0.3;
-    (this.chainClock.set(t, n), this.pending.set(e, n), (e.chain = t));
+    this.scheduleWave([e], t);
+  }
+  scheduleWave(pieces, t) {
+    if (!pieces.length) return;
+    const waveDelay = 0.25;
+    const n = Math.max(this.time, this.chainClock.get(t) ?? this.time) + waveDelay;
+    this.chainClock.set(t, n);
+    for (const a of pieces) {
+      this.pending.set(a, n);
+      a.chain = t;
+    }
   }
   checkFrom(e, t = ++this.chainSeq) {
     if (this.bulk || !e.length) return;
     const n = new Map();
-    for (const a of e) !this.map.has(a.key) || this.pending.has(a) || this.componentGrounded(a, n) || this.schedule(a, t);
+    const unsupported = [];
+    for (const a of e) {
+      if (!this.map.has(a.key) || this.pending.has(a)) continue;
+      if (!this.componentGrounded(a, n)) unsupported.push(a);
+    }
+    this.scheduleWave(unsupported, t);
   }
   supportFor(e) {
     const t = this.boundsOf(e),
@@ -35327,13 +35562,25 @@ class dR {
       const t = new Map(),
         n = [];
       for (const [a, o] of this.pending) o <= this.time && n.push(a);
-      for (const a of n) {
-        if ((this.pending.delete(a), !this.map.has(a.key))) continue;
-        if (this.componentGrounded(a, t)) continue;
-        const o = this.neighbors(a, []);
-        (this.onCollapse?.(a), this.remove(a, !0, !0));
-        for (const c of o) t.delete(c);
-        this.checkFrom(o, a.chain);
+      if (n.length) {
+        const nextWaves = new Map();
+        for (const a of n) {
+          this.pending.delete(a);
+          if (!this.map.has(a.key)) continue;
+          if (this.componentGrounded(a, t)) continue;
+          const o = this.neighbors(a, []);
+          (this.onCollapse?.(a), this.remove(a, !0, !0));
+          for (const c of o) t.delete(c);
+          const ch = a.chain ?? 0;
+          if (!nextWaves.has(ch)) nextWaves.set(ch, new Set());
+          const s = nextWaves.get(ch);
+          for (const c of o) {
+            if (this.map.has(c.key) && !this.pending.has(c)) s.add(c);
+          }
+        }
+        for (const [ch, s] of nextWaves) {
+          if (s.size) this.checkFrom([...s], ch);
+        }
       }
       this.pending.size || this.chainClock.clear();
     }
@@ -35612,7 +35859,16 @@ class xR {
     const a = this.curChain ?? ++this.chainSeq;
     ((this.curChain = null), this.graph(e));
     const o = new Map();
-    for (const c of t.nbrs) c.destroyed || this.pending.has(c) || this.supported(c, o) || this.schedule(c, a);
+    const unsupported = [];
+    for (const c of t.nbrs) {
+      if (!c.destroyed && !this.pending.has(c) && !this.supported(c, o)) unsupported.push(c);
+    }
+    for (const p of e.pieces) {
+      if (!p.destroyed && !this.pending.has(p) && !this.supported(p, o)) {
+        if (!unsupported.includes(p)) unsupported.push(p);
+      }
+    }
+    this.scheduleWave(unsupported, a);
   }
   onCollapse = null;
   pending = new Map();
@@ -35638,7 +35894,9 @@ class xR {
     const n = Math.min(e.maxX, t.maxX) - Math.max(e.minX, t.minX),
       a = Math.min(e.maxY, t.maxY) - Math.max(e.minY, t.minY),
       o = Math.min(e.maxZ, t.maxZ) - Math.max(e.minZ, t.minZ);
-    return n < -0.3 || a < -0.3 || o < -0.3 ? !1 : (n > 0.1) + (a > 0.1) + (o > 0.1) >= 2;
+    if (n < -0.3 || a < -0.3 || o < -0.3) return !1;
+    const c = (n > 0.08) + (a > 0.08) + (o > 0.08);
+    return c >= 2 || (c === 1 && n > -0.15 && a > -0.15 && o > -0.15);
   }
   groundedAt(e, t) {
     const n = e.box,
@@ -35674,6 +35932,7 @@ class xR {
     if (!n) for (const o of t) o.box.minY <= a + 0.5 && (o.anchor = !0);
   }
   supported(e, t) {
+    if (e.destroyed) return !1;
     const n = t?.get(e);
     if (n !== void 0) return n;
     const a = [e],
@@ -35681,7 +35940,7 @@ class xR {
     let c = !1;
     for (let h = 0; h < a.length && h < 3e3; h++) {
       const f = a[h];
-      if (f.anchor) {
+      if (f.anchor && !f.destroyed) {
         c = !0;
         break;
       }
@@ -35691,20 +35950,62 @@ class xR {
     return c;
   }
   schedule(e, t) {
-    const n = Math.max(this.time, this.chainClock.get(t) ?? 0) + 0.3;
-    (this.chainClock.set(t, n), this.pending.set(e, n), (e.chain = t), (e.collapsing = !0));
+    this.scheduleWave([e], t);
+  }
+  scheduleWave(pieces, t) {
+    if (!pieces.length) return;
+    const waveDelay = 0.25;
+    const n = Math.max(this.time, this.chainClock.get(t) ?? this.time) + waveDelay;
+    this.chainClock.set(t, n);
+    for (const e of pieces) {
+      this.pending.set(e, n);
+      e.chain = t;
+      e.collapsing = !0;
+    }
   }
   updateCollapse(e) {
     if (((this.time += e), this.pending.size)) {
       const t = [];
       for (const [n, a] of this.pending) a <= this.time && t.push(n);
-      for (const n of t) {
-        if ((this.pending.delete(n), n.destroyed)) continue;
-        if (this.supported(n)) {
+      if (t.length) {
+        const nextChains = new Map();
+        for (const n of t) {
+          this.pending.delete(n);
+          if (n.destroyed) continue;
+          if (this.supported(n)) {
+            n.collapsing = !1;
+            continue;
+          }
+          (this.spawnDebris(n), this.onCollapse?.(n), HB?.release?.(n));
+          const ch = n.chain ?? ++this.chainSeq;
+          const bldg = n.building;
+          const cbox = bldg.removeColliders(n, this.physics);
+          cbox && this.onChanged(cbox);
+          this.dirty.add(bldg);
+          n.destroyed = !0;
           n.collapsing = !1;
-          continue;
+          this.graph(bldg);
+          if (!nextChains.has(ch)) nextChains.set(ch, []);
+          const list = nextChains.get(ch);
+          for (const c of n.nbrs) {
+            if (!c.destroyed && !this.pending.has(c) && !list.includes(c)) list.push(c);
+          }
         }
-        (this.spawnDebris(n), this.onCollapse?.(n), HB?.release?.(n), (this.curChain = n.chain), n.building.destroyPiece(n));
+        for (const [ch, nbrs] of nextChains) {
+          const o = new Map();
+          const unsupported = [];
+          for (const c of nbrs) {
+            if (!c.destroyed && !this.pending.has(c) && !this.supported(c, o)) unsupported.push(c);
+          }
+          if (unsupported.length && nbrs[0]?.building) {
+            for (const p of nbrs[0].building.pieces) {
+              if (!p.destroyed && !this.pending.has(p) && !this.supported(p, o)) {
+                if (!unsupported.includes(p)) unsupported.push(p);
+              }
+            }
+          }
+          this.scheduleWave(unsupported, ch);
+        }
       }
       this.pending.size || this.chainClock.clear();
     }
@@ -36242,8 +36543,8 @@ class _R {
   animating = [];
   root = new ut();
   cullTimer = 0;
-  constructor(e) {
-    ((this.root.name = "pickups"), e.add(this.root));
+  constructor(e, physics = null) {
+    ((this.root.name = "pickups"), e.add(this.root), (this.physics = physics));
   }
   grid = new Map();
   gk(e, t) {
@@ -36326,6 +36627,7 @@ class _R {
     );
   }
   update(e, t, n) {
+    const phys = this.physics || GAME?.physics;
     if (((this.cullTimer -= n), this.cullTimer <= 0)) {
       this.cullTimer = 0.25;
       const a = 34225;
@@ -36334,9 +36636,37 @@ class _R {
           h = o.pos.y - t.y,
           f = o.pos.z - t.z;
         o.group.visible = c * c + f * f + h * h < a;
+        if (!o.group.visible && phys) {
+          const floorY = Math.max(_t(o.pos.x, o.pos.z), phys.groundHeight(o.pos.x, o.pos.z, o.pos.y + 0.1));
+          if (o.pos.y > floorY + 0.05) {
+            o.pos.y = floorY;
+            o.velY = 0;
+            o.group.position.y = o.pos.y;
+          }
+        }
       }
     }
-    for (const a of this.items) a.group.visible && a.update(e);
+    for (const a of this.items) {
+      if (a.group.visible) {
+        if (phys) {
+          const floorY = Math.max(_t(a.pos.x, a.pos.z), phys.groundHeight(a.pos.x, a.pos.z, a.pos.y + 0.1));
+          if (a.pos.y > floorY + 0.04) {
+            a.velY = (a.velY ?? 0) - 24 * n;
+            a.pos.y = Math.max(floorY, a.pos.y + a.velY * n);
+            if (a.pos.y <= floorY) {
+              a.pos.y = floorY;
+              a.velY = 0;
+            }
+            a.group.position.y = a.pos.y;
+          } else if (a.pos.y < floorY - 0.05) {
+            a.pos.y = floorY;
+            a.velY = 0;
+            a.group.position.y = a.pos.y;
+          }
+        }
+        a.update(e);
+      }
+    }
     for (let i = this.animating.length - 1; i >= 0; i--) {
       const a = this.animating[i];
       a.elapsed += n;
@@ -36391,19 +36721,26 @@ const bR = [
     ["lmg", 5],
     ["autoshotgun", 6],
     ["lever", 6],
-    ["rpg", 1.5],
+    ["rpg", 0.5],
     ["tactical", 9],
     ["drum", 7],
     ["heavyshot", 6],
     ["revolver", 7],
     ["minigun", 3],
     ["heavysniper", 2.5],
-    ["launcher", 2],
+    ["launcher", 0.7],
     ["dud", 5],
     ["plasma", 8],
     ["burstsmg", 8],
     ["widowmaker", 4],
     ["dragon", 7],
+    ["railgun", 3.5],
+    ["slugger", 6],
+    ["phantom", 8],
+    ["dualies", 8],
+    ["blaster", 0.7],
+    ["hyperburst", 7],
+    ["compactpdw", 8],
   ],
   SR = [
     ["bandage", 30],
@@ -36411,10 +36748,10 @@ const bR = [
     ["minifizz", 32],
     ["shieldfizz", 20],
     ["tideflask", 3],
-    ["grenade", 18],
+    ["grenade", 10],
     ["shockwave", 20],
   ],
-  MR = { light: [30, 60], medium: [20, 40], shells: [6, 12], heavy: [8, 16], rockets: [2, 4] };
+  MR = { light: [30, 60], medium: [20, 40], shells: [6, 12], heavy: [8, 16], rockets: [1, 2] };
 function P0(r, e) {
   let t = 0;
   for (const a of e) t += a[1];
@@ -36458,7 +36795,9 @@ function supplyLoot(r) {
 }
 function U0(r, e = 0) {
   const t = Ho[P0(r, bR)];
-  return { kind: "weapon", def: t, rarity: t.id === "rpg" ? (r.chance(0.4) ? "legendary" : "epic") : TR(r, e), ammo: t.magSize };
+  const isExplosive = t.id === "rpg" || t.id === "launcher" || t.id === "blaster";
+  const rarity = isExplosive ? (r.chance(0.4) ? "legendary" : "epic") : TR(r, e);
+  return { kind: "weapon", def: t, rarity, ammo: t.magSize };
 }
 function Ih(r, e) {
   const t =
@@ -36468,7 +36807,7 @@ function Ih(r, e) {
         ["medium", 30],
         ["heavy", 30],
         ["shells", 22],
-        ["rockets", 10],
+        ["rockets", 3],
       ]),
     [n, a] = MR[t];
   return { kind: "ammo", ammoType: t, amount: r.int(n, a) };
@@ -39565,23 +39904,38 @@ class NR {
 function stormMaterial() {
   return new Os({
     uniforms: { time: { value: 0 }, radius: { value: 600 }, opacity: { value: 0.42 } },
-    vertexShader:
-      "varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+    vertexShader: `varying vec2 vUv;
+varying vec3 vW;
+#include <common>
+#include <logdepthbuf_pars_vertex>
+void main(){
+  vUv = uv;
+  vec4 w = modelMatrix * vec4(position, 1.0);
+  vW = w.xyz;
+  gl_Position = projectionMatrix * viewMatrix * w;
+  #include <logdepthbuf_vertex>
+}`,
     fragmentShader: `uniform float time, radius, opacity; varying vec2 vUv; varying vec3 vW;
+#include <common>
+#include <logdepthbuf_pars_fragment>
 float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y); }
 void main(){
-  if (vW.y < -0.55) discard;
+  #include <logdepthbuf_fragment>
   float u = vUv.x * radius * 6.2831853 / 28.0;
   float y = vW.y;
+  float topProg = smoothstep(0.4, 0.96, vUv.y);
+  float topFade = mix(1.0, 0.5, topProg);
+  float rimFade = smoothstep(1.0, 0.96, vUv.y);
+  float fade = topFade * rimFade;
   float n = vn(vec2(u * 0.7, y * 0.035 - time * 0.3)) * 0.6 + vn(vec2(u * 2.1 + time * 0.25, y * 0.1 - time * 0.8)) * 0.4;
-  float b = smoothstep(0.62, 1.0, sin(y * 0.16 - time * 2.4 + n * 7.0) * 0.5 + 0.5);
-  float s = smoothstep(0.93, 1.0, vn(vec2(u * 6.0, y * 0.5 - time * 6.0)));
+  float b = smoothstep(0.62, 1.0, sin(y * 0.16 - time * 2.4 + n * 7.0) * 0.5 + 0.5) * topFade;
+  float s = smoothstep(0.93, 1.0, vn(vec2(u * 6.0, y * 0.5 - time * 6.0))) * topFade;
   vec3 col = mix(vec3(0.42, 0.08, 0.95), vec3(1.0, 0.22, 0.72), n);
   col = mix(col, vec3(0.35, 0.95, 1.0), b * 0.55);
-  col *= 1.2 + b * 2.2 + s * 4.0;
-  float a = opacity * (0.45 + 0.55 * n + b * 0.4) * (1.0 - smoothstep(220.0, 470.0, y)) * smoothstep(-0.55, 1.2, y);
+  col *= (1.2 + b * 2.2 + s * 4.0) * topFade;
+  float a = opacity * (0.45 + 0.55 * n + b * 0.4) * fade * smoothstep(-150.0, -10.0, y);
   gl_FragColor = vec4(col, clamp(a, 0.0, 0.92));
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -39598,15 +39952,11 @@ class LR {
       (this.rng = t),
       (this.next = this.pickNext(this.cur, ws[0].radius)),
       (this.wallMat = stormMaterial()));
-    const n = new fa(1, 1, 520, 96, 1, !0);
+    const n = new fa(1, 1, 960, 96, 1, !0);
     ((this.wall = new je(n, this.wallMat)),
-      (this.wall.position.y = 230),
-      (this.wall.renderOrder = 5),
-      e.add(this.wall));
-    const a = new zs({ color: 16777215, transparent: !0, opacity: 0.16, side: Di, depthWrite: !1 });
-    ((this.nextWall = new je(new fa(1, 1, 200, 96, 1, !0), a)),
-      (this.nextWall.position.y = 80),
-      (this.nextWall.renderOrder = 4),
+      (this.wall.position.y = 320),
+      (this.wall.renderOrder = 10),
+      e.add(this.wall),
       this.syncVisuals());
   }
   scene;
@@ -39619,7 +39969,6 @@ class LR {
   next;
   warned = !1;
   wall;
-  nextWall;
   wallMat;
   t = 0;
   ph = ws;
@@ -39688,14 +40037,9 @@ class LR {
     ((this.wall.position.x = this.cur.x),
       (this.wall.position.z = this.cur.z),
       this.wall.scale.set(Math.max(0.3, this.cur.r), 1, Math.max(0.3, this.cur.r)));
-    const e = this.state !== "closed" && Math.abs(this.next.r - this.cur.r) > 0.5;
-    ((this.nextWall.visible = e),
-      (this.nextWall.position.x = this.next.x),
-      (this.nextWall.position.z = this.next.z),
-      this.nextWall.scale.set(Math.max(0.3, this.next.r), 1, Math.max(0.3, this.next.r)));
   }
   setVisible(e) {
-    ((e = e && !this.off), (this.wall.visible = e), (this.nextWall.visible = e && this.state !== "closed"));
+    ((e = e && !this.off), (this.wall.visible = e));
   }
   isInside(e, t, n = "cur", a = 0) {
     if (this.off) return !0;
@@ -39713,11 +40057,8 @@ class LR {
   }
   dispose() {
     (this.scene.remove(this.wall),
-      this.scene.remove(this.nextWall),
       this.wall.geometry.dispose(),
-      this.nextWall.geometry.dispose(),
-      this.wallMat.dispose(),
-      this.nextWall.material.dispose());
+      this.wallMat.dispose());
   }
 }
 const Jp = 5;
@@ -40981,6 +41322,18 @@ const fh = {
     minigun: 5,
     heavysniper: 4,
     launcher: 4,
+    railgun: 5,
+    slugger: 4,
+    phantom: 5,
+    dualies: 3,
+    blaster: 4,
+    hyperburst: 5,
+    compactpdw: 4,
+    plasma: 4,
+    burstsmg: 4,
+    widowmaker: 5,
+    dragon: 5,
+    dud: 2,
   },
   ic = new H(),
   dh = new H(),
@@ -41226,7 +41579,7 @@ class IR {
       case "weapon": {
         if (t.slots.indexOf(null) >= 0) return !0;
         const a = this.worstWeaponSlot();
-        return a >= 0 && fh[n.def.id] > fh[t.slots[a].def.id];
+        return a >= 0 && (fh[n.def.id] ?? 3) > (fh[t.slots[a].def.id] ?? 3);
       }
       case "consumable":
         return (
@@ -41248,7 +41601,7 @@ class IR {
     for (const a of e.weaponSlots()) {
       const o = e.slots[a];
       if (!o || o.kind !== "weapon") continue;
-      const c = fh[o.def.id];
+      const c = fh[o.def.id] ?? 3;
       c < n && ((n = c), (t = a));
     }
     return t;
@@ -41284,7 +41637,7 @@ class IR {
       const c = t.slots[o];
       if (!c || c.kind !== "weapon" || !(c.ammo > 0 || t.ammo[c.def.ammoType] > 0)) continue;
       const [f, d] = c.def.idealRange;
-      let m = fh[c.def.id];
+      let m = fh[c.def.id] ?? 3;
       (e >= f && e <= d ? (m += 4) : (m -= Math.min(3, Math.abs(e < f ? f - e : e - d) / 15)),
         m > a && ((a = m), (n = o)));
     }
@@ -41568,6 +41921,16 @@ class FR {
       (this.pitch -= a.dy * y),
       (this.pitch = Math.max(_n.minPitch, Math.min(_n.maxPitch, this.pitch)))),
       n.alive && ((n.yaw = this.yaw), (n.pitch = this.pitch)));
+    if (!n.alive && this.spectate && this.spectate.alive) {
+      if (Math.abs(a.dx) > 0.001 || Math.abs(a.dy) > 0.001) {
+        this.userLookTimer = 2;
+      } else if (this.userLookTimer > 0) {
+        this.userLookTimer -= e;
+      } else {
+        this.yaw = jp(this.yaw, this.spectate.yaw, Math.min(1, e * 6));
+        this.pitch += ((this.spectate.pitch ?? 0) * 0.4 - this.pitch) * Math.min(1, e * 6);
+      }
+    }
     const b = im.set(Math.sin(this.yaw), 0, Math.cos(this.yaw)),
       A = J_.set(-Math.cos(this.yaw), 0, Math.sin(this.yaw));
     let S = 0,
@@ -41593,7 +41956,6 @@ class FR {
       !n.alive || !a.locked)
     ) {
       t.setTrajectory?.(null, !1);
-      this.updateCamera(e, t);
       return;
     }
     const T = ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6"];
@@ -41667,7 +42029,6 @@ class FR {
         D && (this.prompt = `[F] Edit ${D.spec.type} - ${D.spec.type === "ramp" ? "rotate" : D.spec.type === "floor" ? (D.spec.variant === "hole" ? "close hole" : "cut hole") : { solid: "door", door: "window", window: "solid" }[D.spec.variant ?? "solid"]}`);
       }
     }
-    this.updateCamera(e, t);
   }
   spectate = null;
   updateCamera(e, t) {
@@ -41690,8 +42051,9 @@ class FR {
       h = kR.set(Math.sin(this.yaw) * c, Math.sin(this.pitch), Math.cos(this.yaw) * c),
       f = J_.set(-Math.cos(this.yaw), 0, Math.sin(this.yaw)),
       d = n.crouching || n.sliding,
-      m = n.mode === "ground" ? (d ? 1.15 : _n.height) : 1.2,
-      g = Q_.set(n.pos.x, n.pos.y + m, n.pos.z),
+      m = n.mode === "ground" ? (d ? 1.15 : _n.height) : 1.2;
+    this.camHeight = this.camHeight === void 0 ? m : this.camHeight + (m - this.camHeight) * Math.min(1, e * 14);
+    const g = Q_.set(n.pos.x, n.pos.y + this.camHeight, n.pos.z),
       v = n.mode === "ground" ? _n.shoulder + (_n.adsShoulder - _n.shoulder) * o : 0;
     g.addScaledVector(f, v);
     const y = n.mode === "ground" ? _n.distance + (_n.adsDistance - _n.distance) * o : 6.5,
@@ -41699,16 +42061,22 @@ class FR {
       A = y + b,
       S = im.copy(h).multiplyScalar(-1),
       _ = t.physics.raycast(g, S, A + 0.3, null, null, !1),
-      T = _ ? Math.max(0.35, _.dist - 0.3) : A,
-      R = T < this.camDist ? _n.collisionTighten : _n.collisionRecover;
-    ((this.camDist += (T - this.camDist) * Math.min(1, e * R)),
+      T = _ ? Math.max(0.35, _.dist - 0.25) : A;
+    this.targetCamDist = this.targetCamDist === void 0 ? A : this.targetCamDist;
+    if (T < this.targetCamDist) {
+      this.targetCamDist = T;
+    } else {
+      this.targetCamDist += (T - this.targetCamDist) * Math.min(1, e * 8);
+    }
+    const R = T < this.camDist ? Math.min(1, e * 22) : Math.min(1, e * 9);
+    ((this.camDist += (this.targetCamDist - this.camDist) * R),
       a.position.copy(g).addScaledVector(S, this.camDist),
       a.lookAt(g.x + h.x * 40, g.y + h.y * 40, g.z + h.z * 40));
     const w = n.inventory.activeWeapon,
       D = (w ? _n.fov + (w.def.zoomFov - _n.fov) * o : _n.fov) + (b > 0 ? 7 * (1 - o) : 0);
     ((this.fov += (D - this.fov) * Math.min(1, e * 18)),
       Math.abs(a.fov - this.fov) > 0.02 && ((a.fov = this.fov), a.updateProjectionMatrix()),
-      n.model.setActive(n.alive && this.camDist > 0.9),
+      n.model.setActive(n.alive && this.camDist > 0.9 && (!w?.def?.scope || o <= 0.05)),
       t.ctx.audio.listenerPos.copy(a.position),
       (t.ctx.audio.listenerYaw = this.yaw));
   }
@@ -42408,7 +42776,7 @@ class XR {
           structureDamage: 260,
         });
       }),
-      (this.pickups = new _R(this.scene)),
+      (this.pickups = new _R(this.scene, this.physics)),
       (this.effects = new CR(this.scene)),
       (this.mapGen = new AR(this.scene, this.statics, this.props, this.pickups, this.rng)),
       this.mapGen.generate(),
@@ -42423,8 +42791,10 @@ class XR {
       f = this.rng.range(-320, 320),
       d = new H(Math.cos(h), 0, Math.sin(h)),
       m = new H(-d.z, 0, d.x),
-      g = m.clone().multiplyScalar(f).addScaledVector(d, -Ci.ferryStartDistance).setY(Ci.ferryAltitude),
-      v = m.clone().multiplyScalar(f).addScaledVector(d, Ci.ferryStartDistance).setY(Ci.ferryAltitude);
+      maxSafeChord = Math.sqrt(Math.max(100, (this.zone.cur.r - 80) ** 2 - f * f)),
+      ferryDist = Math.min(Ci.ferryStartDistance, maxSafeChord, 1260),
+      g = m.clone().multiplyScalar(f).addScaledVector(d, -ferryDist).setY(Ci.ferryAltitude),
+      v = m.clone().multiplyScalar(f).addScaledVector(d, ferryDist).setY(Ci.ferryAltitude);
     const islandR = xt.islandRadius * 0.98,
       pathChord = Math.sqrt(Math.max(0, islandR * islandR - f * f)),
       p1 = { x: m.x * f - d.x * pathChord, z: m.z * f - d.z * pathChord },
@@ -42954,12 +43324,17 @@ class XR {
     const isShockwave = def?.id === "shockwave" || !!def?.shockwave;
     let t, n;
     if (aimDir && aimOrigin) {
-      n = e.eyePos(new H()).addScaledVector(aimDir, 0.4);
-      const rayHit = this.physics.raycast(aimOrigin, aimDir, 120, this.rayTargets?.(), e);
-      const targetPoint = rayHit ? rayHit.point : new H().copy(aimOrigin).addScaledVector(aimDir, 120);
-      t = new H().subVectors(targetPoint, n);
-      if (t.length() < 0.8) t.copy(aimDir);
-      else t.normalize();
+      if (isShockwave && aimDir.y < -0.45) {
+        n = new H(e.pos.x, e.pos.y + 0.6, e.pos.z);
+        t = aimDir.clone().normalize();
+      } else {
+        n = e.eyePos(new H()).addScaledVector(aimDir, 0.4);
+        const rayHit = this.physics.raycast(aimOrigin, aimDir, 120, this.rayTargets?.(), e);
+        const targetPoint = rayHit ? rayHit.point : new H().copy(aimOrigin).addScaledVector(aimDir, 120);
+        t = new H().subVectors(targetPoint, n);
+        if (t.length() < 0.8) t.copy(aimDir);
+        else t.normalize();
+      }
     } else {
       t = e.aimDirection(new H());
       n = e.eyePos(new H()).addScaledVector(t, 0.7);
@@ -42987,6 +43362,10 @@ class XR {
         const hit = this.physics.raycast(simPos, tmpDir, stepDist + 0.16, null, e);
         if (hit) {
           simPos.copy(hit.point).addScaledVector(tmpDir, -0.16);
+          if (isShockwave) {
+            points.push(simPos.clone());
+            break;
+          }
           bounces.push(simPos.clone());
           if (Math.abs(tmpDir.y) > 0.7) {
             simVel.y *= -0.35;
@@ -43004,6 +43383,10 @@ class XR {
       const groundY = Math.max(_t(simPos.x, simPos.z), this.physics.groundHeight(simPos.x, simPos.z, simPos.y + 0.3));
       if (simPos.y < groundY + 0.16) {
         simPos.y = groundY + 0.16;
+        if (isShockwave) {
+          points.push(simPos.clone());
+          break;
+        }
         if (simVel.y < 0) {
           if (simVel.y < -2) bounces.push(simPos.clone());
           simVel.y = simVel.y > -2 ? 0 : -simVel.y * 0.35;
@@ -43149,12 +43532,17 @@ class XR {
     const isShockwave = def?.id === "shockwave" || !!def?.shockwave;
     let t, n;
     if (aimDir && aimOrigin) {
-      n = e.eyePos(new H()).addScaledVector(aimDir, 0.4);
-      const rayHit = this.physics.raycast(aimOrigin, aimDir, 120, this.rayTargets?.(), e);
-      const targetPoint = rayHit ? rayHit.point : new H().copy(aimOrigin).addScaledVector(aimDir, 120);
-      t = new H().subVectors(targetPoint, n);
-      if (t.length() < 0.8) t.copy(aimDir);
-      else t.normalize();
+      if (isShockwave && aimDir.y < -0.45) {
+        n = new H(e.pos.x, e.pos.y + 0.6, e.pos.z);
+        t = aimDir.clone().normalize();
+      } else {
+        n = e.eyePos(new H()).addScaledVector(aimDir, 0.4);
+        const rayHit = this.physics.raycast(aimOrigin, aimDir, 120, this.rayTargets?.(), e);
+        const targetPoint = rayHit ? rayHit.point : new H().copy(aimOrigin).addScaledVector(aimDir, 120);
+        t = new H().subVectors(targetPoint, n);
+        if (t.length() < 0.8) t.copy(aimDir);
+        else t.normalize();
+      }
     } else {
       t = e.aimDirection(new H());
       n = e.eyePos(new H()).addScaledVector(t, 0.7);
@@ -43183,35 +43571,60 @@ class XR {
   updateGrenades(e) {
     for (let t = this.grenades.length - 1; t >= 0; t--) {
       const n = this.grenades[t];
+      if (n.stuck) {
+        n.fuse -= e;
+        (n.mesh.material.emissiveIntensity = Math.sin(this.time * 40) > 0 ? 3.5 : 1.0);
+        if (Math.random() < 0.35) this.effects.burst(n.pos, "#00e5ff", 1, 0.6, 0.2);
+        if (n.fuse <= 0 || n.pos.y < xt.waterLevel - 1) {
+          this.explodeShockwave(n.pos.clone(), n.owner, n.visual);
+          this.scene.remove(n.mesh);
+          n.mesh.material.dispose();
+          this.grenades.splice(t, 1);
+        }
+        continue;
+      }
       ((n.fuse -= e), (n.vel.y -= 22 * e));
       const a = n.vel.length() * e;
       if (a > 1e-4) {
         const c = this.tmpDir.copy(n.vel).normalize(),
           h = this.physics.raycast(n.pos, c, a + 0.16, null, n.owner);
-        h
-          ? (n.pos.copy(h.point).addScaledVector(c, -0.17),
+        if (h) {
+          n.pos.copy(h.point).addScaledVector(c, -0.17);
+          if (n.isShockwave) {
+            n.vel.set(0, 0, 0);
+            n.stuck = !0;
+            n.fuse = Math.min(n.fuse, 0.15);
+          } else {
             Math.abs(c.y) > 0.7
               ? ((n.vel.y *= -0.35), (n.vel.x *= 0.6), (n.vel.z *= 0.6))
-              : ((n.vel.x *= -0.4), (n.vel.z *= -0.4), (n.vel.y *= 0.6)))
-          : n.pos.addScaledVector(c, a);
+              : ((n.vel.x *= -0.4), (n.vel.z *= -0.4), (n.vel.y *= 0.6));
+          }
+        } else {
+          n.pos.addScaledVector(c, a);
+        }
       }
       const o = Math.max(_t(n.pos.x, n.pos.z), this.physics.groundHeight(n.pos.x, n.pos.z, n.pos.y + 0.3));
-      if (
-        (n.pos.y < o + 0.16 &&
-          ((n.pos.y = o + 0.16),
-          n.vel.y < 0 && (n.vel.y = n.vel.y > -2 ? 0 : -n.vel.y * 0.35),
-          n.vel.x *= 1 - Math.min(1, e * 6),
-          (n.vel.z *= 1 - Math.min(1, e * 6))),
-        n.mesh.position.copy(n.pos),
+      if (n.pos.y < o + 0.16) {
+        n.pos.y = o + 0.16;
+        if (n.isShockwave) {
+          n.vel.set(0, 0, 0);
+          n.stuck = !0;
+          n.fuse = Math.min(n.fuse, 0.15);
+        } else {
+          n.vel.y < 0 && (n.vel.y = n.vel.y > -2 ? 0 : -n.vel.y * 0.35);
+          n.vel.x *= 1 - Math.min(1, e * 6);
+          (n.vel.z *= 1 - Math.min(1, e * 6));
+        }
+      }
+      (n.mesh.position.copy(n.pos),
         (n.mesh.rotation.x += e * 8),
         (n.mesh.rotation.y += e * (n.isShockwave ? 12 : 0)),
         (n.mesh.material.emissiveIntensity = Math.sin(this.time * (n.fuse < 1 ? 40 : 14)) > 0 ? (n.isShockwave ? 3 : 2.5) : 0.4),
-        n.isShockwave && Math.random() < 0.25 && this.effects.burst(n.pos, "#00e5ff", 1, 0.6, 0.2),
-        n.fuse <= 0 || n.pos.y < xt.waterLevel - 1)
-      ) {
+        n.isShockwave && Math.random() < 0.25 && this.effects.burst(n.pos, "#00e5ff", 1, 0.6, 0.2));
+      if (n.fuse <= 0 || n.pos.y < xt.waterLevel - 1) {
         (n.isShockwave
           ? this.explodeShockwave(n.pos.clone(), n.owner, n.visual)
-          : this.explode(n.pos.clone(), n.owner, 75, 5.5, 240, n.visual, "a Surge Grenade", !0),
+          : this.explode(n.pos.clone(), n.owner, 75, 5.5, 384, n.visual, "a Surge Grenade", !0),
           this.scene.remove(n.mesh),
           n.mesh.material.dispose(),
           this.grenades.splice(t, 1));
@@ -43237,16 +43650,16 @@ class XR {
       const y = this.tmpDir.subVectors(d, e);
       y.y = 0;
       let len = y.length();
-      if (len < 0.05) {
+      if (len < 0.55) {
         g.aimDirection(y);
         y.y = 0;
         len = y.length();
-        if (len < 0.05) y.set(1, 0, 0);
+        if (len < 0.05) y.set(0, 0, -1);
       }
       y.normalize();
       const A = Math.max(0.15, 1 - v / radius);
-      const horizSpeed = 24 + 12 * A;
-      const vertSpeed = 16 + 8 * A;
+      const horizSpeed = (len < 0.55 ? 18 : 24) + 12 * A;
+      const vertSpeed = (len < 0.55 ? 22 : 16) + 10 * A;
       if (!g.remotePeerId) {
         g.vel.x = y.x * horizSpeed;
         g.vel.z = y.z * horizSpeed;
@@ -43826,12 +44239,10 @@ class XR {
   }
   jump(e) {
     if (e.mode !== "ferry" || this.phase === "warmup") return;
+    if (this.ferry && !this.zone.isInside(this.ferry.mesh.position.x, this.ferry.mesh.position.z) && this.ferry.progress < 1) return;
     ((e.mode = "skydive"),
       e.model.setActive(!0),
-      e.pos.copy(this.ferry.mesh.position),
-      (e.pos.y -= 1.5),
-      (e.pos.x += (this.rng.next() - 0.5) * 3),
-      (e.pos.z += (this.rng.next() - 0.5) * 3));
+      e.pos.set(this.ferry.mesh.position.x, this.ferry.mesh.position.y - 1.5, this.ferry.mesh.position.z));
     const t = this.tmpV.subVectors(this.ferry.end, this.ferry.start).normalize();
     (e.vel.set(t.x * Ci.ferrySpeed, -2, t.z * Ci.ferrySpeed),
       e.isPlayer &&
@@ -43848,22 +44259,15 @@ class XR {
       ((t.progress = Math.min(1, t.progress + (Ci.ferrySpeed * e) / t.len)),
         t.mesh.position.lerpVectors(t.start, t.end, t.progress));
       const o = this.tmpV.subVectors(t.end, t.start).normalize();
-      let c = 0;
       for (const h of this.characters) {
         if (h.mode !== "ferry" || h.remotePeerId) continue;
-        const f = (c % 2 === 0 ? -1 : 1) * 1.4,
-          d = -4 + Math.floor(c / 2) * 1.5;
-        (h.pos.set(
-          t.mesh.position.x + o.x * d - o.z * f,
-          t.mesh.position.y - 0.85,
-          t.mesh.position.z + o.z * d + o.x * f,
-        ),
-          (h.yaw = Math.atan2(o.x, o.z)),
-          h !== this.player && (h.yaw += c % 2 === 0 ? 0.6 : -0.6),
-          c++);
+        h.pos.set(t.mesh.position.x, t.mesh.position.y - 1.2, t.mesh.position.z);
+        h.yaw = Math.atan2(o.x, o.z);
       }
-      this.playerWorld.canJump = t.progress * t.len >= Ci.minJumpDelay * Ci.ferrySpeed;
-      for (const h of this.bots) h.ch.mode === "ferry" && t.progress >= h.jumpAt && this.jump(h.ch);
+      const blimpInStorm = !this.zone.isInside(t.mesh.position.x, t.mesh.position.z);
+      this.playerWorld.canJump = t.progress * t.len >= Ci.minJumpDelay * Ci.ferrySpeed && !blimpInStorm;
+      this.playerWorld.blimpInStorm = blimpInStorm;
+      for (const h of this.bots) h.ch.mode === "ferry" && !blimpInStorm && t.progress >= h.jumpAt && this.jump(h.ch);
       if (t.progress >= 1) for (const h of this.characters) h.mode === "ferry" && !h.remotePeerId && this.jump(h);
     } else t.mesh.position.addScaledVector(this.tmpV.subVectors(t.end, t.start).normalize(), Ci.ferrySpeed * e);
     t.mesh.visible = this.characters.some((o) => o.alive && o.mode === "ferry");
@@ -43877,7 +44281,7 @@ class XR {
           ? this.stormAlert("New safe zone revealed", `Phase ${this.zone.phase + 1}/${this.zone.ph.length} - check your map`, "info")
           : n === "closed" && this.stormAlert("Final Surge", "No safe zone remains", "warn"),
       this.stormQueued && this.time - this.lastStormAlert >= 4 && this.stormAlert(...this.stormQueued.splice(0)),
-      this.zone.setVisible(this.player.mode !== "ferry" || !this.player.alive),
+      this.zone.setVisible(this.phase !== "warmup"),
       this.invOpen && !this.player.alive && ((this.invOpen = !1), (this.invSel = -1)),
       this.updateRespawns(e),
       ROOM.mode === "br" && ROOM.supply && this.time >= this.supplyNext && ((this.supplyNext = this.time + 95), (!this.session || this.session.state.role === "host") && this.spawnSupplyDrop()),
@@ -43916,25 +44320,30 @@ class XR {
       this.separateCharacters(),
       this.build.update(this.player, this.characters),
       this.structures.update(e),
+      this.controller.updateCamera(e, this.playerWorld),
       this.statics.update(this.camera.position, e),
       this.mapGen.update(e),
       this.props.update(this.time, this.camera.position, e),
       (this.water.position.y = xt.waterLevel + Math.sin(this.time * 0.8) * 0.045),
       this.pickups.update(this.time, this.camera.position, e),
       this.effects.update(e, this.camera.position),
-      this.sun.position.copy(this.player.pos).addScaledVector(SUN_DIR, 150),
-      this.sun.target.position.copy(this.player.pos),
+      this.sun.position.copy((!this.player.alive && this.controller.spectate) ? this.controller.spectate.pos : this.player.pos).addScaledVector(SUN_DIR, 150),
+      this.sun.target.position.copy((!this.player.alive && this.controller.spectate) ? this.controller.spectate.pos : this.player.pos),
       this.sun.target.updateMatrixWorld(),
       this.checkMatchEnd(e),
       (this.hudTimer -= e),
       this.hudTimer <= 0 && ((this.hudTimer = 1 / 15), this.publishHud()));
   }
   updateWarmup(e) {
-    ((this.warmupLeft -= e), this.controller.update(e, this.playerWorld), this.player.update(e, this.ctx));
+    ((this.warmupLeft -= e),
+      this.controller.update(e, this.playerWorld),
+      this.player.update(e, this.ctx));
     for (const t of this.characters) t.remotePeerId && this.updateRemote(t, e);
-    (this.spawnIsland?.update(e),
+    (this.separateCharacters(),
+      this.spawnIsland?.update(e),
       this.build.update(this.player, this.characters),
       this.structures.update(e),
+      this.controller.updateCamera(e, this.playerWorld),
       this.statics.update(this.camera.position, e),
       this.pickups.update(this.time, this.camera.position, e),
       this.effects.update(e, this.camera.position),
@@ -44006,7 +44415,7 @@ class XR {
     }
   }
   updatePuppets(e) {
-    const t = this.player.pos,
+    const t = (!this.player.alive && this.controller.spectate) ? this.controller.spectate.pos : this.player.pos,
       n = is.lodNear * is.lodNear,
       a = is.lodFar * is.lodFar,
       o = Math.min(1, e * 12);
@@ -44030,7 +44439,7 @@ class XR {
       const m = h.pos.x - t.x,
         g = h.pos.z - t.z,
         v = m * m + g * g,
-        y = v < n ? 0 : v < a ? 1 : 2;
+        y = (h === this.controller.spectate) ? 0 : v < n ? 0 : v < a ? 1 : 2;
       if (((h.lod = y), h.model.setActive(y < 2), y === 2)) continue;
       (h.model.group.position.copy(h.pos),
         h.model.update(e, {
@@ -44051,7 +44460,8 @@ class XR {
     if (!e || !e.alive || !t) return;
     const n = Ho[typeof t.weapon == "string" ? t.weapon : "rifle"],
       a = e.muzzlePos();
-    if (a.distanceTo(this.player.pos) > 420) return;
+    const focusPos = (!this.player.alive && this.controller.spectate) ? this.controller.spectate.pos : this.player.pos;
+    if (a.distanceTo(focusPos) > 420) return;
     (this.effects.muzzleFlash(a, n?.color ?? "#ffd166"), this.audio.play(`shot_${n?.archetype ?? "rifle"}`, e.pos));
     if (n && !n.projectile && Array.isArray(t.d))
       for (let o = 0; o + 2 < Math.min(t.d.length, 36); o += 3) {
@@ -44062,8 +44472,9 @@ class XR {
   updateBots(e) {
     if (this.bots[0]?.ch.puppet) return this.updatePuppets(e);
     this.sendBots(e);
-    const t = this.player.pos.x,
-      n = this.player.pos.z,
+    const focus = (!this.player.alive && this.controller.spectate) ? this.controller.spectate : this.player,
+      t = focus.pos.x,
+      n = focus.pos.z,
       a = is.lodNear * is.lodNear,
       o = is.lodFar * is.lodFar;
     for (let c = 0; c < this.bots.length; c++) {
@@ -44074,10 +44485,11 @@ class XR {
         f.model.setActive(!1);
         continue;
       }
+      const isSpectated = f === this.controller.spectate;
       const d = f.pos.x - t,
         m = f.pos.z - n,
         g = d * d + m * m,
-        v = g < a ? 0 : g < o ? 1 : 2;
+        v = isSpectated ? 0 : g < a ? 0 : g < o ? 1 : 2;
       if (f.dummy) {
         const y = Math.sin(this.time * 1.1 + c * 1.7) > 0 ? 1 : -1;
         (f.moveDir.set(0, 0, 0),
@@ -44106,34 +44518,82 @@ class XR {
       h = this.session?.state.kind === "party";
     let o = null;
     if (!this.player.alive) {
-      const c = this.characters
-        .filter((f) => f !== this.player && f.alive && (this.isMate(f) || (h && f.remotePeerId)))
-        .sort((f, d) => this.isMate(d) - this.isMate(f));
-      ((o = c.includes(this.spectatePick) ? this.spectatePick : (c[0] ?? null)),
-        o && c.length > 1 && (this.input.mousePressed[0] || this.input.pressed("Space")) && (o = c[(c.indexOf(o) + 1) % c.length]),
-        (this.spectatePick = o),
-        (this.spectateCount = c.length),
-        o &&
-          o !== this.spectateShown &&
-          this.showBanner("Spectating " + o.name, c.length > 1 ? "Click or press Space to switch players" : this.isMate(o) ? "Your team is still in the fight" : "Your party is still in the fight", "info"),
-        (this.spectateShown = o));
+      const allAlive = this.characters.filter((f) => f !== this.player && f.alive);
+      const mates = allAlive.filter((f) => this.isMate(f) || (h && f.remotePeerId));
+      const c = mates.length > 0 ? mates.concat(allAlive.filter((f) => !mates.includes(f))) : allAlive;
+
+      if (this.spectatePick && c.includes(this.spectatePick)) {
+        o = this.spectatePick;
+      } else if (this.lastSpectatedKiller && c.includes(this.lastSpectatedKiller)) {
+        o = this.lastSpectatedKiller;
+      } else if (this.playerKiller && c.includes(this.playerKiller)) {
+        o = this.playerKiller;
+      } else {
+        o = c[0] ?? null;
+      }
+
+      const wantNext = (this.input.locked && this.input.mousePressed[0]) || this.input.pressed("Space") || this.input.pressed("KeyD") || this.input.pressed("ArrowRight");
+      const wantPrev = (this.input.locked && this.input.mousePressed[2]) || this.input.pressed("KeyA") || this.input.pressed("ArrowLeft");
+      if (o && c.length > 1) {
+        const curIdx = c.indexOf(o);
+        if (wantNext) {
+          const nextIdx = (curIdx + 1) % c.length;
+          o = c[nextIdx];
+          this.audio.play("ui", void 0, 0.4);
+        } else if (wantPrev) {
+          const prevIdx = (curIdx - 1 + c.length) % c.length;
+          o = c[prevIdx];
+          this.audio.play("ui", void 0, 0.4);
+        }
+      }
+      this.spectatePick = o;
+      this.spectateCount = c.length;
+      if (o && o !== this.spectateShown) {
+        this.showBanner(
+          "Spectating " + o.name,
+          c.length > 1
+            ? "Click, Space, or A/D to switch players"
+            : this.isMate(o)
+              ? "Your team is still in the fight"
+              : "Last remaining opponent",
+          "info"
+        );
+        this.spectateShown = o;
+        this.controller.yaw = o.yaw;
+        this.controller.pitch = 0.05;
+      }
     }
     this.controller.spectate = o;
     const f = this.characters.filter((c) => c !== this.player && c.alive),
       d = a ? f.every((c) => c.team === f[0]?.team) : f.length <= 1,
       m = a && o && o.team === n;
-    (this.pendingResult === null &&
-      (this.player.alive || m || (o && !d)
-        ? t === 0 &&
-          ((this.pendingResult = this.makeResult(!0)),
-          (this.endTimer = 1.4),
-          this.audio.play("victory"),
-          this.showBanner("VICTORY", a ? "Your team is the last squad standing" : "You are the last Drifter standing", "good"))
-        : ((this.pendingResult = this.makeResult(!1)), (this.endTimer = 1.8))),
-      this.pendingResult &&
-        this.endTimer >= 0 &&
-        ((this.endTimer -= e),
-        this.endTimer <= 0 && ((this.ended = !0), this.input.releaseLock(), this.callbacks.onEnd(this.pendingResult))));
+    if (this.pendingResult === null) {
+      if (this.player.alive || m) {
+        if (t === 0) {
+          this.pendingResult = this.makeResult(!0);
+          this.endTimer = 1.4;
+          this.audio.play("victory");
+          this.showBanner("VICTORY", a ? "Your team is the last squad standing" : "You are the last Drifter standing", "good");
+        }
+      } else if (o && !d) {
+        // Still spectating while match is ongoing
+      } else {
+        const winner = f[0] ?? o;
+        if (winner) {
+          this.showBanner(`${winner.name} WON`, a ? "Winning squad standing" : "Last Drifter standing", "good");
+        }
+        this.pendingResult = this.makeResult(!1);
+        this.endTimer = 3.5;
+      }
+    }
+    if (this.pendingResult && this.endTimer >= 0) {
+      this.endTimer -= e;
+      if (this.endTimer <= 0) {
+        this.ended = !0;
+        this.input.releaseLock();
+        this.callbacks.onEnd(this.pendingResult);
+      }
+    }
   }
   separateCharacters() {
     const e = this.characters;
@@ -44144,8 +44604,9 @@ class XR {
           const o = e[a];
           if (!o.alive || o.mode !== "ground" || o.remotePeerId || o.puppet || o.lod > 1) continue;
           const c = o.pos.x - n.pos.x,
-            h = o.pos.z - n.pos.z,
-            f = Math.hypot(c, h),
+            h = o.pos.z - n.pos.z;
+          if (Math.abs(c) > 1.8 || Math.abs(h) > 1.8) continue;
+          const f = Math.hypot(c, h),
             d = n.radius + o.radius;
           if (f < d && f > 0.001 && Math.abs(n.pos.y - o.pos.y) < 1.5) {
             const m = (d - f) / 2,
@@ -44159,7 +44620,7 @@ class XR {
   render() {
     const e = this.canvas.clientWidth,
       t = this.canvas.clientHeight,
-      n = this.renderer.getSize(new at());
+      n = this.renderer.getSize((this.tmpCanvasSize ??= new at()));
     (n.x !== e || n.y !== t) &&
       (this.renderer.setSize(e, t, !1),
       (this.camera.aspect = e / Math.max(1, t)),
@@ -44272,12 +44733,20 @@ class XR {
               "good",
             )
           : this.showBanner(`Eliminated ${e.name}`, `${a - 1} opponent${a - 1 === 1 ? "" : "s"} remaining`, "good")),
-      e === this.player &&
-        ((this.playerDiedCause = n),
-        (this.playerKillerName = t && t !== e ? t.name : null),
-        (this.placementAtDeath = a + 1),
-        this.audio.play(ROOM.respawn ? "hurt" : "defeat"),
-        this.build.setActive(!1)));
+      e === this.player
+        ? ((this.playerDiedCause = n),
+          (this.playerKillerName = t && t !== e ? t.name : null),
+          (this.placementAtDeath = a + 1),
+          (this.playerKiller = t && t !== e && t.alive ? t : null),
+          (this.lastSpectatedKiller = null),
+          this.playerKiller &&
+            ((this.spectatePick = this.playerKiller),
+            (this.controller.spectate = this.playerKiller),
+            (this.controller.yaw = this.playerKiller.yaw),
+            (this.controller.pitch = 0.05)),
+          this.audio.play(ROOM.respawn ? "hurt" : "defeat"),
+          this.build.setActive(!1))
+        : e === this.spectatePick && t && t !== e && t.alive && (this.lastSpectatedKiller = t));
     ROOM.respawn &&
       !this.pendingResult &&
       (e === this.player || (e.botIndex !== void 0 && !e.puppet)) &&
@@ -44609,7 +45078,8 @@ class XR {
     this.banner = { title: e, sub: t, t: this.time, kind: n };
   }
   publishHud() {
-    const e = this.player,
+    const isSpec = !this.player.alive && this.controller.spectate,
+      e = isSpec ? this.controller.spectate : this.player,
       t = e.inventory,
       n = this.phase === "warmup",
       a = t.slots.map((A) =>
@@ -44650,7 +45120,7 @@ class XR {
           : ROOM.mode === "range"
             ? { label: `Range · ${this.arenaName}`, value: `${e.kills} elims`, sub: `Damage dealt ${Math.round(e.damageDealt)}` }
             : null,
-      W = this.respawnQ.find((A) => A.ch === e);
+      W = this.respawnQ.find((A) => A.ch === this.player);
     Et.set({
       hud: {
         maxHp: ROOM.maxHealth,
@@ -44658,7 +45128,8 @@ class XR {
         custom: M,
         respawnIn: W ? Math.max(0, W.at - d) : null,
         mode: n ? "warmup" : e.mode,
-        canJump: this.playerWorld.canJump,
+        canJump: isSpec ? !1 : this.playerWorld.canJump,
+        blimpInStorm: !!this.playerWorld.blimpInStorm,
         altitude: Math.max(0, e.pos.y - v),
         health: Math.ceil(e.health),
         shield: Math.ceil(e.shield),
@@ -44668,7 +45139,7 @@ class XR {
         active: t.active,
         ammo: { ...t.ammo },
         materials: { ...t.materials },
-        buildMode: this.build.active,
+        buildMode: isSpec ? !1 : this.build.active,
         buildPiece: this.build.piece,
         buildMaterial: this.build.material,
         buildValid: this.build.check.ok,
@@ -44676,7 +45147,7 @@ class XR {
         alive: this.characters.filter((A) => A.alive).length,
         kills: e.kills,
         supply: this.supply.map((A) => ({ x: A.x, z: A.z })),
-        spectating: !e.alive && this.controller.spectate ? { name: this.controller.spectate.name, count: this.spectateCount ?? 1 } : null,
+        spectating: isSpec ? { name: this.controller.spectate.name, count: this.spectateCount ?? 1 } : null,
         mates: this.teamMode ? this.characters.filter((A) => A.alive && this.isMate(A) && A.mode !== "ferry").map((A) => ({ x: A.pos.x, z: A.pos.z, name: A.name })) : [],
         zone:
           n || e.mode === "ferry"
@@ -44693,7 +45164,7 @@ class XR {
               distToSafe: c.distOutside(e.pos.x, e.pos.z),
               dirToSafe: f,
             },
-        prompt: this.controller.prompt,
+        prompt: isSpec ? null : this.controller.prompt,
         reload: e.reload ? 1 - e.reload.t / e.reload.total : null,
         using: e.using
           ? { name: t.slots[e.using.slot]?.def.name ?? "Item", progress: 1 - e.using.t / e.using.total }
@@ -44741,7 +45212,7 @@ class XR {
             }
           : null,
         pointerLocked: this.input.locked,
-        lowHealth: !n && e.alive && e.health <= ROOM.maxHealth * 0.3,
+        lowHealth: !n && !isSpec && e.alive && e.health <= ROOM.maxHealth * 0.3,
         warmup: n ? Math.max(0, this.warmupLeft) : null,
         warmupPlayers: 1 + b,
       },
@@ -49126,7 +49597,7 @@ function RoomPanel({ network: r, onRoom: e }) {
   });
 }
 function bD(r) {
-  const { settings: e, loadout: t, network: n, publicCountdown: a, mapImage: o } = nf(),
+  const { settings: e, loadout: t, network: n, publicCountdown: a } = nf(),
     [c, h] = Xt.useState("play"),
     [f, d] = Xt.useState(e.playerName),
     [m, g] = Xt.useState(""),
@@ -49151,11 +49622,6 @@ function bD(r) {
     children: [
       z.jsx("div", { className: "menu-sky absolute inset-0" }),
       z.jsx("div", { className: "menu-orbit absolute inset-0" }),
-      o &&
-        z.jsx("div", {
-          className: "menu-island absolute inset-y-0 right-[-16%] hidden w-[62%] opacity-50 xl:block",
-          style: { backgroundImage: `url(${o})` },
-        }),
       z.jsx("div", { className: "absolute inset-0 bg-gradient-to-r from-[#06121b] via-[#06121b]/92 to-transparent" }),
       z.jsxs("div", {
         className: "relative mx-auto flex min-h-full w-full max-w-[1500px] flex-col px-5 py-6 sm:px-9",
@@ -49995,7 +50461,7 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
     o = r.active,
     c = o >= 0 ? r.slots[o] : null,
     h = r.mode === "warmup",
-    f = r.mode === "ground" || h,
+    f = r.mode !== "ferry",
     d = r.banner,
     m = d ? r.time - d.t : 99;
   return z.jsxs("div", {
@@ -50005,7 +50471,7 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
         f &&
         z.jsx("div", {
           className: "absolute inset-0 animate-pulse",
-          style: { boxShadow: "inset 0 0 160px 40px rgba(200,60,255,0.55)" },
+          style: { boxShadow: "inset 0 0 180px 50px rgba(185,40,255,0.65), inset 0 0 80px 20px rgba(255,50,220,0.4)" },
         }),
       r.lowHealth &&
         f &&
@@ -50029,15 +50495,22 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
         }),
       r.scoped &&
         z.jsxs("div", {
-          className: "absolute inset-0",
-          style: { opacity: Math.max(0, (r.adsAmount - 0.72) / 0.28) },
+          className: "pointer-events-none absolute inset-0 select-none",
+          style: { opacity: Math.max(0, (r.adsAmount - 0.65) / 0.35) },
           children: [
             z.jsx("div", {
               className: "absolute inset-0",
-              style: { background: "radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.92) 31%)" },
+              style: { background: "radial-gradient(circle at center, transparent min(780px, 43vh), #000000 min(781px, 43.2vh))" },
             }),
-            z.jsx("div", { className: "absolute left-0 right-0 top-1/2 h-px bg-black/70" }),
-            z.jsx("div", { className: "absolute bottom-0 top-0 left-1/2 w-px bg-black/70" }),
+            z.jsx("div", {
+              className: "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-black/95",
+              style: { width: "min(1562px, 86.4vh)", height: "min(1562px, 86.4vh)", boxShadow: "inset 0 0 32px #000000" },
+            }),
+            z.jsx("div", { className: "absolute left-0 right-0 top-1/2 h-[1.5px] bg-black" }),
+            z.jsx("div", { className: "absolute bottom-0 top-0 left-1/2 w-[1.5px] bg-black" }),
+            z.jsx("div", {
+              className: "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-red-600 shadow",
+            }),
           ],
         }),
       r.adsAmount > 0.01 &&
@@ -50297,7 +50770,7 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
             }),
             z.jsx("div", {
               style: { fontSize: 10, fontWeight: 700, opacity: 0.65, marginTop: 2 },
-              children: (r.spectating.count > 1 ? "Click / Space to switch player · " : "") + "Esc > Leave party to quit",
+              children: (r.spectating.count > 1 ? "Click / Space / A-D to switch · " : "") + (n ? "Esc > Leave party to quit" : "Esc > Quit to menu"),
             }),
           ],
         }),
@@ -50372,7 +50845,7 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
                 children: [
                   z.jsx("div", {
                     className: "text-2xl font-black uppercase tracking-wider",
-                    children: r.canJump ? "Press SPACE to jump" : "Skyferry departing...",
+                    children: r.canJump ? "Press SPACE to jump" : r.blimpInStorm ? "Airspace compromised · Inside Surge" : "Skyferry departing...",
                   }),
                   z.jsx("div", {
                     className: "text-xs text-white/80",
@@ -51232,7 +51705,6 @@ function AD() {
       (R.shadowMap.type = gb),
       R.setClearColor(9425919),
       (t.current = R),
-      Et.state.mapImage || setTimeout(() => Et.set({ mapImage: hS(512) }), 0),
       () => {
         (n.current?.dispose(), (n.current = null), R.dispose(), (t.current = null));
       }
