@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "voxelcraft2.html",
+      "title": "Voxelcraft 2",
+      "tagline": "Don't question me about the enchanting table's texture i don't want to fix it",
+      "tags": ["multiplayer", "fun"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/voxelcraft2.webp",
+      "hidden": false
+    },
+    {
       "file": "infodeck.html",
       "title": "Info Deck",
       "tagline": "No clue why you would even NEED this.",
@@ -61,7 +69,7 @@
       "file": "uno_arena.html",
       "title": "Uno Arena",
       "tagline": "Based off the original card game, Uno! (who would've guessed)",
-      "tags": ["fun", "multiplayer"],
+      "tags": ["fun", "multiplayer", "party"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/uno_arena.webp",
       "hidden": false
     },
