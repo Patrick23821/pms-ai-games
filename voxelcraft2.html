@@ -953,6 +953,7 @@ for (const m in ARMOR_MATS) ARMOR_SLOTS.forEach((s, i) => {
 });
 const FOODS = { apple: [4, 2.4], beef: [3, 1.8], cooked_beef: [8, 12.8], porkchop: [3, 1.8], cooked_porkchop: [8, 12.8], mutton: [2, 1.2], cooked_mutton: [6, 9.6], chicken: [2, 1.2], cooked_chicken: [6, 7.2], rotten_flesh: [4, 0.8], bread: [5, 6], golden_apple: [4, 9.6] };
 for (const k in FOODS) item(k, { food: FOODS[k][0], sat: FOODS[k][1] });
+ITEMS.cooked_beef.name = 'Steak';
 item('milk_bucket', { stack: 1, drink: 'milk' });
 ['stick', 'coal', 'charcoal', 'iron_ingot', 'gold_ingot', 'copper_ingot', 'diamond', 'lapis_lazuli', 'redstone', 'raw_iron', 'raw_gold', 'raw_copper',
   'flint', 'feather', 'string', 'gunpowder', 'leather', 'bone', 'bone_meal', 'book', 'paper', 'blaze_rod', 'blaze_powder', 'quartz', 'glowstone_dust',
