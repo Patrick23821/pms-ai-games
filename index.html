@@ -5,6 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Omega Arcade</title>
 
+<!--
+  ==========================================================================
+  [MK-a7x9q2]  ACCESS POINT  (Ctrl+F this exact string: MK-a7x9q2)
+  ==========================================================================
+
+  WHERE TO OPEN IT AFTER YOU PUSH arcade.html INTO YOUR REPO
+  ----------------------------------------------------------
+  LIVE (GitHub Pages, if Pages is ON for that repo/branch):
+    https://Patrick23821.github.io/pms-ai-games/arcade.html
+
+  EDIT IT ON GITHUB:
+    https://github.com/Patrick23821/pms-ai-games/new/main
+    (name the file  arcade.html  and commit, then Pages serves it)
+
+  THE REPO SCANNER READS THIS ENDPOINT (public repos, no key needed):
+    https://api.github.com/repos/Patrick23821/pms-ai-games/contents/?ref=main
+
+  YOU CAN RE-POINT ALL OF THAT IN 3 SECONDS -> search  MK-k4m1z8  (config block)
+  PER-GAME METADATA (title, thumb) -> search  MK-i7n4j2  (repo info.json)
+  TO ADD / THEME GAMES             -> search  MK-p3v7n5  (the GAMES list)
+  THUMBNAIL RULES (link or dataURL)-> search  MK-t9c2r6
+  TITLE PICKUP FROM GAME FILES     -> search  MK-y2j6f4
+  IF THE API IS BLOCKED / OFFLINE  -> search  MK-9f2m4x (manualFiles)
+  ANNOUNCEMENTS / COMMANDS (.cmd)  -> search  MK-z9cmd1  (arcade.cmd)
+
+  Every marker in this file starts with  MK-  so one Ctrl+F finds the whole map.
+  ==========================================================================
+-->
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -190,6 +219,18 @@ select.field{cursor:pointer}
 .ticker:hover .run{animation-play-state:paused}
 @keyframes run{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
+/* ---- operator announcements (arcade.cmd) ---- */
+#ann-stack{position:fixed;top:clamp(72px,12vh,110px);left:50%;transform:translateX(-50%);z-index:55;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:min(580px,92vw);width:100%;padding:0 12px}
+.ann-toast{
+  pointer-events:auto;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 16px;border:1px solid rgba(47,243,208,.35);background:linear-gradient(165deg,rgba(8,16,28,.94),rgba(6,10,18,.92));
+  color:#d8f7ff;box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 24px rgba(47,243,208,.12);
+  animation:annIn .45s cubic-bezier(.2,.9,.25,1);clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+}
+.ann-toast.gold{border-color:rgba(255,194,71,.45);color:#fff3d0;box-shadow:0 12px 40px rgba(0,0,0,.45),0 0 22px rgba(255,194,71,.15)}
+.ann-toast.warn{border-color:rgba(255,47,135,.45);color:#ffd6e8}
+@keyframes annIn{from{opacity:0;transform:translateY(-12px) scale(.98)}}
+
 /* ---- modal ---- */
 .shell{position:fixed;inset:0;z-index:80;background:rgba(3,5,11,.9);backdrop-filter:blur(7px);display:none;place-items:center;padding:clamp(0px,2.4vw,26px)}
 .shell.open{display:grid;animation:pop .26s ease}
@@ -234,6 +275,8 @@ pre.code s{color:#4f7386;text-decoration:none}
     <div class="f-mono text-[10px] tracking-[.3em] text-[var(--dim)] mt-3">PRESS ANY KEY TO SKIP</div>
   </div>
 </div>
+
+<div id="ann-stack" aria-live="polite" aria-atomic="false"></div>
 
 <div class="relative z-10">
 
@@ -404,6 +447,13 @@ pre.code s{color:#4f7386;text-decoration:none}
           <span class="f-mono text-[var(--cyan)] break-all" id="help-url">…</span>.
           On a private repo the API returns 404 — add a read-only token to <span class="f-mono">CFG.token</span>
           (<span class="f-mono">MK-4t2kp6</span>) or just fill <span class="f-mono">CFG.manualFiles</span>.</p>
+          <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">4 · OPERATOR COMMANDS (<span class="f-mono">arcade.cmd</span>)</p>
+          <p>Place <span class="f-mono text-[var(--cyan)]">arcade.cmd</span> next to <span class="f-mono">arcade.html</span>.
+          Lines run <strong>top to bottom</strong> on each load. Use
+          <span class="f-mono">StartUpAnnouncement("Your message")</span> for boot + ticker text,
+          <span class="f-mono">ScheduleAnnouncement("Later", 120)</span> for timed toasts (seconds),
+          <span class="f-mono">Wait(2)</span>, <span class="f-mono">Ticker("…")</span>, <span class="f-mono">Rescan()</span>.
+          <span class="f-mono">#</span> starts a comment. See <span class="f-mono">ARCADE_CMD.md</span> in the repo.</p>
         </div>
       </div>
 
@@ -466,6 +516,8 @@ const CFG = {
   scrapeTitles: true,                          /* read <title> from each game file */
   infoFile: "info.json",                       /* [MK-i7n4j2] shelf metadata in the repo */
   repoCacheMinutes: 15,                        /* [MK-c8r2e1] skip GitHub API if cache is fresh */
+  cmdFile: "arcade.cmd",                       /* [MK-z9cmd1] operator script next to arcade.html */
+  cmdEnabled: true,
 };
 
 /* ==========================================================================
@@ -497,6 +549,8 @@ const ARCADE = (() => {
     plays: load("arcade.plays", {}),
     source: "—", ready: false, loading: true, sound: load("arcade.sound", true),
     io: null,
+    cmdTicker: [],
+    cmdRan: false,
   };
 
   /* ---------- tiny utils ---------- */
@@ -844,6 +898,192 @@ const ARCADE = (() => {
   const setStatus = () => {};
 
   /* ==================================================================
+     [MK-z9cmd1] OPERATOR SCRIPT — arcade.cmd (top-to-bottom, one line = one call)
+     ================================================================== */
+  const CMD_ALIASES = {
+    startupannouncement: "StartUpAnnouncement",
+    announcement: "Announcement",
+    scheduleannouncement: "ScheduleAnnouncement",
+    ticker: "Ticker",
+    setticker: "SetTicker",
+    wait: "Wait",
+    log: "Log",
+    rescan: "Rescan",
+    playsound: "PlaySound",
+    clearticker: "ClearTicker",
+    clearannouncements: "ClearAnnouncements",
+  };
+  const cmdTimers = [];
+
+  function splitCmdArgs(s) {
+    const args = [];
+    let i = 0;
+    while (i < s.length) {
+      while (i < s.length && (s[i] === " " || s[i] === ",")) i++;
+      if (i >= s.length) break;
+      const q = s[i];
+      if (q === '"' || q === "'") {
+        i++;
+        let buf = "";
+        while (i < s.length && s[i] !== q) {
+          if (s[i] === "\\" && i + 1 < s.length) { buf += s[++i]; i++; continue; }
+          buf += s[i++];
+        }
+        if (s[i] === q) i++;
+        args.push(buf);
+      } else {
+        let buf = "";
+        while (i < s.length && s[i] !== ",") buf += s[i++];
+        args.push(buf.trim());
+      }
+    }
+    return args;
+  }
+
+  function parseCmdLine(line) {
+    let s = String(line || "").trim();
+    if (!s || s.startsWith("#") || s.startsWith("//")) return null;
+    s = s.replace(/;\s*$/, "");
+    const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*\(([\s\S]*)\)\s*$/);
+    if (!m) return { err: s };
+    const name = CMD_ALIASES[m[1].toLowerCase()] || m[1];
+    return { name, args: splitCmdArgs(m[2].trim()) };
+  }
+
+  function parseCmdScript(text) {
+    return String(text || "").split(/\r?\n/).map(parseCmdLine).filter(Boolean);
+  }
+
+  function cmdNum(v, d = 0) {
+    const n = Number(String(v ?? "").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(n) ? n : d;
+  }
+
+  function showAnnouncement(text, kind = "info", ms = 9000) {
+    const stack = $("#ann-stack");
+    if (!stack || !text) return;
+    const el = document.createElement("div");
+    el.className = "ann-toast" + (kind === "gold" ? " gold" : kind === "warn" ? " warn" : "");
+    el.innerHTML = `<span class="text-[var(--cyan)] mr-2">▸</span>${esc(text)}`;
+    stack.appendChild(el);
+    while (stack.children.length > 4) stack.removeChild(stack.firstChild);
+    const t = setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateY(-8px)"; setTimeout(() => el.remove(), 420); }, ms);
+    cmdTimers.push(t);
+    if (S.sound) Snd.play(kind === "warn" ? 280 : 880, .08, "triangle", .06);
+  }
+
+  async function execCmdCall(call) {
+    if (call.err) { log(`cmd skip: <span class="warn">${esc(call.err)}</span>`, "warn"); return; }
+    const a = call.args;
+    const n = call.name;
+    switch (n) {
+      case "StartUpAnnouncement":
+        log(`▸ ${esc(a[0] || "")}`, "dim");
+        if (a[0]) S.cmdTicker.push(String(a[0]));
+        await sleep(280);
+        break;
+      case "Announcement":
+        showAnnouncement(a[0], a[1] === "warn" || a[1] === "gold" ? a[1] : "info", cmdNum(a[2], 9000) || 9000);
+        if (a[0]) S.cmdTicker.push(String(a[0]));
+        renderTicker();
+        break;
+      case "ScheduleAnnouncement": {
+        const text = a[0];
+        const sec = cmdNum(a[1], 60);
+        const kind = a[2] === "warn" || a[2] === "gold" ? a[2] : "info";
+        const id = setTimeout(() => {
+          showAnnouncement(text, kind);
+          if (text) { S.cmdTicker.push(String(text)); renderTicker(); }
+        }, Math.max(0, sec) * 1000);
+        cmdTimers.push(id);
+        log(`scheduled in ${sec}s: <span class="dim">${esc(text || "")}</span>`, "dim");
+        break;
+      }
+      case "Ticker":
+        if (a[0]) { S.cmdTicker.push(String(a[0])); renderTicker(); }
+        break;
+      case "SetTicker":
+        S.cmdTicker = a[0] ? [String(a[0])] : [];
+        renderTicker();
+        break;
+      case "ClearTicker":
+        S.cmdTicker = [];
+        renderTicker();
+        break;
+      case "ClearAnnouncements":
+        $("#ann-stack")?.replaceChildren?.();
+        break;
+      case "Wait":
+        await sleep(Math.max(0, cmdNum(a[0], 1)) * 1000);
+        break;
+      case "Log":
+        log(esc(a[0] || ""), a[1] === "warn" ? "warn" : a[1] === "err" ? "err" : "dim");
+        break;
+      case "Rescan":
+        rescan();
+        break;
+      case "PlaySound":
+        if (S.sound) Snd.play(cmdNum(a[0], 660), .1, a[1] || "square", .08);
+        break;
+      default:
+        log(`unknown cmd: <span class="warn">${esc(n)}</span>`, "warn");
+    }
+  }
+
+  async function runCmdScript(text, label = "arcade.cmd") {
+    const lines = parseCmdScript(text);
+    if (!lines.length) return { ok: true, n: 0 };
+    log(`run <span class="dim">${esc(label)}</span> · ${lines.length} line(s)`, "dim");
+    for (const call of lines) await execCmdCall(call);
+    S.cmdRan = true;
+    return { ok: true, n: lines.length };
+  }
+
+  async function fetchCmdFile() {
+    if (CFG.cmdEnabled === false) return "";
+    const name = CFG.cmdFile || "arcade.cmd";
+    const urls = [
+      new URL(name, location.href).href,
+      rawURL(name),
+      fileURL(name),
+    ];
+    const seen = new Set();
+    for (const u of urls) {
+      if (!u || seen.has(u)) continue;
+      seen.add(u);
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch(u, { signal: ctrl.signal, cache: "no-store" });
+        clearTimeout(t);
+        if (r.ok) return { text: await r.text(), url: u };
+      } catch { /* try next */ }
+    }
+    return null;
+  }
+
+  async function loadAndRunCmd() {
+    const hit = await fetchCmdFile();
+    if (!hit?.text) {
+      log(`no <span class="dim">${esc(CFG.cmdFile || "arcade.cmd")}</span> (optional)`, "dim");
+      return;
+    }
+    log(`loaded cmd from <span class="dim">${esc(hit.url.replace(/^https?:\/\//, ""))}</span>`, "dim");
+    await runCmdScript(hit.text, CFG.cmdFile || "arcade.cmd");
+  }
+
+  async function reloadCmd() {
+    clearCmdTimers();
+    await loadAndRunCmd();
+    renderTicker();
+  }
+
+  function clearCmdTimers() {
+    for (const t of cmdTimers) clearTimeout(t);
+    cmdTimers.length = 0;
+  }
+
+  /* ==================================================================
      [MK-0z5t2 + MK-g1n4l9] RENDER / CARD ART / LAUNCHER
      ================================================================== */
   function initialsPlate(g) {
@@ -1030,6 +1270,7 @@ const ARCADE = (() => {
     const credits = Object.values(S.plays).reduce((a, b) => a + b, 0);
     if (credits) parts.push(`<span><i class="fa-solid fa-coins text-[var(--cyan)]"></i> TOTAL PLAYS · ${credits}</span>`);
     if (S.source && S.source !== "—") parts.push(`<span><i class="fa-solid fa-satellite text-[var(--ice)]"></i> SYNC · ${esc(S.source)}</span>`);
+    for (const line of S.cmdTicker) parts.push(`<span><i class="fa-solid fa-bullhorn text-[var(--amber)]"></i> ${esc(String(line).toUpperCase())}</span>`);
     if (!parts.length) parts.push(`<span class="text-[var(--dim)]">MOUNTING VAULT…</span>`);
     const one = parts.join("");
     $("#ticker").innerHTML = one + one;
@@ -1108,6 +1349,7 @@ const ARCADE = (() => {
       [`local GAMES overrides: <span class="dim">${GAMES.length}</span> · metadata file: <span class="dim">${esc(CFG.infoFile || "info.json")}</span>`, 100],
     ];
     for (const [m, d] of steps) { log(m); await sleep(d); }
+    try { await loadAndRunCmd(); } catch (e) { log("cmd error: " + esc(e.message), "warn"); }
     try {
       await Promise.race([build(), sleep(3500)]);
     } catch (e) {
@@ -1266,7 +1508,7 @@ const ARCADE = (() => {
   }
 
   /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
-  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, CFG, GAMES, key, S };
+  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, runCmd: runCmdScript, showAnnouncement, CFG, GAMES, key, S };
 })();
 
 document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
