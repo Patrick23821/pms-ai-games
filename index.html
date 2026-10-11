@@ -489,6 +489,8 @@ const CFG = {
   repoCacheMinutes: 15,                        /* [MK-c8r2e1] skip GitHub API if cache is fresh */
   cmdFile: "arcade.cmd",                       /* [MK-z9cmd1] operator script next to arcade.html */
   cmdEnabled: true,
+  /* Paste commands here if arcade.cmd cannot load (runs after file, or alone if file missing): */
+  cmdInline: "",
 };
 
 /* ==========================================================================
@@ -522,6 +524,7 @@ const ARCADE = (() => {
     io: null,
     cmdTicker: [],
     cmdRan: false,
+    cmdStartupToasts: [],
   };
 
   /* ---------- tiny utils ---------- */
@@ -921,8 +924,15 @@ const ARCADE = (() => {
     return { name, args: splitCmdArgs(m[2].trim()) };
   }
 
+  function normalizeCmdText(text) {
+    return String(text || "")
+      .replace(/^\uFEFF/, "")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[\u2018\u2019]/g, "'");
+  }
+
   function parseCmdScript(text) {
-    return String(text || "").split(/\r?\n/).map(parseCmdLine).filter(Boolean);
+    return normalizeCmdText(text).split(/\r?\n/).map(parseCmdLine).filter(Boolean);
   }
 
   function cmdNum(v, d = 0) {
@@ -950,7 +960,11 @@ const ARCADE = (() => {
     switch (n) {
       case "StartUpAnnouncement":
         log(`▸ ${esc(a[0] || "")}`, "dim");
-        if (a[0]) S.cmdTicker.push(String(a[0]));
+        if (a[0]) {
+          const msg = String(a[0]);
+          S.cmdTicker.push(msg);
+          S.cmdStartupToasts.push(msg);
+        }
         await sleep(280);
         break;
       case "Announcement":
@@ -1007,16 +1021,21 @@ const ARCADE = (() => {
     log(`run <span class="dim">${esc(label)}</span> · ${lines.length} line(s)`, "dim");
     for (const call of lines) await execCmdCall(call);
     S.cmdRan = true;
+    renderTicker();
     return { ok: true, n: lines.length };
   }
 
   async function fetchCmdFile() {
-    if (CFG.cmdEnabled === false) return "";
+    if (CFG.cmdEnabled === false) return null;
     const name = CFG.cmdFile || "arcade.cmd";
+    const bust = "?t=" + Date.now();
+    const base = location.href.replace(/[#?].*$/, "");
+    const dir = base.replace(/[^/]+$/, "");
     const urls = [
-      new URL(name, location.href).href,
-      rawURL(name),
-      fileURL(name),
+      dir + name + bust,
+      new URL(name, base).href + bust,
+      rawURL(name) + bust,
+      fileURL(name) + bust,
     ];
     const seen = new Set();
     for (const u of urls) {
@@ -1027,20 +1046,45 @@ const ARCADE = (() => {
         const t = setTimeout(() => ctrl.abort(), 8000);
         const r = await fetch(u, { signal: ctrl.signal, cache: "no-store" });
         clearTimeout(t);
-        if (r.ok) return { text: await r.text(), url: u };
+        if (!r.ok) continue;
+        const text = normalizeCmdText(await r.text());
+        if (!text.trim() || /404|not found/i.test(text.slice(0, 120))) continue;
+        return { text, url: u.replace(/\?t=\d+$/, "") };
       } catch { /* try next */ }
     }
     return null;
   }
 
   async function loadAndRunCmd() {
+    if (CFG.cmdEnabled === false) return;
+    let ran = 0;
     const hit = await fetchCmdFile();
-    if (!hit?.text) {
-      log(`no <span class="dim">${esc(CFG.cmdFile || "arcade.cmd")}</span> (optional)`, "dim");
-      return;
+    if (hit?.text?.trim()) {
+      log(`loaded cmd from <span class="dim">${esc(hit.url.replace(/^https?:\/\//, ""))}</span>`, "dim");
+      const r = await runCmdScript(hit.text, CFG.cmdFile || "arcade.cmd");
+      ran += r.n || 0;
+    } else {
+      log(`no <span class="warn">${esc(CFG.cmdFile || "arcade.cmd")}</span> — upload it next to arcade.html`, "warn");
     }
-    log(`loaded cmd from <span class="dim">${esc(hit.url.replace(/^https?:\/\//, ""))}</span>`, "dim");
-    await runCmdScript(hit.text, CFG.cmdFile || "arcade.cmd");
+    const inline = normalizeCmdText(CFG.cmdInline || "").trim();
+    if (inline) {
+      log(`run <span class="dim">CFG.cmdInline</span>`, "dim");
+      const r = await runCmdScript(inline, "CFG.cmdInline");
+      ran += r.n || 0;
+    }
+    if (ran) log(`operator cmd · <span class="dim">${ran} line(s) executed</span>`, "dim");
+    else if (!hit?.text && !inline) log(`cmd idle — add <span class="dim">arcade.cmd</span> or <span class="dim">CFG.cmdInline</span>`, "dim");
+    try { console.info("[Omega Arcade] cmd", { ran, ticker: S.cmdTicker.length, file: hit?.url || null }); } catch { }
+  }
+
+  async function flushStartupToasts() {
+    const q = S.cmdStartupToasts.splice(0, S.cmdStartupToasts.length);
+    if (!q.length) return;
+    await sleep(400);
+    for (const msg of q) {
+      showAnnouncement(msg, "gold", 11000);
+      await sleep(450);
+    }
   }
 
   async function reloadCmd() {
@@ -1241,7 +1285,7 @@ const ARCADE = (() => {
     const credits = Object.values(S.plays).reduce((a, b) => a + b, 0);
     if (credits) parts.push(`<span><i class="fa-solid fa-coins text-[var(--cyan)]"></i> TOTAL PLAYS · ${credits}</span>`);
     if (S.source && S.source !== "—") parts.push(`<span><i class="fa-solid fa-satellite text-[var(--ice)]"></i> SYNC · ${esc(S.source)}</span>`);
-    for (const line of S.cmdTicker) parts.push(`<span><i class="fa-solid fa-bullhorn text-[var(--amber)]"></i> ${esc(String(line).toUpperCase())}</span>`);
+    for (const line of S.cmdTicker) parts.unshift(`<span><i class="fa-solid fa-bullhorn text-[var(--amber)]"></i> ${esc(String(line).toUpperCase())}</span>`);
     if (!parts.length) parts.push(`<span class="text-[var(--dim)]">MOUNTING VAULT…</span>`);
     const one = parts.join("");
     $("#ticker").innerHTML = one + one;
@@ -1326,8 +1370,9 @@ const ARCADE = (() => {
     } catch (e) {
       log("build error: " + esc(e.message), "err");
     }
-    await sleep(200);
+    await sleep(S.cmdStartupToasts.length ? 900 : 200);
     dismissBoot();
+    flushStartupToasts();
   }
   const dismissBoot = () => { const b = $("#boot"); if (b && !b.classList.contains("done")) { b.classList.add("done"); setTimeout(() => b.remove(), 600); } };
 
