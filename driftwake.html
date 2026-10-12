@@ -40556,6 +40556,17 @@ class vS {
   setNameTagVisible(e) {
     this.nameTag && (this.nameTag.visible = e);
   }
+  setMateVisible(e) {
+    if (e && !this.mateRing) {
+      const t = new Wo(0.52, 0.64, 14),
+        n = new zs({ color: "#3ee6ff", transparent: !0, opacity: 0.5, depthWrite: !1, fog: !1 });
+      ((this.mateRing = new je(t, n)),
+        (this.mateRing.rotation.x = Math.PI / 2),
+        this.mateRing.position.set(0, 2.12, 0),
+        this.group.add(this.mateRing));
+    }
+    this.mateRing && (this.mateRing.visible = !!e);
+  }
   setHeld(e) {
     (this.weaponMesh &&
       (this.weaponHolder.remove(this.weaponMesh),
@@ -42109,10 +42120,37 @@ function cc(r) {
       localStorage.setItem(yS, e);
     } catch {}
 }
+function detectLowTierDevice() {
+  try {
+    const r = navigator.userAgent || "",
+      e = navigator.hardwareConcurrency || 8,
+      t = navigator.deviceMemory || 8;
+    return /CrOS/i.test(r) || e <= 4 || t <= 4;
+  } catch {
+    return !1;
+  }
+}
 class VR {
   state = {
     screen: "home",
-      settings: { bots: 24, sensitivity: 1, muted: !1, shadows: !0, rtx: !0, playerName: GR(), autoAdsCrouch: (() => { try { return localStorage.getItem("driftwake.autoAdsCrouch") === "1"; } catch { return !1; } })() },
+      settings: (() => {
+        const r = detectLowTierDevice();
+        return {
+          bots: r ? 16 : 24,
+          sensitivity: 1,
+          muted: !1,
+          shadows: !r,
+          rtx: !r,
+          playerName: GR(),
+          autoAdsCrouch: (() => {
+            try {
+              return localStorage.getItem("driftwake.autoAdsCrouch") === "1";
+            } catch {
+              return !1;
+            }
+          })(),
+        };
+      })(),
     loadout: zR(),
     hud: null,
     result: null,
@@ -42168,7 +42206,7 @@ const nextFrame = (r) => {
 let HB = null,
   GAME = null;
 const PARTY_MODES = [
-  { id: "ffa", name: "Free for all", note: "Everyone for themselves", size: 1, vs: !1 },
+  { id: "ffa", name: "Solos", note: "Everyone for themselves", size: 1, vs: !1 },
   { id: "duos", name: "Duos", note: "Teams of 2 - party teams up", size: 2, vs: !1 },
   { id: "trios", name: "Trios", note: "Teams of 3 - party teams up", size: 3, vs: !1 },
   { id: "squads", name: "Squads", note: "Teams of 4 - party teams up", size: 4, vs: !1 },
@@ -42189,6 +42227,12 @@ function assignTeams(r, e) {
     n
   );
 }
+function teamBadge(r, e) {
+  const t = partyMode(r);
+  if (t.size < 2) return null;
+  return t.vs ? (e === 0 ? "A" : e === 1 ? "B" : "S" + (e - 1)) : "T" + (e + 1);
+}
+const TEAM_QUICK = ["ffa", "duos", "trios", "squads"];
 const ROOM_MODES = [
     { id: "br", name: "Battle Royale", note: "Skyferry drop, shrinking Surge, last one standing" },
     { id: "zonewars", name: "Zone Wars", note: "Spawn armed inside a fast-closing zone - no respawns", set: { loadout: "full", infiniteMats: !0 } },
@@ -42710,8 +42754,9 @@ class XR {
       this.scene.add(o),
       (this.sun = new $m(16773590, 1.7)),
       this.sun.position.set(60, 90, 40),
-      (this.sun.castShadow = n.shadows),
-      this.sun.shadow.mapSize.set(1024, 1024),
+      (this.lowPerf = !!n.lowPerf),
+      (this.sun.castShadow = n.shadows && !this.lowPerf),
+      this.sun.shadow.mapSize.set(this.lowPerf ? 512 : 1024, this.lowPerf ? 512 : 1024),
       (this.sun.shadow.camera.near = 10),
       (this.sun.shadow.camera.far = 340),
       (this.sun.shadow.camera.left = -75),
@@ -42883,7 +42928,9 @@ class XR {
         computeTrajectory: (T, R, O, D) => this.computeThrowableTrajectory(T, R, O, D),
         setTrajectory: (T, R) => this.setTrajectoryVisual(T, R),
       }));
-    const S = Math.max(0, Math.min(Ci.maxBots, n.session ? n.bots : Ci.soloBots));
+    const botCap = this.lowPerf ? 28 : Ci.maxBots,
+      soloCap = this.lowPerf ? 32 : Ci.soloBots;
+    const S = Math.max(0, Math.min(botCap, n.session ? n.bots : soloCap));
     for (let T = 0; T < S; T++) {
       const R = b[T % b.length],
         w = T >= y.length ? `-${Math.floor(T / y.length) + 1}` : "",
@@ -43970,6 +44017,8 @@ class XR {
         c = (d, m = 0) => (typeof t[d] == "number" && Number.isFinite(t[d]) ? t[d] : m),
         h = ["ferry", "skydive", "glide", "ground"].includes(String(t.mode)) ? t.mode : "ground",
         f = typeof t.weapon == "string" ? t.weapon : null;
+      (this.teamMode && typeof t.team == "number" && Number.isInteger(t.team) && (o.team = t.team),
+        this.teamMode && Number.isInteger(this.teamMap?.[e.from]) && (o.team = this.teamMap[e.from]));
       if (
         (this.remoteTargets.set(e.from, {
           pos: new H(c("x"), c("y"), c("z")),
@@ -44193,6 +44242,7 @@ class XR {
       aiming: e.aiming,
       speed: Math.hypot(e.vel.x, e.vel.z),
       weapon: e.inventory.activeWeapon?.def.id ?? (e.inventory.active === -1 ? "tool" : null),
+      team: e.team,
     });
   }
   start() {
@@ -44322,8 +44372,8 @@ class XR {
       this.structures.update(e),
       this.controller.updateCamera(e, this.playerWorld),
       this.statics.update(this.camera.position, e),
-      this.mapGen.update(e),
-      this.props.update(this.time, this.camera.position, e),
+      (!this.lowPerf || this.frame % 2 === 0) && this.mapGen.update(e),
+      (!this.lowPerf || this.frame % 2 === 0) && this.props.update(this.time, this.camera.position, e),
       (this.water.position.y = xt.waterLevel + Math.sin(this.time * 0.8) * 0.045),
       this.pickups.update(this.time, this.camera.position, e),
       this.effects.update(e, this.camera.position),
@@ -45043,7 +45093,11 @@ class XR {
     if (((this.tagTimer -= e), this.tagTimer > 0)) return;
     this.tagTimer = 0.5;
     const t = this.phase === "warmup";
-    for (const n of this.characters) n !== this.player && n.model.setNameTagVisible(t || this.isMate(n));
+    for (const n of this.characters) {
+      if (n === this.player) continue;
+      const a = this.isMate(n);
+      (n.model.setNameTagVisible(t || a), n.model.setMateVisible(a && n.alive && n.mode !== "ferry"));
+    }
   }
   bgWorker = null;
   startBackgroundTicker() {
@@ -45148,6 +45202,7 @@ class XR {
         kills: e.kills,
         supply: this.supply.map((A) => ({ x: A.x, z: A.z })),
         spectating: isSpec ? { name: this.controller.spectate.name, count: this.spectateCount ?? 1 } : null,
+        teamLabel: this.teamMode ? this.matchMode.name : null,
         mates: this.teamMode ? this.characters.filter((A) => A.alive && this.isMate(A) && A.mode !== "ferry").map((A) => ({ x: A.pos.x, z: A.pos.z, name: A.name })) : [],
         zone:
           n || e.mode === "ferry"
@@ -45219,6 +45274,8 @@ class XR {
     });
   }
   dispose(e = !1) {
+    if (this._disposing) return;
+    this._disposing = !0;
     ((this.disposed = !0), this.bgWorker?.terminate(), (this.bgWorker = null));
     (cancelAnimationFrame(this.raf),
       window.removeEventListener("keydown", this.escHandler),
@@ -45253,8 +45310,10 @@ class XR {
     (this.scene.traverse((t) => {
       t instanceof je && t.geometry?.dispose();
     }),
-      this.audio.dispose(),
-      this.scene.clear());
+      this.audio.dispose());
+    try {
+      this.scene.clear();
+    } catch {}
   }
 }
 class WR {
@@ -49936,7 +49995,20 @@ function bD(r) {
                       children: A
                         ? z.jsxs(z.Fragment, {
                             children: [
-                              z.jsx(fb, { network: n, copied: v, onCopy: T, onLeave: r.onLeaveSession, expanded: !0 }),
+                              z.jsx(fb, {
+                                network: n,
+                                copied: v,
+                                onCopy: T,
+                                onLeave: r.onLeaveSession,
+                                expanded: !0,
+                                onTeams:
+                                  n.role === "host"
+                                    ? (R) => {
+                                        const w = cleanRoom(n.room);
+                                        r.onRoom({ ...w, o: { ...w.o, teams: R } });
+                                      }
+                                    : void 0,
+                              }),
                               n.kind === "party" && n.status === "lobby" && z.jsx(RoomPanel, { network: n, onRoom: r.onRoom }),
                               n.kind === "party" &&
                                 n.role === "host" &&
@@ -50026,7 +50098,12 @@ function lm({ label: r, value: e, note: t }) {
     ],
   });
 }
-function fb({ network: r, copied: e, onCopy: t, onLeave: n, expanded: a = !1 }) {
+function fb({ network: r, copied: e, onCopy: t, onLeave: n, expanded: a = !1, onTeams: o }) {
+  const lobbyRoom = r.kind === "party" && r.status === "lobby" && r.room ? cleanRoom(r.room) : null,
+    teamsId = lobbyRoom?.o?.teams ?? "ffa",
+    teamPreview =
+      lobbyRoom && teamsId !== "ffa" && r.players?.length ? assignTeams(r.players.map((c) => c.id), teamsId) : null,
+    pm = partyMode(teamsId);
   return r.status === "idle"
     ? z.jsxs("div", {
         className: "rounded-2xl border border-white/10 bg-[#101e28]/70 p-4 text-center backdrop-blur-xl",
@@ -50100,13 +50177,39 @@ function fb({ network: r, copied: e, onCopy: t, onLeave: n, expanded: a = !1 }) 
                 className:
                   "mt-3 flex items-center justify-between text-[9px] font-black uppercase tracking-[0.18em] text-white/45",
                 children: [
-                  z.jsx("span", { children: "Squad" }),
+                  z.jsx("span", { children: pm.size > 1 ? pm.name : "Party" }),
                   z.jsxs("span", { children: [r.players.length, "/8"] }),
                 ],
               }),
+              lobbyRoom &&
+                z.jsx("p", {
+                  className: "mt-1 text-[10px] font-semibold text-cyan-100/80",
+                  children: pm.size > 1 ? pm.note : "Solos — every drifter for themselves",
+                }),
+              a &&
+                lobbyRoom &&
+                r.role === "host" &&
+                o &&
+                z.jsx("div", {
+                  className: "mt-2 grid grid-cols-4 gap-1",
+                  children: TEAM_QUICK.map((c) =>
+                    z.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => o(c),
+                        className:
+                          "rounded-md px-1 py-1.5 text-[8px] font-black uppercase tracking-wide " +
+                          (teamsId === c ? "bg-cyan-300 text-[#10202a]" : "bg-white/8 text-white/75 hover:bg-white/14"),
+                        children: partyMode(c).name.replace("Solos", "Solo").replace("Duos", "Duo").replace("Trios", "Trio"),
+                      },
+                      c,
+                    ),
+                  ),
+                }),
               z.jsx("div", {
                 className: `mt-2 space-y-1.5 ${a ? "" : "max-h-40 overflow-auto"}`,
-                children: r.players.map((o) =>
+                children: r.players.map((c) =>
                   z.jsxs(
                     "div",
                     {
@@ -50114,17 +50217,22 @@ function fb({ network: r, copied: e, onCopy: t, onLeave: n, expanded: a = !1 }) 
                       children: [
                         z.jsx("span", {
                           className: "h-2.5 w-2.5 shrink-0 rounded-full",
-                          style: { backgroundColor: o.color },
+                          style: { backgroundColor: c.color },
                         }),
-                        z.jsx("span", { className: "truncate font-semibold", children: o.name }),
-                        o.host &&
+                        z.jsx("span", { className: "truncate font-semibold", children: c.name }),
+                        teamPreview &&
+                          z.jsx("span", {
+                            className: "shrink-0 rounded bg-cyan-300/15 px-1.5 py-0.5 font-mono text-[9px] font-black text-cyan-100",
+                            children: teamBadge(teamsId, teamPreview[c.id]),
+                          }),
+                        c.host &&
                           z.jsx("span", {
                             className: "ml-auto shrink-0 text-[8px] font-black uppercase text-amber-200",
                             children: "Host",
                           }),
                       ],
                     },
-                    o.id,
+                    c.id,
                   ),
                 ),
               }),
@@ -50676,6 +50784,19 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
                 " P2P link / ",
                 n.players.length,
                 " drifters",
+              ],
+            }),
+          r.teamLabel &&
+            z.jsxs("div", {
+              className: "max-w-[220px] rounded-lg border border-cyan-300/25 bg-cyan-950/50 px-2.5 py-1.5 text-[10px] backdrop-blur",
+              children: [
+                z.jsx("div", { className: "font-black uppercase tracking-wider text-cyan-200", children: r.teamLabel }),
+                (r.mates?.length ?? 0) > 0
+                  ? z.jsx("div", {
+                      className: "mt-0.5 font-semibold text-cyan-50/90",
+                      children: r.mates.map((g) => g.name).join(" · "),
+                    })
+                  : z.jsx("div", { className: "mt-0.5 text-white/45", children: "No teammates alive" }),
               ],
             }),
         ],
@@ -51691,22 +51812,45 @@ function AD() {
     t = Xt.useRef(null),
     n = Xt.useRef(null),
     a = Xt.useRef(null),
-    o = Xt.useRef(null);
+    o = Xt.useRef(null),
+    loadSeq = Xt.useRef(0);
   Xt.useEffect(() => {
     const T = e.current;
     if (!T) return;
-    const R = new sS({ canvas: T, antialias: !0, powerPreference: "high-performance", logarithmicDepthBuffer: !0 });
+    const low = detectLowTierDevice(),
+      R = new sS({
+        canvas: T,
+        antialias: !low,
+        powerPreference: low ? "default" : "high-performance",
+        logarithmicDepthBuffer: !low,
+      });
+    const onCtxLost = (D) => {
+      (D.preventDefault(),
+        loadSeq.current++,
+        n.current?.dispose(!0),
+        (n.current = null),
+        Et.set({ screen: "home", hud: null, result: null, loadingLabel: "" }),
+        a.current?.markLobby());
+    };
+    const onCtxRestored = () => {};
     return (
+      T.addEventListener("webglcontextlost", onCtxLost),
+      T.addEventListener("webglcontextrestored", onCtxRestored),
       R.setPixelRatio(1),
       (R.outputColorSpace = Hn),
       (R.toneMapping = jh),
       (R.toneMappingExposure = 1.05),
-      (R.shadowMap.enabled = !0),
+      (R.shadowMap.enabled = !low),
       (R.shadowMap.type = gb),
       R.setClearColor(9425919),
       (t.current = R),
       () => {
-        (n.current?.dispose(), (n.current = null), R.dispose(), (t.current = null));
+        (T.removeEventListener("webglcontextlost", onCtxLost),
+          T.removeEventListener("webglcontextrestored", onCtxRestored),
+          n.current?.dispose(),
+          (n.current = null),
+          R.dispose(),
+          (t.current = null));
       }
     );
   }, []);
@@ -51714,7 +51858,9 @@ function AD() {
     const R = e.current,
       w = t.current;
     if (!R || !w) return;
-    const D = Et.state.settings;
+    const D = Et.state.settings,
+      mySeq = ++loadSeq.current,
+      lowPerf = detectLowTierDevice() || D.rtx === !1;
     (cc(D.playerName),
       xS(Et.state.loadout),
       Et.set({
@@ -51726,35 +51872,58 @@ function AD() {
       a.current?.markPlaying(),
       nextFrame(() =>
         nextFrame(() => {
-          if (Et.state.screen !== "loading") return;
-          (n.current?.dispose(!0), applyRoom(T?.room ?? null));
-          const N = T !== null ? a.current : null,
-            O = new XR(
-              R,
-              w,
-              {
-                bots: T?.bots ?? D.bots,
-                sensitivity: D.sensitivity,
-                muted: D.muted,
-                shadows: D.shadows,
-                rtx: D.rtx !== !1,
-                playerName: D.playerName,
-                loadout: Et.state.loadout,
-                seed: T?.seed,
-                session: N,
-                warmupSeconds: T?.warmupSeconds ?? 0,
-                mode: ROOM.teams ?? "ffa",
-                teams: T?.teams,
-              },
-              {
-                onEnd: (E) => Et.set({ screen: E.won ? "victory" : "defeat", result: E }),
-                onPauseChange: (E) => {
-                  (Et.state.screen === "playing" || Et.state.screen === "paused") &&
-                    Et.set({ screen: E ? "paused" : "playing" });
+          if (Et.state.screen !== "loading" || mySeq !== loadSeq.current) return;
+          const prev = n.current;
+          n.current = null;
+          try {
+            prev?.dispose(!0);
+          } catch {}
+          try {
+            applyRoom(T?.room ?? null);
+            const N = T !== null ? a.current : null,
+              O = new XR(
+                R,
+                w,
+                {
+                  bots: T?.bots ?? D.bots,
+                  sensitivity: D.sensitivity,
+                  muted: D.muted,
+                  shadows: D.shadows && !lowPerf,
+                  rtx: D.rtx !== !1 && !lowPerf,
+                  lowPerf,
+                  playerName: D.playerName,
+                  loadout: Et.state.loadout,
+                  seed: T?.seed,
+                  session: N,
+                  warmupSeconds: T?.warmupSeconds ?? 0,
+                  mode: ROOM.teams ?? "ffa",
+                  teams: T?.teams,
                 },
-              },
-            );
-          ((n.current = O), Et.set({ screen: "playing", online: !!N, matchId: Et.state.matchId + 1 }), O.start());
+                {
+                  onEnd: (E) => Et.set({ screen: E.won ? "victory" : "defeat", result: E }),
+                  onPauseChange: (E) => {
+                    (Et.state.screen === "playing" || Et.state.screen === "paused") &&
+                      Et.set({ screen: E ? "paused" : "playing" });
+                  },
+                },
+              );
+            if (mySeq !== loadSeq.current) {
+              O.dispose(!0);
+              return;
+            }
+            ((n.current = O), Et.set({ screen: "playing", online: !!N, matchId: Et.state.matchId + 1 }), O.start());
+          } catch (E) {
+            console.error(E);
+            if (mySeq !== loadSeq.current) return;
+            (a.current?.markLobby(),
+              Et.set({
+                screen: "home",
+                hud: null,
+                result: null,
+                loadingLabel: "",
+                network: { ...Et.state.network, error: "Match failed to load. Turn off RTX & Shadows in settings, then retry." },
+              }));
+          }
         }),
       ));
   }, []);
@@ -51825,7 +51994,8 @@ function AD() {
       (a.current?.leave(), Et.set({ publicCountdown: null }));
     }, []),
     y = Xt.useCallback(() => {
-      (n.current?.dispose(),
+      (loadSeq.current++,
+        n.current?.dispose(),
         (n.current = null),
         a.current?.markLobby(),
         Et.set({ screen: "home", hud: null, result: null }));
