@@ -26,6 +26,14 @@
       "hidden": false
     },
     {
+      "file": "murdermayhem.html",
+      "title": "Murder Mayhem",
+      "tagline": "A game of social deduction.",
+      "tags": ["multiplayer", "fun", "casual"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/murdermayhem.webp",
+      "hidden": false
+    },
+    {
       "file": "ultimate_jenga.html",
       "title": "Ultimate Jenga",
       "tagline": "It actually works differently than jenga so no i'm wrong",
