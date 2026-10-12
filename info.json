@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "floodescape.html",
+      "title": "Flood Escape",
+      "tagline": "Escape the rising flood, self explanatory. Based off of flood escape 2 on Roblox.",
+      "tags": ["multiplayer", "fun", "casual"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/floodescape.webp",
+      "hidden": false
+    },
+    {
       "file": "ultimate_jenga.html",
       "title": "Ultimate Jenga",
       "tagline": "It actually works differently than jenga so no i'm wrong",
