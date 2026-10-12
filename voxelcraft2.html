@@ -4133,7 +4133,7 @@ class Player {
     this.enchSeed = Math.floor(Math.random() * 1e9); this.stepDist = 0; this.jumpCd = 0; this.useT = 0; this.blocking = false; this.swing = 0; this.attackCd = 1; this.cdMax = 0.25;
     this.fallStart = null; this.lastTapW = 0; this.tapSprint = false; this.climbing = false;
   }
-  resetStats() { this.health = 20; this.hunger = 20; this.sat = 5; this.exh = 0; this.air = 10; this.fireT = 0; this.invul = 1; this.regenT = 0; this.starveT = 0; this.drownT = 0; this.hazardT = 0; this.dead = false; this.deathCause = ''; this.xp = this.xp || 0; this.level = this.level || 0; this.effects = {}; this.absorb = 0; }
+  resetStats() { this.health = 20; this.hunger = 20; this.sat = 5; this.exh = 0; this.air = 10; this.fireT = 0; this.fireDmgT = 0; this.invul = 1; this.regenT = 0; this.starveT = 0; this.drownT = 0; this.hazardT = 0; this.dead = false; this.deathCause = ''; this.xp = this.xp || 0; this.level = this.level || 0; this.effects = {}; this.absorb = 0; }
   /* ---------------- status effects ---------------- */
   addEffect(k, sec, amp = 0) {
     if (!EFFECTS[k]) return false; const e = this.effects[k];
@@ -4248,7 +4248,17 @@ class Player {
     else this.air = Math.min(10, this.air + dt * 5);
     if (this.inLava) { this.fireT = 8; this.hazardT += dt; if (this.hazardT >= 0.5) { this.hazardT = 0; this.damage(4, 'Tried to swim in lava', null, { fire: true }); } }
     if (touchingBlock(W, this, id => id === B.fire)) this.fireT = Math.max(this.fireT, 8);
-    if (this.fireT > 0) { const pf = this.fireT; this.fireT -= dt; if (this.inWater) this.fireT = 0; if (Math.floor(pf) !== Math.floor(this.fireT) && !this.inLava) this.damage(1, 'Burned to death', null, { fire: true, dot: true }); }
+    if (this.fireT > 0) {
+      this.fireT -= dt;
+      if (this.inWater) { this.fireT = 0; this.fireDmgT = 0; }
+      else if (!this.inLava) {
+        this.fireDmgT = (this.fireDmgT || 0) - dt;
+        if (this.fireDmgT <= 0) {
+          this.fireDmgT = 0.5;
+          this.damage(1, 'Burned to death', null, { fire: true, dot: true });
+        }
+      }
+    } else this.fireDmgT = 0;
     const hw = this.w / 2 + 0.04, bx = blockBoxes(W, this.x - hw, this.y, this.z - hw, this.x + hw, this.y + this.h, this.z + hw, []);
     let cactus = false; for (const b of bx) if (W.getBlock(Math.floor(b[0]), Math.floor(b[1]), Math.floor(b[2])) === B.cactus) cactus = true;
     if (cactus && this.invul <= 0) this.damage(1, 'Was pricked to death');
