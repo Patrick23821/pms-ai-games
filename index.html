@@ -191,7 +191,7 @@ select.field{cursor:pointer}
 @keyframes run{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ---- operator announcements (arcade.cmd) ---- */
-#ann-stack{position:fixed;top:clamp(72px,12vh,110px);left:50%;transform:translateX(-50%);z-index:55;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:min(580px,92vw);width:100%;padding:0 12px}
+#ann-stack{position:fixed;top:clamp(72px,12vh,110px);left:50%;transform:translateX(-50%);z-index:130;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:min(580px,92vw);width:100%;padding:0 12px}
 .ann-toast{
   pointer-events:auto;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
   padding:12px 16px;border:1px solid rgba(47,243,208,.35);background:linear-gradient(165deg,rgba(8,16,28,.94),rgba(6,10,18,.92));
@@ -940,9 +940,20 @@ const ARCADE = (() => {
     return Number.isFinite(n) ? n : d;
   }
 
+  function ensureAnnStack() {
+    let stack = $("#ann-stack");
+    if (stack) return stack;
+    stack = document.createElement("div");
+    stack.id = "ann-stack";
+    stack.setAttribute("aria-live", "polite");
+    stack.setAttribute("aria-atomic", "false");
+    document.body.insertBefore(stack, document.body.firstChild?.nextSibling || null);
+    return stack;
+  }
+
   function showAnnouncement(text, kind = "info", ms = 9000) {
-    const stack = $("#ann-stack");
-    if (!stack || !text) return;
+    const stack = ensureAnnStack();
+    if (!text) return;
     const el = document.createElement("div");
     el.className = "ann-toast" + (kind === "gold" ? " gold" : kind === "warn" ? " warn" : "");
     el.innerHTML = `<span class="text-[var(--cyan)] mr-2">▸</span>${esc(text)}`;
@@ -958,15 +969,19 @@ const ARCADE = (() => {
     const a = call.args;
     const n = call.name;
     switch (n) {
-      case "StartUpAnnouncement":
-        log(`▸ ${esc(a[0] || "")}`, "dim");
-        if (a[0]) {
-          const msg = String(a[0]);
+      case "StartUpAnnouncement": {
+        const msg = a[0] ? String(a[0]) : "";
+        log(`▸ ${esc(msg)}`, "dim");
+        const bootEl = $("#boot");
+        const bootUp = !!(bootEl && !bootEl.classList.contains("done"));
+        if (msg) {
           S.cmdTicker.push(msg);
-          S.cmdStartupToasts.push(msg);
+          if (bootUp) S.cmdStartupToasts.push(msg);
+          else showAnnouncement(msg, "gold", 11000);
         }
-        await sleep(280);
+        await sleep(bootUp ? 280 : 80);
         break;
+      }
       case "Announcement":
         showAnnouncement(a[0], a[1] === "warn" || a[1] === "gold" ? a[1] : "info", cmdNum(a[2], 9000) || 9000);
         if (a[0]) S.cmdTicker.push(String(a[0]));
@@ -1056,7 +1071,7 @@ const ARCADE = (() => {
   }
 
   async function loadAndRunCmd() {
-    if (CFG.cmdEnabled === false) return;
+    if (CFG.cmdEnabled === false) return { ran: 0, hit: null, inline: false };
     let ran = 0;
     const hit = await fetchCmdFile();
     if (hit?.text?.trim()) {
@@ -1074,7 +1089,9 @@ const ARCADE = (() => {
     }
     if (ran) log(`operator cmd · <span class="dim">${ran} line(s) executed</span>`, "dim");
     else if (!hit?.text && !inline) log(`cmd idle — add <span class="dim">arcade.cmd</span> or <span class="dim">CFG.cmdInline</span>`, "dim");
-    try { console.info("[Omega Arcade] cmd", { ran, ticker: S.cmdTicker.length, file: hit?.url || null }); } catch { }
+    const out = { ran, hit, inline: !!inline, ticker: [...S.cmdTicker] };
+    try { console.info("[Omega Arcade] cmd", out); } catch { }
+    return out;
   }
 
   async function flushStartupToasts() {
@@ -1087,10 +1104,33 @@ const ARCADE = (() => {
     }
   }
 
-  async function reloadCmd() {
+  async function reloadCmd(resetTicker = true) {
     clearCmdTimers();
-    await loadAndRunCmd();
+    if (resetTicker) {
+      S.cmdTicker = [];
+      S.cmdStartupToasts = [];
+    }
+    const out = await loadAndRunCmd();
     renderTicker();
+    await flushStartupToasts();
+    if (!out.ran) {
+      showAnnouncement(
+        "arcade.cmd did not run — put arcade.cmd next to arcade.html and push the latest arcade.html (search MK-z9cmd1)",
+        "warn",
+        16000,
+      );
+    }
+    return out;
+  }
+
+  async function probeCmd() {
+    const hit = await fetchCmdFile();
+    if (!hit?.text?.trim()) {
+      showAnnouncement("Could not load arcade.cmd from this page URL", "warn", 12000);
+      return { ok: false, urls: [location.href.replace(/[^/]+$/, "") + (CFG.cmdFile || "arcade.cmd")] };
+    }
+    showAnnouncement("arcade.cmd OK: " + hit.text.trim().split(/\r?\n/)[0].slice(0, 72), "gold", 9000);
+    return { ok: true, url: hit.url, preview: hit.text.trim().slice(0, 200) };
   }
 
   function clearCmdTimers() {
@@ -1524,7 +1564,7 @@ const ARCADE = (() => {
   }
 
   /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
-  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, runCmd: runCmdScript, showAnnouncement, CFG, GAMES, key, S };
+  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, probeCmd, runCmd: runCmdScript, showAnnouncement, cmdEngine: 2, CFG, GAMES, key, S };
 })();
 
 document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
