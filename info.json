@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "ultimate_jenga.html",
+      "title": "Ultimate Jenga",
+      "tagline": "It actually works differently than jenga so no i'm wrong",
+      "tags": ["multiplayer", "party", "fun"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/ultimate_jenga.webp",
+      "hidden": false
+    },
+    {
       "file": "blankd.html",
       "title": "Blank'd",
       "tagline": "A funny unfunny card game.",
