@@ -3806,10 +3806,12 @@ const Host = {
   stop() { this.active = false; this.players.clear(); this.round = null; Bots.reset(); },
 
   /* ---------------- players ---------------- */
+  /** True while a round is running: newcomers / dead players who leave spectating wait in the lobby. */
+  _midRound() { return !!this.round && (this.phase === 'play' || this.phase === 'intro'); },
   _newPlayer(id, name, look, bot) {
-    const sp = this.grid.spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
-    return { id, name, look, bot, ready: !!bot, x: sp.x, y: 0, z: sp.z, yaw: sp.yaw, pitch: 0, a: 0, sel: -1, fl: 0, alive: this.phase === 'lobby' || this.phase === 'end', role: null,
-      slots: this.phase === 'lobby' ? LOBBY_SLOTS.concat([null]) : [null, null, null, null], uses: {}, shield: false, armor: false, poisonT: 0, coins: 0, kills: 0, cd: {}, joined: U.now(), stT: 0, tp: U.now() };
+    const wait = this._midRound() && !bot, sp = (wait ? MapKit.get('lobby') : this.grid).spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
+    return { id, name, look, bot, ready: !!bot, x: sp.x, y: 0, z: sp.z, yaw: sp.yaw, pitch: 0, a: 0, sel: -1, fl: 0, alive: this.phase === 'lobby' || this.phase === 'end', role: null, ghost: wait,
+      slots: this.phase === 'lobby' || wait ? LOBBY_SLOTS.concat([null]) : [null, null, null, null], uses: {}, shield: false, armor: false, poisonT: 0, coins: 0, kills: 0, cd: {}, joined: U.now(), stT: 0, tp: U.now() };
   },
   /** Room-unique display name: "User", "User (2)", "User (3)"… (case-insensitive; suffix is temporary, per room). */
   uniqueName(name, id) {
@@ -3823,7 +3825,7 @@ const Host = {
     if (this.players.size >= CONFIG.MAX_PLAYERS) this._removeBot(true);
     const P = this._newPlayer(from, this.uniqueName(m.name, from), m.look, false);
     this.players.set(from, P);
-    Net.sendTo(from, { t: 'welcome', id: from, phase: this.phase, map: this.map, end: this.phaseEnd, cfg: this.cfg, code: Net.code, host: Net.myId, p: [P.x, P.z, P.yaw] });
+    Net.sendTo(from, { t: 'welcome', id: from, phase: this.phase, map: this.map, end: this.phaseEnd, cfg: this.cfg, code: Net.code, host: Net.myId, p: [P.x, P.z, P.yaw], wait: !!P.ghost });
     if (this.phase !== 'lobby') Net.sendTo(from, { t: 'you', role: null, slots: P.slots, uses: {}, spectate: true });
     else this._sendYou(P);
     Net.sendTo(from, { t: 'votes', v: this._tally() });
@@ -3842,12 +3844,13 @@ const Host = {
     this.sys(`${P.name} left.`); this.syncBots(); this.roster(); this.needEval = true;
   },
   onLook(m, from) { const P = this.players.get(from); if (!P) return; P.look = m.look; Net.broadcast({ t: 'look', id: from, look: m.look }); },
-  /** Dead player toggles between spectating the round and wandering the lobby as a ghost. */
+  /** Dead player (or mid-round newcomer) toggles between spectating the round and waiting in the lobby as a normal lobby player. */
   onGhost(m, from) {
     const P = this.players.get(from); if (!P || P.bot) return;
     const v = !!m.v && !!this.round && (this.phase === 'play' || this.phase === 'intro') && !P.alive;
     if (v === !!P.ghost) return;
-    P.ghost = v; P.tp = U.now(); P.sel = -1;
+    P.ghost = v; P.tp = U.now(); P.sel = -1; P.cd = {}; P.uses = {};
+    P.slots = v ? LOBBY_SLOTS.concat([null]) : [null, null, null, null];   // lobby kit while waiting, nothing while spectating
     if (!v && this.round) {   // back to the round map: resync coins + dropped gun
       Net.sendTo(from, { t: 'coins', list: [...this.round.coins].map(([k, c]) => [k, c.x, c.z]) });
       if (this.round.gun) Net.sendTo(from, { t: 'gun', x: this.round.gun.x, z: this.round.gun.z, skin: this.round.gun.skin });
@@ -3863,7 +3866,7 @@ const Host = {
     if (!SG.walkableAt(m.p[0], m.p[2]) && !this._nearWalk(m.p[0], m.p[2], SG)) return;
     P.x = m.p[0]; P.y = U.clamp(m.p[1], 0, 3); P.z = m.p[2]; P.yaw = m.y; P.pitch = m.pi; P.a = m.a; P.fl = m.fl;
     P.sel = m.sel >= 0 && P.slots[m.sel] ? m.sel : -1;
-    if (this.phase === 'intro' && P.slots[P.sel] === 'knife') P.sel = -1;   // knife locked until "Hunt them down"
+    if (this.phase === 'intro' && !P.ghost && P.slots[P.sel] === 'knife') P.sel = -1;   // knife locked until "Hunt them down"
   },
   _nearWalk(x, z, g = this.grid) { const C = CONFIG.CELL; for (const [dx, dz] of [[0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5]]) if (g.walkableAt(x + dx, z + dz)) return true; const [cx, cy] = g.cellOf(x, z); const t = g.type(cx, cy); void C; return t === CT.FLOOR || t === CT.DOOR; },
   onChat(m, from) {
@@ -4080,9 +4083,9 @@ const Host = {
 
   /* ---------------- actions (humans via net, bots directly) ---------------- */
   act(P, m) {
-    const now = U.now(), ph = this.phase, live = ph === 'play', lobby = ph === 'lobby' || ph === 'end';
+    const now = U.now(), ph = this.phase, wait = !!P.ghost, live = ph === 'play' && !wait, lobby = ph === 'lobby' || ph === 'end' || wait, G = wait ? MapKit.get('lobby') : this.grid, lw = wait ? 1 : 0;
     if (!P.alive && !lobby) return;
-    const item = this._item(P), anim = k => Net.broadcast({ t: 'act', id: P.id, k }, { except: P.bot ? undefined : P.id });
+    const item = this._item(P), anim = k => Net.broadcast({ t: 'act', id: P.id, k, lw }, { except: P.bot ? undefined : P.id });
     switch (m.k) {
       case 'swing': if (item === 'knife' || item === 'propknife' || item === 'blade') { if (this._cd(P, 'swing', 0.35)) anim('swing'); } break;
       case 'stab': {
@@ -4097,26 +4100,26 @@ const Host = {
       }
       case 'throw': {
         if (item !== 'knife' || !m.o || !m.d || (!live && !lobby)) return;
-        if (lobby && this.grid.id === 'lobby' && !this.grid.inRange(P.x, P.z, 'k')) return;   // lobby knives: Knife Range only
+        if (lobby && G.id === 'lobby' && !G.inRange(P.x, P.z, 'k')) return;   // lobby knives: Knife Range only
         if (!this._cd(P, 'throw', lobby ? 1.2 : CONFIG.THROW_CD)) return;
         if (U.dist(P.x, P.z, m.o[0], m.o[2]) > 2.5) return;
         const L = Math.hypot(...m.d) || 1, d = m.d.map(v => v / L), k = this.knifeSeq++;
-        this.round ? this.round.knives.push({ k, by: P.id, p: m.o.slice(), d, t: 0 }) : (this._lobbyKnives = this._lobbyKnives || []).push({ k, by: P.id, p: m.o.slice(), d, t: 0 });
-        Net.broadcast({ t: 'kfly', k, by: P.id, o: m.o, d, skin: P.look.knife }); anim('throw');
+        (this.round && !wait ? this.round.knives : (this._lobbyKnives = this._lobbyKnives || [])).push({ k, by: P.id, p: m.o.slice(), d, t: 0, lw });
+        Net.broadcast({ t: 'kfly', k, by: P.id, o: m.o, d, skin: P.look.knife, lw }); anim('throw');
         break;
       }
       case 'shoot': {
         if (item !== 'revolver' || !m.o || !m.d) return;
-        if (lobby && this.grid.id === 'lobby' && !this.grid.inRange(P.x, P.z)) return;   // lobby guns: Gun Range only
+        if (lobby && G.id === 'lobby' && !G.inRange(P.x, P.z)) return;   // lobby guns: Gun Range only
         if (!this._cd(P, 'gun', (lobby ? 0.6 : CONFIG.GUN_CD) - 0.15)) return;
         if (Math.hypot(P.x - m.o[0], P.z - m.o[2]) > 2.5) return;
         const L = Math.hypot(...m.d) || 1, d = m.d.map(v => v / L), o = m.o;
-        const w = this.grid.raycast(o[0], o[1], o[2], d[0], d[1], d[2], CONFIG.GUN_RANGE);
+        const w = G.raycast(o[0], o[1], o[2], d[0], d[1], d[2], CONFIG.GUN_RANGE);
         const hp = live ? this.rayPlayers(o, d, w.t, P.id) : null;
         const t = hp ? hp.t : w.t, e = [o[0] + d[0] * t, o[1] + d[1] * t, o[2] + d[2] * t].map(v => Math.round(v * 100) / 100);
-        Net.broadcast({ t: 'shot', by: P.id, o, e, n: hp ? [-d[0], -d[1], -d[2]] : w.n, kind: hp ? 'player' : w.kind, hit: hp ? hp.P.id : 0 });
+        Net.broadcast({ t: 'shot', by: P.id, o, e, n: hp ? [-d[0], -d[1], -d[2]] : w.n, kind: hp ? 'player' : w.kind, hit: hp ? hp.P.id : 0, lw });
         if (hp) this._gunHit(P, hp.P);
-        Bots.onShot(P, o, e);
+        if (!wait) Bots.onShot(P, o, e);
         break;
       }
       case 'use': {
@@ -4166,14 +4169,15 @@ const Host = {
     else if (this.phase === 'end' && now >= this.phaseEnd) this.toLobby();
     else if (this.phase === 'lobby') this._lobbyTick(now);
     if (this.round && (this.phase === 'play' || this.phase === 'intro')) this._roundTick(dt, now);
-    this._knifeTick(dt, this.round ? this.round.knives : (this._lobbyKnives || []));
+    if (this.round) this._knifeTick(dt, this.round.knives, false);
+    this._knifeTick(dt, this._lobbyKnives || (this._lobbyKnives = []), true);
     if (this.needEval) { this.needEval = false; this._evaluate(false); }
     void R0;
     // state broadcast
     this.stT -= dt;
     if (this.stT <= 0) {
       this.stT = 1 / CONFIG.NET_RATE; const s = [], r2 = v => Math.round(v * 100) / 100;
-      for (const P of this.players.values()) if (P.alive || P.ghost) s.push([P.id, r2(P.x), r2(P.y), r2(P.z), r2(P.yaw), r2(P.pitch), P.a, P.ghost ? 0 : this._visCode(P), P.alive ? P.fl & ~32 : (P.fl | 32)]);   // bit 32 = lobby ghost
+      for (const P of this.players.values()) if (P.alive || P.ghost) s.push([P.id, r2(P.x), r2(P.y), r2(P.z), r2(P.yaw), r2(P.pitch), P.a, this._visCode(P), P.alive ? P.fl & ~32 : (P.fl | 32)]);   // bit 32 = waiting in the lobby mid-round
       Net.broadcast({ t: 'st', h: r2(now), s });
     }
   },
@@ -4216,26 +4220,33 @@ const Host = {
       }
     }
   },
-  _knifeTick(dt, list) {
-    const G = this.grid;
+  _knifeTick(dt, list, lob) {
+    const G = lob ? MapKit.get('lobby') : this.grid;
     for (let i = list.length - 1; i >= 0; i--) {
       const K = list[i], step = CONFIG.THROW_SPEED * dt; K.t += dt;
       const by = this.players.get(K.by);
       const w = G.raycast(K.p[0], K.p[1], K.p[2], K.d[0], K.d[1], K.d[2], step);
-      const hp = this.phase === 'play' ? this.rayPlayers(K.p, K.d, Math.min(step, w.t), K.by, P => Roles.knifeCanHit(P.role)) : null;
+      const hp = !lob && this.phase === 'play' ? this.rayPlayers(K.p, K.d, Math.min(step, w.t), K.by, P => Roles.knifeCanHit(P.role)) : null;
       if (hp) {
         const p = K.p.map((v, j) => v + K.d[j] * hp.t); list.splice(i, 1);
         Net.broadcast({ t: 'kend', k: K.k, p, hit: hp.P.id }); this.damage(hp.P, by, 'throw'); continue;
       }
-      if (this.phase === 'lobby' && World.grid && World.def && World.def.id === 'lobby') {
-        const th = World.hitTarget(K.p[0], K.p[1], K.p[2], K.d[0], K.d[1], K.d[2], Math.min(step, w.t));
-        if (th) { const p = K.p.map((v, j) => v + K.d[j] * th.t); list.splice(i, 1); Net.broadcast({ t: 'kend', k: K.k, p, n: [0, 0, 0], stuck: true, tgt: th.score, by: K.by }); continue; }
+      if (lob) {
+        const th = this._hitTarget(K.p[0], K.p[1], K.p[2], K.d[0], K.d[1], K.d[2], Math.min(step, w.t));
+        if (th) { const p = K.p.map((v, j) => v + K.d[j] * th.t); list.splice(i, 1); Net.broadcast({ t: 'kend', k: K.k, p, n: [0, 0, 0], stuck: true, tgt: th.score, by: K.by, lw: K.lw }); continue; }
       }
-      if (w.kind !== 'none' && w.t <= step) { const p = K.p.map((v, j) => v + K.d[j] * w.t); list.splice(i, 1); Net.broadcast({ t: 'kend', k: K.k, p, n: w.n, stuck: w.kind !== 'floor' }); continue; }
+      if (w.kind !== 'none' && w.t <= step) { const p = K.p.map((v, j) => v + K.d[j] * w.t); list.splice(i, 1); Net.broadcast({ t: 'kend', k: K.k, p, n: w.n, stuck: w.kind !== 'floor', lw: K.lw }); continue; }
       for (let j = 0; j < 3; j++) K.p[j] += K.d[j] * step;
       K.d[1] -= dt * 0.25;
-      if (K.t > 2.5) { list.splice(i, 1); Net.broadcast({ t: 'kend', k: K.k }); }
+      if (K.t > 2.5) { list.splice(i, 1); Net.broadcast({ t: 'kend', k: K.k, lw: K.lw }); }
     }
+  },
+  /** Knife Range targets from the lobby layout (independent of what this tab is rendering). */
+  _hitTarget(ox, oy, oz, dx, dy, dz, maxT) {
+    if (!this._tgts) this._tgts = MapKit.get('lobby').props.filter(p => p.ch === '$').map(p => { const yaw = p.rot * Math.PI / 2; return { node: { position: { x: p.x - Math.sin(yaw) * 0.05, z: p.z - Math.cos(yaw) * 0.05 } }, yaw, down: 0, up: 0 }; });
+    const now = U.now(); for (const t of this._tgts) t.down = t.up > now ? 1 : 0;
+    const th = World.hitTarget.call({ targets: this._tgts }, ox, oy, oz, dx, dy, dz, maxT); if (th) th.target.up = now + 2.6;
+    return th;
   },
   _evaluate(timeUp) {
     if (this.phase !== 'play' && this.phase !== 'intro') return;
@@ -4653,7 +4664,7 @@ const Game = {
   },
 
   /* ---------------- message handlers ---------------- */
-  onWelcome(m) { this.me.id = m.id; this.cfg = m.cfg; this.code = m.code; this.hostId = m.host; this.phase = m.phase; this.phaseEnd = m.end; this.loadMap(m.map); if (m.p) { Object.assign(this.local, { x: m.p[0], z: m.p[1], y: 0, vy: 0, vx: 0, vz: 0, yaw: m.p[2] }); this.cam.yaw = m.p[2]; this.cam.pitch = -0.12; } UI.lobbyRefresh(); UI.phase(this.phase); },
+  onWelcome(m) { this.me.id = m.id; this.cfg = m.cfg; this.code = m.code; this.hostId = m.host; this.phase = m.phase; this.phaseEnd = m.end; this.loadMap(m.wait ? 'lobby' : m.map); if (m.wait) { this.ghost = true; this.roundMap = m.map; UI.toast('🏛️ A round is in progress - hang out in the lobby until it ends, or press L to spectate.', 'info'); } if (m.p) { Object.assign(this.local, { x: m.p[0], z: m.p[1], y: 0, vy: 0, vx: 0, vz: 0, yaw: m.p[2] }); this.cam.yaw = m.p[2]; this.cam.pitch = -0.12; } UI.lobbyRefresh(); UI.phase(this.phase); },
   onRoster(m) {
     const ids = new Set();
     for (const r of m.list) {
@@ -4670,7 +4681,7 @@ const Game = {
   onPhase(m) {
     if (this.ghost && m.ph !== 'play' && m.ph !== 'intro') { this.ghost = false; this._clearGhosts(); }
     const prev = this.phase; this.phase = m.ph; this.phaseEnd = m.end; this.countdown = !!m.countdown;
-    if (m.map) this.loadMap(m.map);
+    if (m.map) { if (this.ghost && (m.ph === 'play' || m.ph === 'intro')) this.roundMap = m.map; else this.loadMap(m.map); }   // lobby-waiters stay in the lobby
     if (m.spawns) {
       const s = m.spawns[this.me.id];
       for (const [, c] of this.chars) { c.ch.revive(); c.buf = []; c.ch.setXray(false); }
@@ -4689,7 +4700,7 @@ const Game = {
   onYou(m) {
     const me = this.me; me.role = m.role; me.slots = m.slots; me.uses = m.uses || {}; me.sel = -1; me.target = m.target || null; me.armor = !!m.armor;
     me.mates = new Map((m.mates || []).map(x => [x.id, x.role]));
-    if (m.spectate) { me.alive = false; me.spectate = true; }
+    if (m.spectate) { me.alive = false; me.spectate = true; UI.ghostBar(); }
     if (m.role && this.phase === 'intro') UI.roleCard(m.role, { mates: [...me.mates].map(([id, r]) => ({ name: (this.roster.get(id) || {}).name || '?', role: r })), target: me.target ? (this.roster.get(me.target) || {}).name : null, inPlay: this.inPlay, double: this.double });
     UI.hotbar(); this.refreshTags();
   },
@@ -4698,7 +4709,7 @@ const Game = {
     for (const e of m.s) {
       const [id, x, y, z, yaw, pitch, a, vis, fl] = e; if (id === this.me.id) continue;
       const c = this.chars.get(id); if (!c) continue;
-      if (fl & 32) { (c.gbuf = c.gbuf || []).push({ t: m.h, x, y, z, yaw, pitch, a, vis: 0, fl }); if (c.gbuf.length > 30) c.gbuf.shift(); c.gseen = U.now(); continue; }
+      if (fl & 32) { (c.gbuf = c.gbuf || []).push({ t: m.h, x, y, z, yaw, pitch, a, vis, fl }); if (c.gbuf.length > 30) c.gbuf.shift(); c.gseen = U.now(); continue; }
       if (c.ch.dead) continue;
       c.buf.push({ t: m.h, x, y, z, yaw, pitch, a, vis, fl }); if (c.buf.length > 30) c.buf.shift(); c.seen = U.now();
     }
@@ -4723,44 +4734,47 @@ const Game = {
     UI.scoreboardRefresh(); this.refreshTags();
   },
   onShot(m) {
-    if (this.ghost) return;
+    if (!!this.ghost !== !!m.lw) return;   // round shots vs lobby shots
     const o = new BABYLON.Vector3(...m.o), e = new BABYLON.Vector3(...m.e), mine = m.by === this.me.id;
     const hear = this.hearGuns();   // lobby: the Gun Range is soundproofed
     if (!mine) {
-      const c = this.chars.get(m.by); let mo = o;
-      if (c && !c.ch.dead) { c.ch.act('fire'); if (c.ch.vis === 'revolver') { const mp = c.ch.muzzlePos(); if (BABYLON.Vector3.Distance(mp, o) < 2) mo = mp; } }
+      const c = this.chars.get(m.by), sc = c && (this.ghost ? c.gch : c.ch); let mo = o;
+      if (sc && !sc.dead) { sc.act('fire'); if (sc.vis === 'revolver') { const mp = sc.muzzlePos(); if (BABYLON.Vector3.Distance(mp, o) < 2) mo = mp; } }
       FX.gunshot(mo, e, m.n, m.kind, false); if (hear) Sfx.play('gunshot', m.o[0], m.o[2], 1);
       if (hear && m.kind !== 'player' && m.kind !== 'none' && U.dist(this.local.x, this.local.z, m.e[0], m.e[2]) < 14) Sfx.play('ricochet', m.e[0], m.e[2], 0.6);
       this._knockTarget(m.o, m.e, false);
     }
     if (m.hit) { if (hear) Sfx.play('impact', m.e[0], m.e[2], 1); const hc = this.chars.get(m.hit); if (hc) hc.ch.hitFlash(); if (mine) UI.hitMarker(); }
   },
-  /** Dead: leave spectating and wander the lobby (as a ghost) until the round ends. */
+  /** Dead: leave spectating and go back to the lobby (where every player spawns) as a normal lobby player until the round ends. */
   goLobby() {
     const me = this.me; if (me.alive || this.ghost || (this.phase !== 'play' && this.phase !== 'intro')) return;
-    this.ghost = true; this.roundMap = this.map; this.loadMap('lobby');
+    this._vmRestore(); this.ghost = true; this.roundMap = this.map; this.loadMap('lobby');
+    me.slots = LOBBY_SLOTS.concat([null]); me.sel = -1; me.flash = false; me.cd = { gun: 0, throw: 0, stab: 0 }; this.range.score = 0; UI.hotbar();
     R.darkFogTarget = 0; R.darkFog = 0; R.bakeTarget = 1; R.spot.on = false; this.dark = 0; this.xrayT = 0;
     const s = World.grid.spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
     Object.assign(this.local, { x: s.x, z: s.z, y: 0, vy: 0, vx: 0, vz: 0, yaw: s.yaw }); this.cam.yaw = s.yaw; this.cam.pitch = -0.12;
     Net.toHost({ t: 'ghost', v: true }); UI.death(null); UI.spectating(false); UI.ghostBar(); Sfx.play('ui');
-    UI.toast('🏛️ You\'re in the lobby until the round ends. Press L or Spectate to watch again.', 'info');
+    UI.toast('🏛️ Back in the lobby until the round ends - the Gun & Knife Ranges are open. L to spectate again.', 'info');
   },
-  /** Ghost: go back to spectating the round. */
+  /** Lobby-waiter: go back to spectating the round. */
   stopGhost(quiet) {
     if (!this.ghost) return; this.ghost = false; this._clearGhosts();
+    const me = this.me; me.slots = [null, null, null, null]; me.sel = -1; me.flash = false; R.spot.on = false; if (this.phones) this.setPhones(false, true); UI.hotbar();
     if (this.roundMap && (this.phase === 'play' || this.phase === 'intro')) { this.loadMap(this.roundMap); Net.toHost({ t: 'ghost', v: false }); }
     UI.ghostBar(); if (!quiet) { Sfx.play('ui'); UI.toast('👁️ Spectating the round.', 'info'); }
   },
   _clearGhosts() {
+    this._vmRestore();
     for (const [, c] of this.chars) { if (c.gch) { c.gch.dispose(); c.gch = null; } c.gbuf = []; }
     if (this._myGhost) { this._myGhost.dispose(); this._myGhost = null; }
   },
   /** Lobby: gunshots are only audible from inside the Gun Range. */
-  hearGuns() { const G = World.grid; return !G || G.id !== 'lobby' || this.phase === 'play' || this.phase === 'intro' || G.inRange(this.local.x, this.local.z); },
+  hearGuns() { const G = World.grid; if (this.ghost) return !!G && G.inRange(this.local.x, this.local.z); return !G || G.id !== 'lobby' || this.phase === 'play' || this.phase === 'intro' || G.inRange(this.local.x, this.local.z); },
   /** Lobby headphones: muffle gun audio until the next round starts. */
   setPhones(on, quiet) {
     on = on === undefined ? !this.phones : !!on;
-    if (on && (this.phase === 'play' || this.phase === 'intro')) { UI.toast('🎧 Headphones are only for the lobby.', 'warn'); return; }
+    if (on && (this.phase === 'play' || this.phase === 'intro') && !this.ghost) { UI.toast('🎧 Headphones are only for the lobby.', 'warn'); return; }
     this.phones = on; Sfx.phones = on; UI.phonesBtn();
     if (!quiet) { Sfx.play('equip'); UI.toast(on ? '🎧 Headphones on - gunfire is muffled until the round starts.' : '🎧 Headphones off.', 'info'); }
   },
@@ -4771,14 +4785,14 @@ const Game = {
     return th;
   },
   _rangeScore(s, p) { this.range.score += s; const best = Store.get('rangeBest', 0); if (this.range.score > best) Store.set('rangeBest', this.range.score); UI.popScore(s); Sfx.play('target'); void p; },
-  onKfly(m) { if (this.ghost) return; FX.knifeFly(m.k, m.o, m.d, m.skin); Sfx.play('throw', m.o[0], m.o[2], 0.9); if (m.by !== this.me.id) { const c = this.chars.get(m.by); if (c) c.ch.act('throw'); } },
+  onKfly(m) { if (!!this.ghost !== !!m.lw) return; FX.knifeFly(m.k, m.o, m.d, m.skin); Sfx.play('throw', m.o[0], m.o[2], 0.9); if (m.by !== this.me.id) { const c = this.chars.get(m.by), sc = c && (this.ghost ? c.gch : c.ch); if (sc) sc.act('throw'); } },
   onKend(m) {
-    if (this.ghost) return;
+    if (!!this.ghost !== !!m.lw) { FX.knifeEnd(m.k, null); return; }
     FX.knifeEnd(m.k, m.p, m.n, m.stuck);
     if (m.p) { if (m.hit) { Sfx.play('stab', m.p[0], m.p[2], 1); const c = this.chars.get(m.hit); if (c) c.ch.hitFlash(); } else Sfx.play('thunk', m.p[0], m.p[2], 0.8); }
     if (m.tgt && m.p) { let best = null, bd = 1.5; for (const t of World.targets) { const d = U.dist(t.node.position.x, t.node.position.z, m.p[0], m.p[2]); if (d < bd) { bd = d; best = t; } } if (best) best.down = 2.6; if (m.by === this.me.id) this._rangeScore(m.tgt, m.p); }
   },
-  onAct(m) { const c = this.chars.get(m.id); if (!c) return; c.ch.act(m.k === 'stab' ? 'stab' : m.k); if (m.k === 'stab' || m.k === 'swing') Sfx.play('swish', c.ch.x, c.ch.z, 0.7); if (m.k === 'use') Sfx.play('equip', c.ch.x, c.ch.z, 0.5); },
+  onAct(m) { if (!!this.ghost !== !!m.lw) return; const c = this.chars.get(m.id), ch = c && (m.lw ? c.gch : c.ch); if (!ch) return; ch.act(m.k === 'stab' ? 'stab' : m.k); if (m.k === 'stab' || m.k === 'swing') Sfx.play('swish', ch.x, ch.z, 0.7); if (m.k === 'use') Sfx.play('equip', ch.x, ch.z, 0.5); },
   onGun(m) {
     if (this.ghost) return;
     if (m.taken) { FX.clearGun(); this.gunDrop = null; Sfx.play('pickup'); return; }
@@ -4924,28 +4938,30 @@ const Game = {
     const list = this._specList(); if (!list.length) return; let i = list.findIndex(([id]) => id === this.spec.id); if (i < 0) i = 0;
     i = (i + dir + list.length) % list.length; this.spec.idx = i; this.spec.id = list[i][0]; Sfx.play('tick', null, null, 0.3);
   },
-  emote(code) { if (!this.me.alive || this.me.spectate) return; this.local.emote = code; this.local.emoteT = 3.2; this.selectSlot(-1); },
+  /** Can the local player move/use items right now (alive in the round, or waiting in the lobby)? */
+  canAct() { const me = this.me; return (me.alive && !me.spectate) || !!this.ghost; },
+  emote(code) { if (!this.canAct()) return; this.local.emote = code; this.local.emoteT = 3.2; this.selectSlot(-1); },
 
   selectSlot(i) {
-    const me = this.me; if (!me.alive || me.spectate) return;
+    const me = this.me; if (!this.canAct()) return;
     if (i >= 0 && (!me.slots[i] || me.sel === i)) i = -1;
-    if (i >= 0 && me.slots[i] === 'knife' && this.phase === 'intro') { UI.prompt('🔪 Your knife unlocks when the hunt begins.', 1.8); Sfx.play('error'); return; }
+    if (i >= 0 && me.slots[i] === 'knife' && this.phase === 'intro' && !this.ghost) { UI.prompt('🔪 Your knife unlocks when the hunt begins.', 1.8); Sfx.play('error'); return; }
     if (i === me.sel) return;
     me.sel = i; if (i < 0 || me.slots[i] !== 'flashlight') me.flash = false;
     if (i >= 0) { const it = me.slots[i]; Sfx.play(it === 'revolver' ? 'cock' : it === 'knife' ? 'swish' : 'equip'); UI.prompt(ITEMS[it].hint, 2.5); }
     UI.hotbar();
   },
-  cycleSlot(dir) { const me = this.me, has = [-1, 0, 1, 2, 3].filter(i => i < 0 || (me.slots[i] && !(me.slots[i] === 'knife' && this.phase === 'intro'))); let k = has.indexOf(me.sel); k = (k + dir + has.length) % has.length; this.selectSlot(has[k]); },
+  cycleSlot(dir) { const me = this.me, has = [-1, 0, 1, 2, 3].filter(i => i < 0 || (me.slots[i] && !(me.slots[i] === 'knife' && this.phase === 'intro' && !this.ghost))); let k = has.indexOf(me.sel); k = (k + dir + has.length) % has.length; this.selectSlot(has[k]); },
   item() { return this.me.sel >= 0 ? this.me.slots[this.me.sel] : null; },
   canAttack() { return this.phase === 'play' || this.phase === 'lobby' || this.phase === 'end'; },
 
   primary() {
-    const me = this.me, it = this.item(), now = U.now(); if (!me.alive || me.spectate || !it || this.phase === 'intro') { if (me.spectate && !this.ghost) this.specCycle(1); return; }
+    const me = this.me, it = this.item(), now = U.now(); if (!this.canAct() || !it || (this.phase === 'intro' && !this.ghost)) { if (me.spectate && !this.ghost) this.specCycle(1); return; }
     const ch = this.myChar(); if (!ch) return;
     switch (it) {
       case 'knife': case 'blade': case 'propknife': {
         if (now < me.cd.stab) return; me.cd.stab = now + CONFIG.KNIFE_CD; ch.act(it === 'knife' ? 'stab' : 'swing'); Sfx.play('swish');
-        const T = it === 'propknife' ? null : this.meleeTarget();
+        const T = it === 'propknife' || this.ghost ? null : this.meleeTarget();
         if (T && this.phase === 'play') Net.toHost({ t: 'act', k: 'stab', tg: T }); else Net.toHost({ t: 'act', k: 'swing' });
         if (it === 'blade' && T && T !== me.target) UI.toast('🗡️ Your hidden blade only works on your target.', 'warn');
         break;
@@ -4967,14 +4983,15 @@ const Game = {
     }
   },
   secondary() {
-    const me = this.me, it = this.item(), now = U.now(); if (!me.alive || me.spectate) { if (me.spectate && !this.ghost) this.specCycle(-1); return; }
+    const me = this.me, it = this.item(), now = U.now(); if (!this.canAct()) { if (me.spectate && !this.ghost) this.specCycle(-1); return; }
+    const lob = this.phase !== 'play' || !!this.ghost;
     if (it === 'knife') {
-      if (this.phase === 'intro') return;
-      if (this.phase !== 'play' && World.grid.id === 'lobby' && !World.grid.inRange(this.local.x, this.local.z, 'k')) {
+      if (this.phase === 'intro' && !this.ghost) return;
+      if (lob && World.grid.id === 'lobby' && !World.grid.inRange(this.local.x, this.local.z, 'k')) {
         if (now > (this._rangeMsgT || 0)) { this._rangeMsgT = now + 2.5; UI.toast('🔪 Knives can only be thrown inside the Knife Range.', 'warn'); }
         Sfx.play('error'); return;
       }
-      const cd = this.phase === 'play' ? CONFIG.THROW_CD : 1.2; if (now < me.cd.throw) { Sfx.play('error'); return; }
+      const cd = lob ? 1.2 : CONFIG.THROW_CD; if (now < me.cd.throw) { Sfx.play('error'); return; }
       me.cd.throw = now + cd; me.cd.throwDur = cd; const ch = this.myChar(); ch.act('throw');
       const aim = this.aimRay(), o = ch.handPos(); o.y = Math.max(o.y, 1.3);
       const d = aim.point.subtract(o).normalize(); d.y += 0.01;
@@ -4983,10 +5000,10 @@ const Game = {
     if (it === 'propknife') { const ch = this.myChar(); ch.act('throw'); Net.toHost({ t: 'act', k: 'swing' }); }
   },
   fire() {
-    const me = this.me, now = U.now(), cd = this.phase === 'play' ? CONFIG.GUN_CD : 0.6;
+    const me = this.me, now = U.now(), lob = this.phase !== 'play' || !!this.ghost, cd = lob ? 0.6 : CONFIG.GUN_CD;
     if (now < me.cd.gun) { Sfx.play('dryfire'); return; }
-    if (this.phase === 'intro') return;
-    if (this.phase !== 'play' && World.grid.id === 'lobby' && !World.grid.inRange(this.local.x, this.local.z)) {
+    if (this.phase === 'intro' && !this.ghost) return;
+    if (lob && World.grid.id === 'lobby' && !World.grid.inRange(this.local.x, this.local.z)) {
       if (now > (this._rangeMsgT || 0)) { this._rangeMsgT = now + 2.5; UI.toast('🔫 Guns only work inside the Gun Range.', 'warn'); }
       Sfx.play('dryfire'); me.cd.gun = now + 0.4; return;
     }
@@ -4995,15 +5012,18 @@ const Game = {
     const aim = this.aimRay(), o = ch.muzzlePos(), d = aim.point.subtract(o); const L = d.length(); d.scaleInPlace(1 / (L || 1));
     // local prediction of the impact
     const G = World.grid, w = G.raycast(o.x, o.y, o.z, d.x, d.y, d.z, CONFIG.GUN_RANGE);
-    const hp = this.phase === 'play' ? this.rayChars(o, d, w.t) : null;
+    const hp = !lob ? this.rayChars(o, d, w.t) : null;
     const t = hp ? hp.t : w.t, e = o.add(d.scale(t));
     FX.gunshot(o, e, hp ? [-d.x, -d.y, -d.z] : w.n, hp ? 'player' : w.kind, true);
     Sfx.play('gunshot', null, null, 1.15);
     this.cam.pitch = Math.min(1.2, this.cam.pitch + 0.045); this.cam.yaw += (Math.random() - 0.5) * 0.02; this.cam.punch = 1;
-    if (this.phase !== 'play') this._knockTarget([o.x, o.y, o.z], [e.x, e.y, e.z], true);
+    if (lob) this._knockTarget([o.x, o.y, o.z], [e.x, e.y, e.z], true);
     Net.toHost({ t: 'act', k: 'shoot', o: [o.x, o.y, o.z].map(v => Math.round(v * 100) / 100), d: [d.x, d.y, d.z].map(v => Math.round(v * 10000) / 10000) });
   },
-  myChar() { const c = this.chars.get(this.me.id); return c ? c.ch : null; },
+  myChar() {
+    if (this.ghost) { if (!this._myGhost) this._myGhost = new Character(100000 + this.me.id, this.me.look, { local: true }); return this._myGhost; }   // my lobby body while waiting
+    const c = this.chars.get(this.me.id); return c ? c.ch : null;
+  },
   camForward() { const c = this.cam; return new BABYLON.Vector3(Math.sin(c.yaw) * Math.cos(c.pitch), Math.sin(c.pitch), Math.cos(c.yaw) * Math.cos(c.pitch)); },
   /** Crosshair ray: returns {point, dist, id}. */
   aimRay() {
@@ -5014,6 +5034,7 @@ const Game = {
     const t = hp ? hp.t : w.t; return { point: o.add(f.scale(t)), dist: t + t0, id: hp ? hp.id : null };
   },
   rayChars(o, d, maxT, maxRange) {
+    if (this.ghost) return null;   // the round's players aren't in the lobby
     let best = null; const r = CONFIG.HIT_R;
     for (const [id, c] of this.chars) {
       if (id === this.me.id || c.ch.dead || !c.ch.root.isEnabled()) continue; const ch = c.ch;
@@ -5088,17 +5109,17 @@ const Game = {
       if (!c.gch) c.gch = new Character(100000 + id, (this.roster.get(id) || {}).look || me.look, {});
       let i = g.length - 1; while (i > 0 && g[i - 1].t > rt) i--;
       const B1 = g[i], A = g[Math.max(0, i - 1)]; let k = B1.t > A.t ? U.clamp((rt - A.t) / (B1.t - A.t), 0, 1.2) : 1; if (rt >= B1.t) k = 1;
-      c.gch.setVisible(true); c.gch.setState(U.lerp(A.x, B1.x, k), U.lerp(A.y, B1.y, k), U.lerp(A.z, B1.z, k), A.yaw + U.angDiff(A.yaw, B1.yaw) * k, B1.pitch, ANIM_CODES[B1.a] || 'idle', '', 0); c.gch.update(dt);
+      c.gch.setVisible(true); c.gch.setState(U.lerp(A.x, B1.x, k), U.lerp(A.y, B1.y, k), U.lerp(A.z, B1.z, k), A.yaw + U.angDiff(A.yaw, B1.yaw) * k, B1.pitch, ANIM_CODES[B1.a] || 'idle', VIS_CODES[B1.vis] || '', B1.fl & ~32); c.gch.update(dt);
       while (g.length > 2 && g[1].t < rt - 0.5) g.shift();
     }
-    if (this.ghost) { if (!this._myGhost) this._myGhost = new Character(100000 + me.id, me.look, { local: true }); this._myGhost.setVisible(true); this._myGhost.setState(L.x, L.y, L.z, L.yaw, this.cam.pitch, !L.ground ? 'jump' : 'idle', '', 0); this._myGhost.update(dt); }
+    if (this.ghost) { const g = this.myChar(); g.setVisible(true); g.setState(L.x, L.y, L.z, L.yaw, this.cam.pitch, L.emoteT > 0 ? ANIM_CODES[L.emote] : !L.ground ? 'jump' : 'idle', this.item() ? ITEMS[this.item()].vis : '', (me.flash ? 1 : 0) | (L.aim ? 2 : 0) | (this.phones ? 16 : 0)); g.update(dt); }
     // blackout: dim the sky along with the short-range fog
     if (World.skyMat && World.skyMat.emissiveTexture) World.skyMat.emissiveTexture.level = 1 - 0.92 * R.darkFog;
     if (this._tagT === undefined || (this._tagT -= dt) <= 0 || this._tagDirty) { this._tagT = 0.25; this._tagDirty = false; this._updateTags(); }
     this.updateCamera(dt);
     // flashlight spot
     const myc = this.myChar();
-    if (playing && me.flash && this.item() === 'flashlight' && myc) { const ft = myc.flashTip(); if (ft) { const f = this.camForward(); R.spot.on = true; R.spot.pos = [ft.p.x, ft.p.y, ft.p.z]; R.spot.dir = [f.x, f.y, f.z]; } }
+    if ((playing || this.ghost) && me.flash && this.item() === 'flashlight' && myc) { const ft = myc.flashTip(); if (ft) { const f = this.camForward(); R.spot.on = true; R.spot.pos = [ft.p.x, ft.p.y, ft.p.z]; R.spot.dir = [f.x, f.y, f.z]; } }
     else R.spot.on = false;
     // net state
     this.stT -= dt;
@@ -5169,7 +5190,7 @@ const Game = {
     cam.position.copyFrom(pos); cam.setTarget(pos.add(f));
     cam.fov = (s.fov * Math.PI / 180) * c.fovK * (1 + c.punch * 0.035);
     // hide my own model when the camera is inside it
-    const myc = this.myChar(); if (myc && !me.spectate) { const near = d < 0.6; myc.root.getChildMeshes().forEach(m => { m.visibility = near ? 0.25 : 1; }); }
+    const myc = this.myChar(); if (myc && (!me.spectate || this.ghost)) { const near = d < 0.6; myc.root.getChildMeshes().forEach(m => { m.visibility = near ? 0.25 : 1; }); }
   },
 
   /** First person: the held item becomes a view-model pinned to the camera (lower-right, pointing where you look). */
@@ -5182,8 +5203,8 @@ const Game = {
     n.position.set(aim ? 0.0 : 0.17, aim ? -0.1 : -0.15, (aim ? 0.34 : 0.38) - k * 0.04); n.rotation.set(-k * 0.12, aim ? 0 : -0.08, 0);
   },
   _vmRestore() {
-    const myc = this.myChar(); if (!myc) return;
-    for (const key in myc.items) { const n = myc.items[key].node, o = n._vmOrig; if (!o) continue; n.parent = o.parent; n.position.copyFrom(o.pos); n.rotation.copyFrom(o.rot); if (o.rq) n.rotationQuaternion = o.rq; n._vmOrig = null; }
+    const c = this.chars.get(this.me.id);
+    for (const myc of [c && c.ch, this._myGhost]) if (myc) for (const key in myc.items) { const n = myc.items[key].node, o = n._vmOrig; if (!o) continue; n.parent = o.parent; n.position.copyFrom(o.pos); n.rotation.copyFrom(o.rot); if (o.rq) n.rotationQuaternion = o.rq; n._vmOrig = null; }
   },
 
   /* ---------------- menu backdrop ---------------- */
@@ -5278,10 +5299,11 @@ const UI = {
 
   /* ---------------- menus ---------------- */
   owns(kind, i) { const list = kind === 'hat' ? LOOK.hats : kind === 'knife' ? LOOK.knives : LOOK.guns; return !list[i] || list[i].p === 0 || !!Game.owned[kind + i]; },
-  /** Dead during a round: 'Go to Lobby' while spectating, 'Spectate' while in the lobby. */
+  /** Dead / newcomer during a round: 'Go to Lobby' while spectating, 'Spectate' while waiting in the lobby. */
   ghostBar() {
     const dead = Game.mode === 'game' && !Game.me.alive && (Game.phase === 'play' || Game.phase === 'intro');
     $('ghostBar').classList.toggle('hidden', !dead); $('bPGhost').classList.toggle('hidden', !dead);
+    $('range').classList.toggle('hidden', !(Game.phase === 'lobby' || Game.ghost)); if (Game.mode === 'game') this.hotbar();
     $('bGhost').textContent = Game.ghost ? '👁️ Spectate (L)' : '🏛️ Go to Lobby (L)'; $('bPGhost').textContent = Game.ghost ? '👁️ Spectate the round' : '🏛️ Go to Lobby';
   },
   phonesBtn() { const b = $('bPhones'); if (!b) return; b.classList.toggle('gold', !!Game.phones); b.textContent = Game.phones ? '🎧 Headphones ON' : '🎧 Headphones'; },
@@ -5694,6 +5716,14 @@ const UI = {
         if (h.get('cam') === 'top') Game._debugTop = true;
         if (h.get('cam') === 'fp') Settings.get().firstPerson = true;
         if (h.get('fx') === 'blackout') setTimeout(() => Game.onBlackout({ dur: 30 }), 2500);
+        if (h.get('wait')) setTimeout(() => {   // die mid-round -> back to the lobby -> Gun Range -> fire
+          const P = Host.players.get(Net.myId); if (P.role === 'murderer') { console.log('WAITTEST skip: local player is the murderer'); return; }
+          Host.kill(P, null, 'knife'); Game.goLobby();
+          const G = World.grid; let s = null; for (let cy = 0; cy < G.h && !s; cy++) for (let cx = 0; cx < G.w && !s; cx++) { const c = G.center(cy * G.w + cx); if (G.inRange(c.x, c.z) && G.walkableAt(c.x, c.z)) s = c; }
+          if (s) { Object.assign(Game.local, { x: s.x, z: s.z }); P.tp = U.now(); }
+          Game.selectSlot(0); window.__stN = 0; const th = Net.toHost.bind(Net); Net.toHost = m => { if (m.t === 'st') { window.__stN++; window.__stLast = m; } th(m); };
+          setTimeout(() => { P.tp = U.now(); for (let i = 0; i < 6; i++) Game.update(0.07); Game.fire(); console.log('WAITTEST', JSON.stringify({ ghost: Game.ghost, map: World.grid.id, round: Host.map, phase: Game.phase, slots: Game.me.slots, sel: Game.me.sel, hostGhost: P.ghost, hostSlots: P.slots, inRange: G.inRange(Game.local.x, Game.local.z), hostPos: [P.x, P.z], local: [Game.local.x, Game.local.z], hostSel: P.sel, hostIn: MapKit.get('lobby').inRange(P.x, P.z), tp: U.now() - P.tp, stN: window.__stN, stLast: window.__stLast, stT: U.now() - P.stT })); setTimeout(() => console.log('WAITTEST2 hostShotAccepted=' + !!P.cd.gun), 500); }, 1500);
+        }, 3000);
       }
       if (h.get('screen')) UI.openScreen(h.get('screen'));
     } catch (e) { console.error('[boot]', e); const t = document.getElementById('loadTxt'); if (t) t.textContent = 'Error: ' + e.message; }
