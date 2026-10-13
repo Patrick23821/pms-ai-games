@@ -95,9 +95,8 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 #roleBadge .n { font-family: Cinzel, serif; font-weight: 800; font-size: 20px; }
 #roleBadge .g { font-size: 12px; color: #cfc8bb; margin-top: 2px; }
 #roleBadge .x { font-size: 12px; margin-top: 4px; }
-#mini { position: absolute; top: 14px; right: 14px; width: 190px; height: 190px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .5); }
-#hudCoins { position: absolute; top: 212px; right: 14px; padding: 6px 12px; font-weight: 700; color: var(--gold); }
-#range { position: absolute; top: 250px; right: 14px; padding: 6px 12px; font-size: 13px; }
+#hudCoins { position: absolute; top: 14px; right: 14px; padding: 6px 12px; font-weight: 700; color: var(--gold); }
+#range { position: absolute; top: 52px; right: 14px; padding: 6px 12px; font-size: 13px; }
 #hotbar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
 .slot { width: 74px; height: 74px; border-radius: 14px; background: rgba(12, 10, 16, .78); border: 2px solid rgba(255, 255, 255, .12); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
 .slot .ic { font-size: 30px; line-height: 1; }
@@ -120,8 +119,6 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 #hit::before, #hit::after { content: ''; position: absolute; background: #ff3a4a; }
 #hit::before { left: 16px; top: 0; width: 2px; height: 34px; clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%, 0 65%, 100% 65%, 100% 100%, 0 100%); }
 #hit::after { top: 16px; left: 0; height: 2px; width: 34px; clip-path: polygon(0 0, 35% 0, 35% 100%, 0 100%, 0 0, 65% 0, 100% 0, 100% 100%, 65% 100%); }
-#feed { position: absolute; top: 290px; right: 14px; width: 300px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
-#feed div { background: rgba(0, 0, 0, .55); padding: 5px 10px; border-radius: 8px; font-size: 13px; animation: fin .25s; }
 #toasts { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .toast { padding: 9px 16px; border-radius: 12px; font-size: 15px; background: rgba(14, 12, 20, .9); border: 1px solid var(--line); animation: fin .25s; max-width: 70vw; text-align: center; }
 .toast.good { border-color: rgba(95, 211, 141, .6); } .toast.bad { border-color: rgba(255, 77, 94, .7); } .toast.warn { border-color: rgba(255, 190, 80, .6); } .toast.evil { border-color: #d6336c; } .toast.jester { border-color: #c58cff; }
@@ -242,10 +239,8 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
   <div id="vigSick"></div><div id="vigHurt"></div><div id="vigX"></div>
   <div id="timer" class="panel"><div class="p" id="phaseTxt">LOBBY</div><div class="t" id="timeTxt">—</div></div>
   <div id="roleBadge" class="panel hidden"><div class="n" id="rbName"></div><div class="g" id="rbGoal"></div><div class="x" id="rbExtra"></div></div>
-  <canvas id="mini" width="380" height="380"></canvas>
   <div id="hudCoins" class="panel">🪙 <span id="hudCoinsV">0</span></div>
   <div id="range" class="panel hidden"></div>
-  <div id="feed"></div>
   <div id="toasts"></div>
   <div id="banner"></div>
   <div id="pop"></div>
@@ -3099,7 +3094,6 @@ class Character {
     if (outfit === 'Hoodie') { T.torus(0.085, 0.045, 16, 8, { p: [0, 0.44, -0.04], r: [0.5, 0, 0] }, U.shade(top, 0.85)); deco([-0.08, 0.17, 0.08, 0.17, 0.065, 0.08, -0.065, 0.08], U.shade(top, 0.82)); strand(T, [[-0.025, 0.4, tR(0.4) * zr + 0.01], [-0.03, 0.3, tR(0.3) * zr + 0.01]], 0.005, '#f0f0f0'); strand(T, [[0.025, 0.4, tR(0.4) * zr + 0.01], [0.03, 0.31, tR(0.31) * zr + 0.01]], 0.005, '#f0f0f0'); }
     if (outfit === 'Casual') { T.cyl(0.04, 0.04, 0.006, 16, { p: [0, 0.27, tR(0.27) * zr + 0.004], r: [Math.PI / 2 - 0.08, 0, 0] }, U.mix(top, '#ffffff', 0.6)); T.torus(0.058, 0.01, 14, 5, { p: [0, 0.405, 0.0] }, U.shade(top, 0.8)); }
     if (dress) { T.torus(0.06, 0.012, 14, 5, { p: [0, 0.4, 0.0] }, '#f4e6d0'); T.sphere(0.012, 6, 4, { p: [0, 0.37, tR(0.37) * zr + 0.01] }, '#f4e6d0', { glow: 0.3 }); }
-    if (fem) { const cc = outfit === 'Vest' ? top : torsoCol; for (const s of [-1, 1]) T.sphere(0.054, 10, 8, { p: [s * 0.064, 0.29, tR(0.29) * zr - 0.03], s: [1, 0.9, 0.78] }, cc); }
     mk(T, this.spine, 'torso');
 
     // ---- arms
@@ -4308,7 +4302,7 @@ const Bots = {
       if (by && seesBody && !Roles.isEvil(P.role) && (cause === 'knife' || cause === 'throw' || cause === 'blade')) {
         if (U.dist(P.x, P.z, by.x, by.z) < 22 && G.los(P.x, P.z, by.x, by.z)) this.suspect(B, by.id, 12);
       }
-      if (seesBody && !Roles.isEvil(P.role)) { B.flee = { x: T.x, z: T.z, until: U.now() + 4 }; if (Math.random() < 0.15) this.say(P, U.pick(BOT_LINES.body)); }
+      if (seesBody && !Roles.isEvil(P.role)) { B.flee = { x: T.x, z: T.z, until: U.now() + 4 }; }
     }
   },
   onShot(P, o, e) {
@@ -4597,7 +4591,7 @@ const Game = {
     N('target', m => { this.me.target = m.id; UI.hotbar(); this.refreshTags(); if (m.quiet) return; const r = this.roster.get(m.id); UI.toast(r ? `🎯 New contract: ${r.name}` : '🎯 No targets remain.', 'evil'); Sfx.play('target'); });
     N('sick', () => { this.sickT = 7; UI.toast('🤢 You feel very sick... find a Medic!', 'bad'); Sfx.play('poison'); });
     N('end', this.onEnd); N('chat', m => { UI.chatLine(m); if (!m.sys) Sfx.play('chat'); const c = this.chars.get(m.from); if (c && !m.dead) c.bubble = { text: m.text, t: 4 }; });
-    N('toast', m => { UI.toast(m.text, m.kind); }); N('feed', m => UI.feed(m.text));
+    N('toast', m => { UI.toast(m.text, m.kind); }); N('feed', () => { });   // killfeed removed
     N('note', m => { UI.noteRead(m.text, m.from); Sfx.play('chat'); });
     N('ndrop', this.onNoteDrop); N('nclear', () => this.clearNotes());
     N('hostLeft', m => {
@@ -4660,7 +4654,6 @@ const Game = {
     FX.clear(); this.clearNotes(); World.build(id); this.gunDrop = null;
     const def = World.def; Sfx.indoor = !def.outdoor; Sfx.ambience(def.ambience);
     Sfx.onThunder = def.sky === 'storm' ? () => World.lightning() : null;
-    UI.minimapInit(World.grid);
   },
 
   /* ---------------- message handlers ---------------- */
@@ -4715,14 +4708,9 @@ const Game = {
     }
   },
   onDied(m) {
+    // nobody is told when or where a death happens: no body, no blood, no death sounds, no killfeed - the player just disappears
     const c = this.chars.get(m.id), r = this.roster.get(m.id); if (r) r.alive = false;
-    if (c) { c.ch.setState(m.x, 0, m.z, c.ch.yaw, 0, 'dead', '', 0); c.ch.die(c.ch.yaw); c.buf = []; }
-    if (m.cause === 'left') { if (!m.quiet) UI.feed(`🚪 ${r ? r.name : '?'} disconnected`); }
-    else if (!m.quiet) {
-      if (!this.ghost) { Sfx.play(m.cause === 'poison' ? 'poison' : 'death', m.x, m.z, 1); if (m.cause !== 'guilt' && m.cause !== 'poison') Sfx.play('scream', m.x, m.z, 0.8); }
-      if (!this.ghost) FX.blood(new BABYLON.Vector3(m.x, 1.1, m.z));
-      UI.feed(m.cause === 'guilt' ? `⚖️ ${r ? r.name : '?'} shot an innocent and paid the price` : m.cause === 'gun' ? `💥 ${r ? r.name : '?'} was shot` : m.cause === 'poison' ? `🧪 ${r ? r.name : '?'} collapsed` : `💀 ${r ? r.name : '?'} was killed`);
-    }
+    if (c) { c.ch.die(c.ch.yaw); c.ch.setVisible(false); c.buf = []; }
     if (m.id === this.me.id) {
       this.me.alive = false; this.me.spectate = true; this.me.sel = -1; this.me.flash = false; R.spot.on = false;
       const k = this.roster.get(m.by); UI.death(m.cause, k && (m.cause === 'gun' || m.cause === 'guilt') ? k.name : null); Sfx.play('lose'); UI.ghostBar();
@@ -5228,13 +5216,13 @@ const Game = {
  * ui/ — DOM layer: main menu (name 3-25 chars, solo/host/join), the
  * customize / shop / roles / settings screens, lobby panel (roster, map
  * vote, host settings, ready/start), HUD (timer, role badge, hotbar with
- * cooldowns + uses, stamina, crosshair, minimap, killfeed, toasts, chat)
+ * cooldowns + uses, stamina, crosshair, toasts, chat)
  * and overlays (role card, detective reveal, death, end screen, pause).
  * ===================================================================== */
 
 const $ = id => document.getElementById(id);
 const UI = {
-  screen: null, spin: 0, previewAnim: 'idle', previewItem: '', chatOpen: false, shopTab: 'hats', promptT: 0, bannerT: 0, popT: 0, hitT: 0, fpsT: 0, frames: 0, mini: null,
+  screen: null, spin: 0, previewAnim: 'idle', previewItem: '', chatOpen: false, shopTab: 'hats', promptT: 0, bannerT: 0, popT: 0, hitT: 0, fpsT: 0, frames: 0,
 
   init() {
     const S = Settings.get(); Sfx.setVolumes({ master: S.master, sfx: S.sfx, music: S.music });
@@ -5430,7 +5418,7 @@ const UI = {
   },
   applySettings() { const S = Settings.get(); Sfx.setVolumes({ master: S.master, sfx: S.sfx, music: S.music }); },
 
-  showMenu() { $('menu').classList.remove('hidden'); $('menuMain').classList.remove('hidden'); $('coinBadge').classList.remove('hidden'); $('menuFoot').classList.remove('hidden'); $('hud').classList.add('hidden'); $('lobby').classList.add('hidden'); for (const o of ['roleCard', 'reveal', 'death', 'end', 'board', 'pause']) $(o).classList.add('hidden'); this.openScreen(null); this.coins(Game.wallet); $('chatLog').innerHTML = ''; $('feed').innerHTML = ''; },
+  showMenu() { $('menu').classList.remove('hidden'); $('menuMain').classList.remove('hidden'); $('coinBadge').classList.remove('hidden'); $('menuFoot').classList.remove('hidden'); $('hud').classList.add('hidden'); $('lobby').classList.add('hidden'); for (const o of ['roleCard', 'reveal', 'death', 'end', 'board', 'pause']) $(o).classList.add('hidden'); this.openScreen(null); this.coins(Game.wallet); $('chatLog').innerHTML = '';  },
   showGame() { $('menu').classList.add('hidden'); $('hud').classList.remove('hidden'); this.screen = null; this.hotbar(); this.phase(Game.phase); $('hint').classList.remove('hidden'); },
   loading(on, txt) { $('loading').classList.toggle('hidden', !on); if (txt) $('loadTxt').textContent = txt; },
   error(msg) { $('errTxt').textContent = msg; $('err').classList.remove('hidden'); Sfx.play('error'); },
@@ -5530,7 +5518,7 @@ const UI = {
     while ($('toasts').children.length > 4) $('toasts').firstChild.remove();
     setTimeout(() => { t.style.transition = 'opacity .5s'; t.style.opacity = 0; setTimeout(() => t.remove(), 500); }, 4200);
   },
-  feed(text) { const d = document.createElement('div'); d.textContent = text; $('feed').appendChild(d); while ($('feed').children.length > 6) $('feed').firstChild.remove(); setTimeout(() => d.remove(), 9000); },
+  feed() { },   // killfeed removed: deaths are never announced
   banner(text, color = '#fff') { const b = $('banner'); b.textContent = text; b.style.color = color; b.style.opacity = 1; this.bannerT = 2.8; },
   popScore(s) { const p = $('pop'); p.textContent = '+' + s; p.style.opacity = 1; p.style.transform = 'translateX(-50%) translateY(0)'; this.popT = 0.9; },
   hitMarker() { $('hit').style.opacity = 1; this.hitT = 0.25; },
@@ -5556,7 +5544,7 @@ const UI = {
     const list = [...Game.roster.values()];
     $('board').querySelector('.inner').innerHTML = `<h3 style="margin-bottom:10px">Players (${list.length})</h3><table>${list.map(p => {
       const role = Game.endData ? Game.endData.roles[p.id] : p.id === Game.me.id ? Game.me.role : Game.me.revealed.get(p.id) || Game.me.mates.get(p.id);
-      return `<tr><td>${p.alive || Game.phase === 'lobby' ? '🙂' : '💀'}</td><td>${U.esc(p.name)}${p.bot ? ' <span class="tag">BOT</span>' : ''}${p.host ? ' <span class="tag">HOST</span>' : ''}</td><td style="color:${role ? ROLES[role].color : '#777'}">${role ? ROLES[role].icon + ' ' + ROLES[role].name : '???'}</td></tr>`;
+      return `<tr><td>${p.alive || Game.phase === 'lobby' || (Game.me.alive && !Game.endData) ? '🙂' : '💀'}</td><td>${U.esc(p.name)}${p.bot ? ' <span class="tag">BOT</span>' : ''}${p.host ? ' <span class="tag">HOST</span>' : ''}</td><td style="color:${role ? ROLES[role].color : '#777'}">${role ? ROLES[role].icon + ' ' + ROLES[role].name : '???'}</td></tr>`;
     }).join('')}</table>`;
   },
 
@@ -5611,28 +5599,6 @@ const UI = {
     clearTimeout(this._nr); this._nr = setTimeout(() => el.classList.add('hidden'), Math.min(11000, 4500 + text.length * 45));
   },
 
-  /* ---------------- minimap ---------------- */
-  minimapInit(G) {
-    const c = document.createElement('canvas'), S = 380, k = S / Math.max(G.w, G.h); c.width = S; c.height = S; const g = c.getContext('2d');
-    const ox = (S - G.w * k) / 2, oy = (S - G.h * k) / 2;
-    for (let y = 0; y < G.h; y++) for (let x = 0; x < G.w; x++) {
-      const t = G.cells[y * G.w + x]; let col = null;
-      if (t === CT.FLOOR || t === CT.DOOR) col = G.propAt[y * G.w + x] >= 0 ? 'rgba(150,130,100,0.55)' : 'rgba(210,195,170,0.22)';
-      else if (t === CT.WALL) col = 'rgba(255,230,190,0.75)'; else if (t === CT.WINDOW || t === CT.GLASS) col = 'rgba(140,200,255,0.8)'; else if (t === CT.HEDGE) col = 'rgba(70,140,60,0.8)'; else if (t === CT.FENCE) col = 'rgba(160,120,80,0.6)'; else if (t === CT.WATER) col = 'rgba(60,120,200,0.6)';
-      if (col) { g.fillStyle = col; g.fillRect(ox + x * k, oy + y * k, k + 0.5, k + 0.5); }
-    }
-    this.mini = { img: c, k: k / CONFIG.CELL, ox, oy };
-  },
-  _drawMini() {
-    const M = this.mini; if (!M) return; const cv = $('mini'), g = cv.getContext('2d'); g.clearRect(0, 0, 380, 380); g.drawImage(M.img, 0, 0);
-    const P = (x, z) => [M.ox + x * M.k, M.oy + z * M.k];
-    for (const [, c] of FX.coins) { const [x, y] = P(c.position.x, c.position.z); g.fillStyle = '#ffcc33'; g.fillRect(x - 2, y - 2, 4, 4); }
-    if (Game.gunDrop) { const [x, y] = P(Game.gunDrop.x, Game.gunDrop.z); g.fillStyle = '#5ecbff'; g.beginPath(); g.arc(x, y, 6 + Math.sin(U.now() * 6) * 2, 0, TAU); g.fill(); g.fillStyle = '#fff'; g.font = '12px sans-serif'; g.fillText('🔫', x - 7, y - 8); }
-    for (const [id, c] of Game.chars) { if (c.ch.dead) { const [x, y] = P(c.ch.x, c.ch.z); g.strokeStyle = '#ff4d5e'; g.lineWidth = 2; g.beginPath(); g.moveTo(x - 4, y - 4); g.lineTo(x + 4, y + 4); g.moveTo(x + 4, y - 4); g.lineTo(x - 4, y + 4); g.stroke(); } else if (Game.phase === 'lobby' && id !== Game.me.id && c.ch.root.isEnabled()) { const [x, y] = P(c.ch.x, c.ch.z); g.fillStyle = 'rgba(255,255,255,0.6)'; g.beginPath(); g.arc(x, y, 3, 0, TAU); g.fill(); } }
-    const L = Game.local, [x, y] = P(L.x, L.z), a = Game.cam.yaw;
-    g.save(); g.translate(x, y); g.rotate(a); g.fillStyle = '#ff4d5e'; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, 9); g.lineTo(6, -6); g.lineTo(0, -3); g.lineTo(-6, -6); g.closePath(); g.fill(); g.stroke(); g.restore();
-  },
-
   /* ---------------- per frame ---------------- */
   frame(dt) {
     const me = Game.me, now = U.now(), ph = Game.phase;
@@ -5662,7 +5628,6 @@ const UI = {
     if (this.hitT > 0) { this.hitT -= dt; if (this.hitT <= 0) $('hit').style.opacity = 0; }
     $('vigSick').style.opacity = Game.sickT > 0 ? 0.6 + Math.sin(now * 3) * 0.3 : 0; $('vigX').style.opacity = Game.xrayT > 0 ? 1 : 0;
     if (ph === 'lobby') $('range').innerHTML = `🎯 Range score <b>${Game.range.score}</b> <span class="dim">· best ${Store.get('rangeBest', 0)}</span>`;
-    this._drawMini();
     this.frames++; this.fpsT += dt; if (this.fpsT > 0.5) { $('fps').textContent = Settings.get().showFps ? Math.round(this.frames / this.fpsT) + ' fps' : ''; this.frames = 0; this.fpsT = 0; }
   },
 };
