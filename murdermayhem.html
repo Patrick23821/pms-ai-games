@@ -134,6 +134,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 #chatLog div.sys { color: var(--gold); font-style: italic; } #chatLog div.dead { color: #9aa3b8; }
 #chatLog b { margin-right: 6px; }
 #chatIn { width: 100%; margin-top: 6px; }
+#ghostBar { position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%); pointer-events: auto; }
 #spec { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%); padding: 8px 16px; font-size: 14px; }
 #vigSick { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(80, 160, 40, .5) 100%); opacity: 0; transition: opacity .5s; }
 #vigHurt { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(160, 0, 0, .6) 100%); opacity: 0; transition: opacity .4s; }
@@ -207,7 +208,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
     </div>
     <div id="mobileWarn" class="hidden">Keyboard & mouse required.</div>
   </div>
-  <div id="menuFoot" class="dim">WASD move · Shift sprint · Space jump · 1-4 equip · LMB use · RMB aim/throw · Q holster · N pass a note · E read note · H headphones (lobby) · C first/third person · T chat · Tab players · Spectating: Q / E / wheel switch</div>
+  <div id="menuFoot" class="dim">WASD move · Shift sprint · Space jump · 1-4 equip · LMB use · RMB / Z aim · throw · Q holster · N pass a note · E read note · H headphones (lobby) · C first/third person · T chat · Tab players · Spectating: Q / E / wheel switch</div>
 
   <div id="scrCustomize" class="screen panel hidden">
     <div class="head"><h2>Customize</h2><div class="row"><button id="bRandom">🎲 Random</button><button id="bCustomDone" class="gold">Done</button></div></div>
@@ -253,6 +254,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
   <div id="stam"><i></i></div>
   <div id="hotbar"></div>
   <div id="spec" class="panel hidden"></div>
+  <div id="ghostBar" class="hidden"><button id="bGhost" class="gold">🏛️ Go to Lobby (L)</button></div>
   <div id="hint" class="panel hidden">Click to play</div>
   <div id="chat"><div id="chatLog"></div><input type="text" id="chatIn" class="hidden" maxlength="140" placeholder="Say something… (Enter to send)"></div>
   <div id="fps"></div>
@@ -279,10 +281,10 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 
 <div id="roleCard" class="overlay hidden"><div class="inner panel"></div></div>
 <div id="reveal" class="overlay hidden" style="pointer-events:none"><div class="inner panel"></div></div>
-<div id="death" class="overlay hidden" style="pointer-events:none"><div class="inner panel"><h2>YOU DIED</h2><div id="deathTxt" style="font-size:17px;margin-top:6px"></div><div class="dim" style="margin-top:10px;font-size:13px">You can spectate · Dead chat is only seen by the dead</div></div></div>
+<div id="death" class="overlay hidden" style="pointer-events:none"><div class="inner panel"><h2>YOU DIED</h2><div id="deathTxt" style="font-size:17px;margin-top:6px"></div><div class="dim" style="margin-top:10px;font-size:13px">You're spectating — press L to go to the lobby instead · Dead chat is only seen by the dead</div></div></div>
 <div id="end" class="overlay shade hidden"><div class="inner panel"></div></div>
 <div id="board" class="overlay hidden" style="pointer-events:none"><div class="inner panel"></div></div>
-<div id="pause" class="overlay shade hidden"><div class="inner panel"><h2>Menu</h2><button class="primary" id="bResume">Resume</button><button id="bPSettings">⚙️ Settings</button><button id="bPCustom">🎩 Customize (lobby)</button><button id="bPShop">🛒 Shop (lobby)</button><div class="row hidden" id="pBots" style="align-items:center;gap:8px"><button id="bBotSub" style="flex:1">➖ Bot</button><span id="pBotN" class="dim" style="min-width:86px;text-align:center"></span><button id="bBotAdd" style="flex:1">➕ Bot</button></div><button id="bPLeave">🚪 Leave Room</button><div class="dim" style="font-size:12px" id="pauseCode"></div></div></div>
+<div id="pause" class="overlay shade hidden"><div class="inner panel"><h2>Menu</h2><button class="primary" id="bResume">Resume</button><button id="bPSettings">⚙️ Settings</button><button id="bPGhost" class="hidden">🏛️ Go to Lobby</button><button id="bPCustom">🎩 Customize (lobby)</button><button id="bPShop">🛒 Shop (lobby)</button><div class="row hidden" id="pBots" style="align-items:center;gap:8px"><button id="bBotSub" style="flex:1">➖ Bot</button><span id="pBotN" class="dim" style="min-width:86px;text-align:center"></span><button id="bBotAdd" style="flex:1">➕ Bot</button></div><button id="bPLeave">🚪 Leave Room</button><div class="dim" style="font-size:12px" id="pauseCode"></div></div></div>
 <div id="err" class="overlay shade hidden" style="z-index:60"><div class="inner panel"><h3>Hmm…</h3><div id="errTxt"></div><button id="bErrOk" class="gold">OK</button></div></div>
 
 <div id="noteBox" class="overlay shade hidden" style="z-index:40"><div class="inner">
@@ -323,6 +325,7 @@ const CONFIG = {
   INVESTIGATE_RANGE: 18, TOUCH_RANGE: 2.6, SHIELD_RANGE: 4.5,
   POISON_DELAY: 20, BLACKOUT_TIME: 16, XRAY_TIME: 8,
   COIN_MAX: 30, COIN_BAG: 40, COIN_SPAWN_EVERY: 2.5,
+  KILL_COINS: 5,                                                // coins for a legit kill (evil kill, or shooting an evil player)
 
   NOTE_RANGE: 4.5, NOTE_DROP: 0.3, NOTE_CD: 6, NOTE_MAX: 140,   // passed notes (30% slip to the floor)
   PUBLIC_CODES: ['PUB01', 'PUB02', 'PUB03'], PUBLIC_FILL: 10,   // always-joinable rooms, topped up with bots
@@ -1267,7 +1270,8 @@ class Grid {
   randomWalk(rnd = Math.random) { const i = this.walkList[Math.floor(rnd() * this.walkList.length)]; const c = this.center(i); return { x: c.x + (rnd() - 0.5) * 0.8, z: c.z + (rnd() - 0.5) * 0.8, i }; }
   /** Spread-out spawn points. */
   spawns(n, rnd = Math.random) {
-    const main = this.mainComponent(), cand = U.shuffle(this.walkList.filter(i => main[i]), rnd), out = [];
+    const noSpawn = i => this.id === 'lobby' && this.zone[i] >= 0 && (this.zones[this.zone[i]].key === 'r' || this.zones[this.zone[i]].key === 'k');   // not in the Gun/Knife Range
+    const main = this.mainComponent(), cand = U.shuffle(this.walkList.filter(i => main[i] && !noSpawn(i)), rnd), out = [];
     for (const minD of [7, 5, 3, 1.5, 0]) { for (const i of cand) { if (out.length >= n) break; const c = this.center(i); if (out.every(o => U.dist(o.x, o.z, c.x, c.z) >= minD)) out.push({ x: c.x, z: c.z, i }); } if (out.length >= n) break; }
     const cx = this.ww / 2, cz = this.wh / 2;
     return out.map(p => ({ x: p.x, z: p.z, yaw: Math.atan2(cx - p.x, cz - p.z) + (rnd() - 0.5) * 0.8 }));
@@ -3590,9 +3594,10 @@ const C2H = {
   leave: () => ({ t: 'leave' }),
   note: m => { const text = San.str(m.text, 140).trim(); return text ? { t: 'note', to: San.int(m.to, 0, 1e6), text, anon: !!m.anon } : null; },
   bot: m => ({ t: 'bot', d: m.d > 0 ? 1 : -1 }),
+  ghost: m => ({ t: 'ghost', v: !!m.v }),
 };
 const H2C_TYPES = new Set(['welcome', 'reject', 'roster', 'cfg', 'votes', 'phase', 'you', 'inv', 'st', 'died', 'shot', 'kfly', 'kend', 'act', 'gun', 'coins', 'coin', 'coin-',
-  'reveal', 'fx', 'blackout', 'xray', 'target', 'sick', 'end', 'chat', 'toast', 'feed', 'emote', 'clockSync', 'hostLeft', 'look', 'note', 'ndrop', 'nclear', 'info']);
+  'reveal', 'fx', 'blackout', 'xray', 'target', 'sick', 'end', 'chat', 'toast', 'feed', 'emote', 'clockSync', 'hostLeft', 'look', 'note', 'ndrop', 'nclear', 'info', 'kcoin']);
 
 const Net = {
   peer: null, isHost: false, offline: false, myId: 0, hostId: 1, code: '', connected: false,
@@ -3793,7 +3798,7 @@ const Host = {
     const H = (t, fn) => Net.onHost(t, (m, from) => { if (!this.active) return; fn.call(this, m, from); });
     H('join', this.onJoin); H('leave', this.onLeave); H('look', this.onLook); H('st', this.onState); H('chat', this.onChat); H('vote', this.onVote);
     H('ready', this.onReady); H('cfg', this.onCfg); H('start', this.onStart); H('act', (m, from) => { const P = this.players.get(from); if (P) this.act(P, m); });
-    H('note', this.onNote); H('bot', this.onBot);
+    H('note', this.onNote); H('bot', this.onBot); H('ghost', this.onGhost);
     Net.canAccept = () => this.players.size < CONFIG.MAX_PLAYERS || [...this.players.values()].some(p => p.bot);
     Net.info = () => ({ t: 'info', n: this.players.size, humans: [...this.players.values()].filter(p => !p.bot).length, phase: this.phase, map: this.map === 'lobby' ? 'Lobby' : (MapKit.byId(this.map).name), max: CONFIG.MAX_PLAYERS });
     this.onJoin({ name, look }, Net.myId);
@@ -3837,16 +3842,30 @@ const Host = {
     this.sys(`${P.name} left.`); this.syncBots(); this.roster(); this.needEval = true;
   },
   onLook(m, from) { const P = this.players.get(from); if (!P) return; P.look = m.look; Net.broadcast({ t: 'look', id: from, look: m.look }); },
+  /** Dead player toggles between spectating the round and wandering the lobby as a ghost. */
+  onGhost(m, from) {
+    const P = this.players.get(from); if (!P || P.bot) return;
+    const v = !!m.v && !!this.round && (this.phase === 'play' || this.phase === 'intro') && !P.alive;
+    if (v === !!P.ghost) return;
+    P.ghost = v; P.tp = U.now(); P.sel = -1;
+    if (!v && this.round) {   // back to the round map: resync coins + dropped gun
+      Net.sendTo(from, { t: 'coins', list: [...this.round.coins].map(([k, c]) => [k, c.x, c.z]) });
+      if (this.round.gun) Net.sendTo(from, { t: 'gun', x: this.round.gun.x, z: this.round.gun.z, skin: this.round.gun.skin });
+    }
+  },
   onState(m, from) {
     const P = this.players.get(from); if (!P || P.bot) return;
+    if (!P.alive && !P.ghost && this.round && (this.phase === 'play' || this.phase === 'intro')) return;
+    const SG = P.ghost ? MapKit.get('lobby') : this.grid;
     const now = U.now(), dt = Math.max(0.03, now - (P.stT || now)); P.stT = now;
     const d = U.dist(P.x, P.z, m.p[0], m.p[2]);
     if (d > CONFIG.SPRINT * dt * 1.6 + 1.5 && now - P.tp > 1.2) return;         // reject teleports/speed hacks
-    if (!this.grid.walkableAt(m.p[0], m.p[2]) && !this._nearWalk(m.p[0], m.p[2])) return;
+    if (!SG.walkableAt(m.p[0], m.p[2]) && !this._nearWalk(m.p[0], m.p[2], SG)) return;
     P.x = m.p[0]; P.y = U.clamp(m.p[1], 0, 3); P.z = m.p[2]; P.yaw = m.y; P.pitch = m.pi; P.a = m.a; P.fl = m.fl;
     P.sel = m.sel >= 0 && P.slots[m.sel] ? m.sel : -1;
+    if (this.phase === 'intro' && P.slots[P.sel] === 'knife') P.sel = -1;   // knife locked until "Hunt them down"
   },
-  _nearWalk(x, z) { const C = CONFIG.CELL; for (const [dx, dz] of [[0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5]]) if (this.grid.walkableAt(x + dx, z + dz)) return true; const [cx, cy] = this.grid.cellOf(x, z); const t = this.grid.type(cx, cy); void C; return t === CT.FLOOR || t === CT.DOOR; },
+  _nearWalk(x, z, g = this.grid) { const C = CONFIG.CELL; for (const [dx, dz] of [[0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5]]) if (g.walkableAt(x + dx, z + dz)) return true; const [cx, cy] = g.cellOf(x, z); const t = g.type(cx, cy); void C; return t === CT.FLOOR || t === CT.DOOR; },
   onChat(m, from) {
     const P = this.players.get(from); if (!P) return;
     if (m.text.startsWith('/') && from === Net.myId) { this._cmd(m.text); return; }
@@ -3955,7 +3974,7 @@ const Host = {
     list.forEach((P, i) => {
       const s = sp[i % sp.length]; P.x = s.x; P.z = s.z; P.y = 0; P.yaw = s.yaw; P.tp = now; P.stT = now;
       P.role = roles[P.id]; P.alive = true; P.slots = Roles.startingSlots(P.role); P.uses = Roles.startingUses(P.role); P.sel = -1;
-      P.shield = false; P.armor = P.role === 'bodyguard'; P.poisonT = 0; P.sick = false; P.coins = 0; P.kills = 0; P.cd = {}; P.ready = P.bot;
+      P.shield = false; P.armor = P.role === 'bodyguard'; P.poisonT = 0; P.sick = false; P.coins = 0; P.kcoins = 0; P.kills = 0; P.ghost = false; P.cd = {}; P.ready = P.bot;
       spawns[P.id] = [Math.round(s.x * 100) / 100, Math.round(s.z * 100) / 100, Math.round(s.yaw * 100) / 100];
     });
     this.round = { target, coins: new Map(), coinSeq: 1, coinT: now + 6, knives: [], gun: null, jesters: [], jesterWin: 0, gone: {}, blackoutEnd: 0, start: now, deaths: [], firstBlood: null };
@@ -3985,7 +4004,7 @@ const Host = {
   toLobby(results) {
     this.map = 'lobby'; this.phase = 'lobby'; this.round = null; this.countdown = 0; this._clearNotes(); const now = U.now(), G = this.grid;
     const list = [...this.players.values()], sp = G.spawns(list.length), spawns = {};
-    list.forEach((P, i) => { const s = sp[i % sp.length]; Object.assign(P, { x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: now, alive: true, role: null, slots: LOBBY_SLOTS.concat([null]), uses: {}, sel: -1, shield: false, armor: false, poisonT: 0, cd: {}, ready: P.bot }); spawns[P.id] = [s.x, s.z, s.yaw]; });
+    list.forEach((P, i) => { const s = sp[i % sp.length]; Object.assign(P, { x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: now, alive: true, ghost: false, role: null, slots: LOBBY_SLOTS.concat([null]), uses: {}, sel: -1, shield: false, armor: false, poisonT: 0, cd: {}, ready: P.bot }); spawns[P.id] = [s.x, s.z, s.yaw]; });
     this.syncBots();
     for (const P of this.players.values()) if (!spawns[P.id]) { spawns[P.id] = [P.x, P.z, P.yaw]; }
     Net.broadcast({ t: 'phase', ph: 'lobby', map: 'lobby', end: 0, spawns, results: !!results });
@@ -4026,8 +4045,11 @@ const Host = {
   },
   kill(T, by, cause) {
     if (!T.alive) return; T.alive = false; T.sel = -1;
-    if (by && by !== T && Roles.isEvil(by.role) && cause !== 'gun') by.kills++;
-    if (by && cause === 'gun' && Roles.isEvil(T.role)) by.kills++;
+    const scored = by && by !== T && ((Roles.isEvil(by.role) && cause !== 'gun') || (cause === 'gun' && Roles.isEvil(T.role)));
+    if (scored) {
+      by.kills++; by.coins += CONFIG.KILL_COINS; by.kcoins = (by.kcoins || 0) + CONFIG.KILL_COINS;   // kill bounty (doesn't fill the coin bag)
+      if (!by.bot) Net.sendTo(by.id, { t: 'kcoin', n: CONFIG.KILL_COINS });
+    }
     this._dropGunFrom(T);
     this.round.deaths.push({ id: T.id, by: by ? by.id : null, cause, t: U.now() });
     Net.broadcast({ t: 'died', id: T.id, cause, x: Math.round(T.x * 100) / 100, z: Math.round(T.z * 100) / 100, yaw: T.yaw, by: by ? by.id : 0 });
@@ -4070,7 +4092,7 @@ const Host = {
         const T = this.players.get(m.tg); if (!T || !T.alive || T === P) return;
         if (U.dist(P.x, P.z, T.x, T.z) > CONFIG.KNIFE_RANGE + 0.8 || !this._losP(P, T)) return;
         if (item === 'knife') { if (P.role !== 'murderer' || !Roles.knifeCanHit(T.role)) return; this.damage(T, P, 'knife'); }
-        else { const tgt = this.round && T.id === this.round.target; if (!this.round || (!tgt && T.role !== 'jester') || !(P.uses.blade > 0)) return; P.uses.blade--; this._inv(P); if (this.damage(T, P, 'blade') && tgt) { P.kills++; this.toast(P.id, '🗡️ Contract complete. Now survive — the Murderer doesn\'t know you\'re on their side.', 'good'); } }
+        else { const tgt = this.round && T.id === this.round.target; if (!this.round || (!tgt && T.role !== 'jester') || !(P.uses.blade > 0)) return; P.uses.blade--; this._inv(P); if (this.damage(T, P, 'blade') && tgt) { this.toast(P.id, '🗡️ Contract complete. Now survive — the Murderer doesn\'t know you\'re on their side.', 'good'); } }
         break;
       }
       case 'throw': {
@@ -4151,7 +4173,7 @@ const Host = {
     this.stT -= dt;
     if (this.stT <= 0) {
       this.stT = 1 / CONFIG.NET_RATE; const s = [], r2 = v => Math.round(v * 100) / 100;
-      for (const P of this.players.values()) if (P.alive) s.push([P.id, r2(P.x), r2(P.y), r2(P.z), r2(P.yaw), r2(P.pitch), P.a, this._visCode(P), P.fl]);
+      for (const P of this.players.values()) if (P.alive || P.ghost) s.push([P.id, r2(P.x), r2(P.y), r2(P.z), r2(P.yaw), r2(P.pitch), P.a, P.ghost ? 0 : this._visCode(P), P.alive ? P.fl & ~32 : (P.fl | 32)]);   // bit 32 = lobby ghost
       Net.broadcast({ t: 'st', h: r2(now), s });
     }
   },
@@ -4180,7 +4202,7 @@ const Host = {
     }
     for (const P of this.players.values()) {
       if (!P.alive) continue;
-      if (play && P.coins < CONFIG.COIN_BAG) for (const [id, c] of R0.coins) if (U.dist2(P.x, P.z, c.x, c.z) < 1.1) { R0.coins.delete(id); P.coins++; Net.broadcast({ t: 'coin-', id, by: P.id }); break; }
+      if (play && P.coins - (P.kcoins || 0) < CONFIG.COIN_BAG) for (const [id, c] of R0.coins) if (U.dist2(P.x, P.z, c.x, c.z) < 1.1) { R0.coins.delete(id); P.coins++; Net.broadcast({ t: 'coin-', id, by: P.id }); break; }
       if (R0.gun && now > R0.gun.t && Roles.canTakeGun(P.role) && !P.slots.includes('revolver') && U.dist2(P.x, P.z, R0.gun.x, R0.gun.z) < 1.6) {
         const i = P.slots.indexOf(null); if (i >= 0) {
           P.slots[i] = 'revolver'; P.cd.gun = now + 0.8; R0.gun = null; this._inv(P);
@@ -4559,7 +4581,7 @@ const Game = {
     N('cfg', m => { this.cfg = m.cfg; UI.lobbyRefresh(); }); N('votes', m => { this.votes = m.v; UI.lobbyRefresh(); });
     N('phase', this.onPhase); N('you', this.onYou); N('inv', this.onInv); N('st', this.onStates); N('died', this.onDied); N('shot', this.onShot);
     N('kfly', this.onKfly); N('kend', this.onKend); N('act', this.onAct); N('gun', this.onGun);
-    N('coins', m => FX.setCoins(m.list)); N('coin', m => FX.addCoin(m.id, m.x, m.z)); N('coin-', this.onCoinTaken);
+    N('kcoin', m => { const n = U.clamp(m.n | 0, 0, 50); if (!n) return; this.me.coinsRound += n; this.addCoins(n); Sfx.play('coin'); UI.toast(`🪙 +${n} coins for the kill`, 'good'); }); N('coins', m => { if (!this.ghost) FX.setCoins(m.list); }); N('coin', m => { if (!this.ghost) FX.addCoin(m.id, m.x, m.z); }); N('coin-', this.onCoinTaken);
     N('reveal', this.onReveal); N('fx', this.onFx); N('blackout', this.onBlackout); N('xray', this.onXray);
     N('target', m => { this.me.target = m.id; UI.hotbar(); this.refreshTags(); if (m.quiet) return; const r = this.roster.get(m.id); UI.toast(r ? `🎯 New contract: ${r.name}` : '🎯 No targets remain.', 'evil'); Sfx.play('target'); });
     N('sick', () => { this.sickT = 7; UI.toast('🤢 You feel very sick... find a Medic!', 'bad'); Sfx.play('poison'); });
@@ -4603,6 +4625,7 @@ const Game = {
   },
   _resetSession() {
     if (Host.active) Host.stop();
+    this.ghost = false; this._clearGhosts();
     for (const [, c] of this.chars) c.ch.dispose(); this.chars.clear(); this.roster.clear(); this.clearNotes();
     const keep = { name: this.me.name, look: this.me.look }; this.me = this.newMe(); Object.assign(this.me, keep);
     this.phase = 'lobby'; this.endData = null; R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0; FX.clear(); this.gunDrop = null;
@@ -4611,10 +4634,11 @@ const Game = {
   exitToMenu() {
     this.publicCode = null; this.setPhones(false, true);
     if (Host.active) Host.stop(); Net.close(); this.mode = 'menu'; this._menuSnap = false;
+    this.ghost = false; this._clearGhosts();
     for (const [, c] of this.chars) c.ch.dispose(); this.chars.clear(); this.roster.clear(); this.clearNotes();
     const keep = { name: this.me.name, look: this.me.look }; this.me = this.newMe(); Object.assign(this.me, keep); this.local = this.newLocal();
     this.phase = 'lobby'; this.endData = null; this.unlock(); R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0;
-    FX.clear(); UI.hideEnd(); UI.noteClose(); this.loadMap('lobby'); UI.showMenu(); if (this.preview) { this.preview.setVisible(true); this.preview.setLook(this.me.look); }
+    FX.clear(); UI.hideEnd(); UI.noteClose(); this.loadMap('lobby'); UI.showMenu(); UI.ghostBar(); if (this.preview) { this.preview.setVisible(true); this.preview.setLook(this.me.look); }
   },
   setLook(look) { this.me.look = Look.validate(look); Store.set('look', this.me.look); if (this.preview) this.preview.setLook(this.me.look); if (this.mode === 'game') Net.toHost({ t: 'look', look: this.me.look }); },
   setName(n) { this.me.name = U.cleanName(n); Store.set('name', this.me.name); return U.nameOk(this.me.name); },
@@ -4644,6 +4668,7 @@ const Game = {
     UI.lobbyRefresh(); UI.scoreboardRefresh();
   },
   onPhase(m) {
+    if (this.ghost && m.ph !== 'play' && m.ph !== 'intro') { this.ghost = false; this._clearGhosts(); }
     const prev = this.phase; this.phase = m.ph; this.phaseEnd = m.end; this.countdown = !!m.countdown;
     if (m.map) this.loadMap(m.map);
     if (m.spawns) {
@@ -4659,7 +4684,7 @@ const Game = {
     if (m.ph === 'intro') { this.inPlay = m.inPlay || []; this.double = !!m.double; this.endData = null; UI.hideEnd(); Sfx.play('start'); if (this.double) UI.banner('🔪🔪 DOUBLE MURDER ROUND — two Murderers!', '#ff3b4e'); }
     if (m.ph === 'play' && prev === 'intro') { UI.banner(this.me.role === 'murderer' ? 'Hunt them down.' : this.double ? 'BOTH Murderers are now armed.' : 'The Murderer is now armed.', '#ff4d5e'); Sfx.play('reveal'); }
     if (m.ph === 'lobby' && m.spawns) { if (!m.results) { this.endData = null; UI.hideEnd(); } this.me.role = null; this.range.score = 0; this.me.slots = LOBBY_SLOTS.concat([null]); UI.death(null); }
-    UI.phase(this.phase); UI.lobbyRefresh(); this.refreshTags();
+    UI.phase(this.phase); UI.lobbyRefresh(); this.refreshTags(); UI.ghostBar();
   },
   onYou(m) {
     const me = this.me; me.role = m.role; me.slots = m.slots; me.uses = m.uses || {}; me.sel = -1; me.target = m.target || null; me.armor = !!m.armor;
@@ -4672,7 +4697,9 @@ const Game = {
   onStates(m) {
     for (const e of m.s) {
       const [id, x, y, z, yaw, pitch, a, vis, fl] = e; if (id === this.me.id) continue;
-      const c = this.chars.get(id); if (!c || c.ch.dead) continue;
+      const c = this.chars.get(id); if (!c) continue;
+      if (fl & 32) { (c.gbuf = c.gbuf || []).push({ t: m.h, x, y, z, yaw, pitch, a, vis: 0, fl }); if (c.gbuf.length > 30) c.gbuf.shift(); c.gseen = U.now(); continue; }
+      if (c.ch.dead) continue;
       c.buf.push({ t: m.h, x, y, z, yaw, pitch, a, vis, fl }); if (c.buf.length > 30) c.buf.shift(); c.seen = U.now();
     }
   },
@@ -4681,13 +4708,13 @@ const Game = {
     if (c) { c.ch.setState(m.x, 0, m.z, c.ch.yaw, 0, 'dead', '', 0); c.ch.die(c.ch.yaw); c.buf = []; }
     if (m.cause === 'left') { if (!m.quiet) UI.feed(`🚪 ${r ? r.name : '?'} disconnected`); }
     else if (!m.quiet) {
-      Sfx.play(m.cause === 'poison' ? 'poison' : 'death', m.x, m.z, 1); if (m.cause !== 'guilt' && m.cause !== 'poison') Sfx.play('scream', m.x, m.z, 0.8);
-      FX.blood(new BABYLON.Vector3(m.x, 1.1, m.z));
+      if (!this.ghost) { Sfx.play(m.cause === 'poison' ? 'poison' : 'death', m.x, m.z, 1); if (m.cause !== 'guilt' && m.cause !== 'poison') Sfx.play('scream', m.x, m.z, 0.8); }
+      if (!this.ghost) FX.blood(new BABYLON.Vector3(m.x, 1.1, m.z));
       UI.feed(m.cause === 'guilt' ? `⚖️ ${r ? r.name : '?'} shot an innocent and paid the price` : m.cause === 'gun' ? `💥 ${r ? r.name : '?'} was shot` : m.cause === 'poison' ? `🧪 ${r ? r.name : '?'} collapsed` : `💀 ${r ? r.name : '?'} was killed`);
     }
     if (m.id === this.me.id) {
       this.me.alive = false; this.me.spectate = true; this.me.sel = -1; this.me.flash = false; R.spot.on = false;
-      const k = this.roster.get(m.by); UI.death(m.cause, k && (m.cause === 'gun' || m.cause === 'guilt') ? k.name : null); Sfx.play('lose');
+      const k = this.roster.get(m.by); UI.death(m.cause, k && (m.cause === 'gun' || m.cause === 'guilt') ? k.name : null); Sfx.play('lose'); UI.ghostBar();
       // spectate whoever killed you (if they're still standing), otherwise the next player
       const kc = m.by && m.by !== this.me.id ? this.chars.get(m.by) : null;
       this.spec.id = kc && !kc.ch.dead ? m.by : null;
@@ -4696,6 +4723,7 @@ const Game = {
     UI.scoreboardRefresh(); this.refreshTags();
   },
   onShot(m) {
+    if (this.ghost) return;
     const o = new BABYLON.Vector3(...m.o), e = new BABYLON.Vector3(...m.e), mine = m.by === this.me.id;
     const hear = this.hearGuns();   // lobby: the Gun Range is soundproofed
     if (!mine) {
@@ -4706,6 +4734,26 @@ const Game = {
       this._knockTarget(m.o, m.e, false);
     }
     if (m.hit) { if (hear) Sfx.play('impact', m.e[0], m.e[2], 1); const hc = this.chars.get(m.hit); if (hc) hc.ch.hitFlash(); if (mine) UI.hitMarker(); }
+  },
+  /** Dead: leave spectating and wander the lobby (as a ghost) until the round ends. */
+  goLobby() {
+    const me = this.me; if (me.alive || this.ghost || (this.phase !== 'play' && this.phase !== 'intro')) return;
+    this.ghost = true; this.roundMap = this.map; this.loadMap('lobby');
+    R.darkFogTarget = 0; R.darkFog = 0; R.bakeTarget = 1; R.spot.on = false; this.dark = 0; this.xrayT = 0;
+    const s = World.grid.spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
+    Object.assign(this.local, { x: s.x, z: s.z, y: 0, vy: 0, vx: 0, vz: 0, yaw: s.yaw }); this.cam.yaw = s.yaw; this.cam.pitch = -0.12;
+    Net.toHost({ t: 'ghost', v: true }); UI.death(null); UI.spectating(false); UI.ghostBar(); Sfx.play('ui');
+    UI.toast('🏛️ You\'re in the lobby until the round ends. Press L or Spectate to watch again.', 'info');
+  },
+  /** Ghost: go back to spectating the round. */
+  stopGhost(quiet) {
+    if (!this.ghost) return; this.ghost = false; this._clearGhosts();
+    if (this.roundMap && (this.phase === 'play' || this.phase === 'intro')) { this.loadMap(this.roundMap); Net.toHost({ t: 'ghost', v: false }); }
+    UI.ghostBar(); if (!quiet) { Sfx.play('ui'); UI.toast('👁️ Spectating the round.', 'info'); }
+  },
+  _clearGhosts() {
+    for (const [, c] of this.chars) { if (c.gch) { c.gch.dispose(); c.gch = null; } c.gbuf = []; }
+    if (this._myGhost) { this._myGhost.dispose(); this._myGhost = null; }
   },
   /** Lobby: gunshots are only audible from inside the Gun Range. */
   hearGuns() { const G = World.grid; return !G || G.id !== 'lobby' || this.phase === 'play' || this.phase === 'intro' || G.inRange(this.local.x, this.local.z); },
@@ -4723,26 +4771,30 @@ const Game = {
     return th;
   },
   _rangeScore(s, p) { this.range.score += s; const best = Store.get('rangeBest', 0); if (this.range.score > best) Store.set('rangeBest', this.range.score); UI.popScore(s); Sfx.play('target'); void p; },
-  onKfly(m) { FX.knifeFly(m.k, m.o, m.d, m.skin); Sfx.play('throw', m.o[0], m.o[2], 0.9); if (m.by !== this.me.id) { const c = this.chars.get(m.by); if (c) c.ch.act('throw'); } },
+  onKfly(m) { if (this.ghost) return; FX.knifeFly(m.k, m.o, m.d, m.skin); Sfx.play('throw', m.o[0], m.o[2], 0.9); if (m.by !== this.me.id) { const c = this.chars.get(m.by); if (c) c.ch.act('throw'); } },
   onKend(m) {
+    if (this.ghost) return;
     FX.knifeEnd(m.k, m.p, m.n, m.stuck);
     if (m.p) { if (m.hit) { Sfx.play('stab', m.p[0], m.p[2], 1); const c = this.chars.get(m.hit); if (c) c.ch.hitFlash(); } else Sfx.play('thunk', m.p[0], m.p[2], 0.8); }
     if (m.tgt && m.p) { let best = null, bd = 1.5; for (const t of World.targets) { const d = U.dist(t.node.position.x, t.node.position.z, m.p[0], m.p[2]); if (d < bd) { bd = d; best = t; } } if (best) best.down = 2.6; if (m.by === this.me.id) this._rangeScore(m.tgt, m.p); }
   },
   onAct(m) { const c = this.chars.get(m.id); if (!c) return; c.ch.act(m.k === 'stab' ? 'stab' : m.k); if (m.k === 'stab' || m.k === 'swing') Sfx.play('swish', c.ch.x, c.ch.z, 0.7); if (m.k === 'use') Sfx.play('equip', c.ch.x, c.ch.z, 0.5); },
   onGun(m) {
+    if (this.ghost) return;
     if (m.taken) { FX.clearGun(); this.gunDrop = null; Sfx.play('pickup'); return; }
     this.gunDrop = { x: m.x, z: m.z }; FX.dropGun(m.x, m.z, m.skin); Sfx.play('thunk', m.x, m.z, 0.8);
   },
-  onCoinTaken(m) { FX.takeCoin(m.id, m.by === this.me.id); if (m.by === this.me.id) { this.me.coinsRound++; this.addCoins(1); Sfx.play('coin'); } },
+  onCoinTaken(m) { if (!this.ghost) FX.takeCoin(m.id, m.by === this.me.id); if (m.by === this.me.id) { this.me.coinsRound++; this.addCoins(1); Sfx.play('coin'); } },
   onReveal(m) { this.me.revealed.set(m.id, m.role); const r = this.roster.get(m.id); UI.revealCard(r ? r.name : '?', m.role); Sfx.play('reveal1'); this.refreshTags(); },
   onFx(m) {
+    if (this.ghost) return;
     const p = new BABYLON.Vector3(m.x, 0.1, m.z), c = this.chars.get(m.id);
     if (m.k === 'shield') { FX.magic(p, [0.4, 1, 0.7]); Sfx.play('shield', m.x, m.z, 1); }
     if (m.k === 'shieldbreak') { FX.magic(p, [0.5, 1, 1]); Sfx.play('shieldbreak', m.x, m.z, 1); if (c) c.ch.hitFlash([0.4, 1, 1]); }
     if (m.k === 'armor') { FX.sparkle(new BABYLON.Vector3(m.x, 1.2, m.z)); Sfx.play('ricochet', m.x, m.z, 1); if (c) c.ch.hitFlash([0.8, 0.85, 1]); }
   },
   onBlackout(m) {
+    if (this.ghost) return;
     const nv = this.me.alive && !this.me.spectate && (this.me.role === 'murderer' || this.me.role === 'saboteur');   // evil night vision
     this.dark = m.dur; R.darkFogMul = nv ? CONFIG.BLACKOUT_NV : 1; R.bakeTarget = nv ? 0.2 : 0.05; R.darkFogTarget = 1; Sfx.play('blackout');
     if (nv) UI.toast('🌙 Night vision - you can see further in the dark than everyone else.', 'good');
@@ -4762,6 +4814,7 @@ const Game = {
     m.specularColor = BABYLON.Color3.Black(); m.backFaceCulling = false; m.disableLighting = true; this._nMat = m; return m;
   },
   onNoteDrop(m) {
+    if (this.ghost) return;
     if (this.notes.has(m.id)) return;
     const p = BABYLON.MeshBuilder.CreatePlane('note' + m.id, { size: 0.3 }, R.scene);
     p.material = this._noteMat(); p.rotation.x = Math.PI / 2; p.rotation.y = m.r || 0; p.position.set(m.x, 0.015, m.z); p.isPickable = false;
@@ -4832,7 +4885,7 @@ const Game = {
     cv.addEventListener('contextmenu', e => e.preventDefault());
     cv.addEventListener('wheel', e => {
       if (this.mode !== 'game') return;
-      if (this.me.spectate || !this.me.alive) { const t = U.now(); if (t - (this._wheelT || 0) > 0.12) { this._wheelT = t; this.specCycle(e.deltaY > 0 ? 1 : -1); } return; }
+      if ((this.me.spectate || !this.me.alive) && !this.ghost) { const t = U.now(); if (t - (this._wheelT || 0) > 0.12) { this._wheelT = t; this.specCycle(e.deltaY > 0 ? 1 : -1); } return; }
       if (!this.locked) return; this.cycleSlot(e.deltaY > 0 ? 1 : -1);
     }, { passive: true });
     window.addEventListener('keydown', e => {
@@ -4842,7 +4895,8 @@ const Game = {
       if (k === 'Tab') { e.preventDefault(); UI.scoreboard(true); }
       if (k === 'KeyT' || k === 'Enter') { e.preventDefault(); UI.openChat(); return; }
       if (k === 'Escape') return;
-      const spec = this.me.spectate || !this.me.alive;
+      if (k === 'KeyL' && !e.repeat && !this.me.alive && (this.phase === 'play' || this.phase === 'intro')) { this.ghost ? this.stopGhost() : this.goLobby(); return; }
+      const spec = (this.me.spectate || !this.me.alive) && !this.ghost;
       if (spec) {
         if (k === 'KeyQ') this.specCycle(-1);
         if (k === 'KeyE' || k === 'Space') this.specCycle(1);
@@ -4852,6 +4906,7 @@ const Game = {
       if (k === 'KeyQ') this.selectSlot(-1);
       if (k === 'KeyE') { const n = this.nearNote(); if (n) { UI.noteRead(n.text, n.from, true); Sfx.play('equip'); } }
       if (k === 'KeyN' && !e.repeat) { e.preventDefault(); this.openNote(); }
+      if (k === 'KeyZ' && !e.repeat && (this.item() === 'knife' || this.item() === 'propknife')) this.secondary();   // keyboard throw
       if (k === 'KeyH' && !e.repeat) this.setPhones();
       if (k === 'KeyC' && !e.repeat) { const v = !Settings.get().firstPerson; Settings.set('firstPerson', v); UI.prompt(v ? '👁️ First person' : '🎥 Third person', 1.2); if (UI.screen === 'settings') UI.buildSettings(); }
       if (k === 'KeyF' && this.me.slots.includes('flashlight')) { if (this.me.slots[this.me.sel] !== 'flashlight') this.selectSlot(this.me.slots.indexOf('flashlight')); this.me.flash = !this.me.flash; Sfx.play('flash'); }
@@ -4874,17 +4929,18 @@ const Game = {
   selectSlot(i) {
     const me = this.me; if (!me.alive || me.spectate) return;
     if (i >= 0 && (!me.slots[i] || me.sel === i)) i = -1;
+    if (i >= 0 && me.slots[i] === 'knife' && this.phase === 'intro') { UI.prompt('🔪 Your knife unlocks when the hunt begins.', 1.8); Sfx.play('error'); return; }
     if (i === me.sel) return;
     me.sel = i; if (i < 0 || me.slots[i] !== 'flashlight') me.flash = false;
     if (i >= 0) { const it = me.slots[i]; Sfx.play(it === 'revolver' ? 'cock' : it === 'knife' ? 'swish' : 'equip'); UI.prompt(ITEMS[it].hint, 2.5); }
     UI.hotbar();
   },
-  cycleSlot(dir) { const me = this.me, has = [-1, 0, 1, 2, 3].filter(i => i < 0 || me.slots[i]); let k = has.indexOf(me.sel); k = (k + dir + has.length) % has.length; this.selectSlot(has[k]); },
+  cycleSlot(dir) { const me = this.me, has = [-1, 0, 1, 2, 3].filter(i => i < 0 || (me.slots[i] && !(me.slots[i] === 'knife' && this.phase === 'intro'))); let k = has.indexOf(me.sel); k = (k + dir + has.length) % has.length; this.selectSlot(has[k]); },
   item() { return this.me.sel >= 0 ? this.me.slots[this.me.sel] : null; },
   canAttack() { return this.phase === 'play' || this.phase === 'lobby' || this.phase === 'end'; },
 
   primary() {
-    const me = this.me, it = this.item(), now = U.now(); if (!me.alive || me.spectate || !it || this.phase === 'intro') { if (me.spectate) this.specCycle(1); return; }
+    const me = this.me, it = this.item(), now = U.now(); if (!me.alive || me.spectate || !it || this.phase === 'intro') { if (me.spectate && !this.ghost) this.specCycle(1); return; }
     const ch = this.myChar(); if (!ch) return;
     switch (it) {
       case 'knife': case 'blade': case 'propknife': {
@@ -4911,7 +4967,7 @@ const Game = {
     }
   },
   secondary() {
-    const me = this.me, it = this.item(), now = U.now(); if (!me.alive || me.spectate) { if (me.spectate) this.specCycle(-1); return; }
+    const me = this.me, it = this.item(), now = U.now(); if (!me.alive || me.spectate) { if (me.spectate && !this.ghost) this.specCycle(-1); return; }
     if (it === 'knife') {
       if (this.phase === 'intro') return;
       if (this.phase !== 'play' && World.grid.id === 'lobby' && !World.grid.inRange(this.local.x, this.local.z, 'k')) {
@@ -4995,7 +5051,7 @@ const Game = {
     if (this.mode === 'menu') { this.menuUpdate(dt); return; }
     const me = this.me, L = this.local, G = World.grid; if (!G) return;
     const playing = me.alive && !me.spectate;
-    if (playing) this.movePlayer(dt);
+    if (playing || this.ghost) this.movePlayer(dt);
     // timers
     if (this.dark > 0) { this.dark -= dt; if (this.dark <= 0) { R.bakeTarget = 1; R.darkFogTarget = 0; UI.toast('💡 The lights are back on.', 'info'); } }
     if (this.xrayT > 0) { this.xrayT -= dt; }
@@ -5024,6 +5080,18 @@ const Game = {
       ch.setXray(this.xrayT > 0 && id !== me.id && !ch.dead, VIS_CODES.indexOf(ch.vis) === 1 ? [1, 0.25, 0.3] : [0.35, 0.95, 1]);
       ch.update(dt);
     }
+    // lobby ghosts: hide the round (bodies + players) and show other ghosts + my own ghost body
+    if (this.ghost) for (const [, c] of this.chars) c.ch.setVisible(false);
+    for (const [id, c] of this.chars) {
+      const g = c.gbuf, show = this.ghost && id !== me.id && g && g.length && U.now() - (c.gseen || 0) < 1.5;
+      if (!show) { if (c.gch) c.gch.setVisible(false); continue; }
+      if (!c.gch) c.gch = new Character(100000 + id, (this.roster.get(id) || {}).look || me.look, {});
+      let i = g.length - 1; while (i > 0 && g[i - 1].t > rt) i--;
+      const B1 = g[i], A = g[Math.max(0, i - 1)]; let k = B1.t > A.t ? U.clamp((rt - A.t) / (B1.t - A.t), 0, 1.2) : 1; if (rt >= B1.t) k = 1;
+      c.gch.setVisible(true); c.gch.setState(U.lerp(A.x, B1.x, k), U.lerp(A.y, B1.y, k), U.lerp(A.z, B1.z, k), A.yaw + U.angDiff(A.yaw, B1.yaw) * k, B1.pitch, ANIM_CODES[B1.a] || 'idle', '', 0); c.gch.update(dt);
+      while (g.length > 2 && g[1].t < rt - 0.5) g.shift();
+    }
+    if (this.ghost) { if (!this._myGhost) this._myGhost = new Character(100000 + me.id, me.look, { local: true }); this._myGhost.setVisible(true); this._myGhost.setState(L.x, L.y, L.z, L.yaw, this.cam.pitch, !L.ground ? 'jump' : 'idle', '', 0); this._myGhost.update(dt); }
     // blackout: dim the sky along with the short-range fog
     if (World.skyMat && World.skyMat.emissiveTexture) World.skyMat.emissiveTexture.level = 1 - 0.92 * R.darkFog;
     if (this._tagT === undefined || (this._tagT -= dt) <= 0 || this._tagDirty) { this._tagT = 0.25; this._tagDirty = false; this._updateTags(); }
@@ -5034,10 +5102,10 @@ const Game = {
     else R.spot.on = false;
     // net state
     this.stT -= dt;
-    if (playing && this.stT <= 0) {
+    if ((playing || this.ghost) && this.stT <= 0) {
       this.stT = 1 / CONFIG.NET_RATE;
       const a = L.emoteT > 0 ? L.emote : !L.ground ? 3 : L.moving ? (L.sprint ? 2 : 1) : 0;
-      Net.toHost({ t: 'st', p: [Math.round(L.x * 100) / 100, Math.round(L.y * 100) / 100, Math.round(L.z * 100) / 100], y: Math.round(L.yaw * 100) / 100, pi: Math.round(this.cam.pitch * 100) / 100, a, sel: me.sel, fl: (me.flash ? 1 : 0) | (L.aim ? 2 : 0) | (L.sprint ? 8 : 0) | (this.phones ? 16 : 0) });
+      Net.toHost({ t: 'st', p: [Math.round(L.x * 100) / 100, Math.round(L.y * 100) / 100, Math.round(L.z * 100) / 100], y: Math.round(L.yaw * 100) / 100, pi: Math.round(this.cam.pitch * 100) / 100, a, sel: me.sel, fl: (me.flash ? 1 : 0) | (L.aim ? 2 : 0) | (L.sprint ? 8 : 0) | (this.phones ? 16 : 0) | (this.ghost ? 32 : 0) });
     }
     Sfx.setListener(L.x, L.z, this.cam.yaw);
     UI.frame(dt);
@@ -5048,7 +5116,7 @@ const Game = {
     const f = typing ? 0 : (k.KeyW ? 1 : 0) - (k.KeyS ? 1 : 0), s = typing ? 0 : (k.KeyD ? 1 : 0) - (k.KeyA ? 1 : 0);
     const cy = this.cam.yaw, fx = Math.sin(cy), fz = Math.cos(cy), rx = Math.cos(cy), rz = -Math.sin(cy);
     let mx = fx * f + rx * s, mz = fz * f + rz * s; const ml = Math.hypot(mx, mz); if (ml > 0) { mx /= ml; mz /= ml; }
-    L.aim = this.mouse.r && this.item() === 'revolver';
+    L.aim = (this.mouse.r || (!typing && !!k.KeyZ)) && this.item() === 'revolver';   // RMB or hold Z
     const wantSprint = k.ShiftLeft || k.ShiftRight; L.sprint = wantSprint && ml > 0 && L.stam > 0.05 && !L.aim;
     if (L.sprint) L.stam = Math.max(0, L.stam - dt); else L.stam = Math.min(CONFIG.STAMINA, L.stam + dt * CONFIG.STAMINA_REGEN * (ml > 0 ? 1.4 : 2.4));
     const sick = this.sickT > 0 ? 0.75 : 1, spd = (L.sprint ? CONFIG.SPRINT : CONFIG.WALK) * (L.aim ? 0.55 : 1) * sick;
@@ -5070,7 +5138,7 @@ const Game = {
   updateCamera(dt) {
     const cam = R.camera, c = this.cam, L = this.local, G = World.grid, s = Settings.get(), me = this.me;
     let px = L.x, py = L.y, pz = L.z;
-    if (me.spectate || !me.alive) {
+    if ((me.spectate || !me.alive) && !this.ghost) {
       const alive = this._specList();
       if (alive.length) { let t = alive.find(([id]) => id === this.spec.id); if (!t) { t = alive[((this.spec.idx % alive.length) + alive.length) % alive.length]; this.spec.id = t[0]; } px = t[1].ch.x; py = t[1].ch.y; pz = t[1].ch.z; UI.spectating((this.roster.get(t[0]) || {}).name); }
       else UI.spectating(null);
@@ -5078,14 +5146,14 @@ const Game = {
     } else UI.spectating(false);
     const aim = L.aim; c.fovK = U.damp(c.fovK, aim ? 0.68 : 1, 12, dt); c.punch = U.damp(c.punch, 0, 9, dt);
     // first person (alive + not spectating): eyes at head height, own body hidden but the held item stays as a view-model
-    if (s.firstPerson && me.alive && !me.spectate) {
+    if (s.firstPerson && ((me.alive && !me.spectate) || this.ghost)) {
       const f = this.camForward(), hy = py + 1.62, pos = new BABYLON.Vector3(px + Math.sin(c.yaw) * 0.14, hy, pz + Math.cos(c.yaw) * 0.14), sk = FX.shakeOffset();
       pos.x += sk[0]; pos.y += sk[1]; pos.z += sk[2];
       cam.position.copyFrom(pos); cam.setTarget(pos.add(f)); cam.fov = (s.fov * Math.PI / 180) * c.fovK * (1 + c.punch * 0.035);
-      const myc = this.myChar(); if (myc) { myc.root.getChildMeshes().forEach(m => { m.visibility = 0; }); const it = myc.items[myc.vis]; if (it) it.node.getChildMeshes().forEach(m => { m.visibility = 1; }); }
+      const myc = this.ghost ? this._myGhost : this.myChar(); if (myc) { myc.root.getChildMeshes().forEach(m => { m.visibility = 0; }); const it = myc.items[myc.vis]; if (it) { this._vm(it); it.node.getChildMeshes().forEach(m => { m.visibility = 1; }); } }
       this._fpOn = true; return;
     }
-    if (this._fpOn) { this._fpOn = false; const myc = this.myChar(); if (myc) myc.root.getChildMeshes().forEach(m => { m.visibility = 1; }); }
+    if (this._fpOn) { this._fpOn = false; this._vmRestore(); for (const myc of [this.myChar(), this._myGhost]) if (myc) myc.root.getChildMeshes().forEach(m => { m.visibility = 1; }); }
     const dist = U.lerp(1.55, 3.4 * s.camDist, (c.fovK - 0.68) / 0.32), sh = U.lerp(0.62, 0.48, (c.fovK - 0.68) / 0.32);
     const f = this.camForward(), rx = Math.cos(c.yaw), rz = -Math.sin(c.yaw);
     const piv = new BABYLON.Vector3(px + rx * sh, py + 1.58, pz + rz * sh);
@@ -5102,6 +5170,20 @@ const Game = {
     cam.fov = (s.fov * Math.PI / 180) * c.fovK * (1 + c.punch * 0.035);
     // hide my own model when the camera is inside it
     const myc = this.myChar(); if (myc && !me.spectate) { const near = d < 0.6; myc.root.getChildMeshes().forEach(m => { m.visibility = near ? 0.25 : 1; }); }
+  },
+
+  /** First person: the held item becomes a view-model pinned to the camera (lower-right, pointing where you look). */
+  _vm(it) {
+    if (!this._vmNode) this._vmNode = new BABYLON.TransformNode('viewModel', R.scene);
+    this._vmNode.parent = R.camera;
+    const n = it.node;
+    if (n.parent !== this._vmNode) { n._vmOrig = { parent: n.parent, pos: n.position.clone(), rot: n.rotation.clone(), rq: n.rotationQuaternion ? n.rotationQuaternion.clone() : null }; n.parent = this._vmNode; n.rotationQuaternion = null; }
+    const aim = this.local.aim, k = this.cam.punch || 0;
+    n.position.set(aim ? 0.0 : 0.17, aim ? -0.1 : -0.15, (aim ? 0.34 : 0.38) - k * 0.04); n.rotation.set(-k * 0.12, aim ? 0 : -0.08, 0);
+  },
+  _vmRestore() {
+    const myc = this.myChar(); if (!myc) return;
+    for (const key in myc.items) { const n = myc.items[key].node, o = n._vmOrig; if (!o) continue; n.parent = o.parent; n.position.copyFrom(o.pos); n.rotation.copyFrom(o.rot); if (o.rq) n.rotationQuaternion = o.rq; n._vmOrig = null; }
   },
 
   /* ---------------- menu backdrop ---------------- */
@@ -5173,6 +5255,8 @@ const UI = {
     $('bPSettings').onclick = () => { this.pause(false); this.openScreen('settings', true); };
     $('bLCustom').onclick = () => this.openScreen('customize', true); $('bLShop').onclick = () => this.openScreen('shop', true); $('bPhones').onclick = () => Game.setPhones();
     $('bPShop').onclick = () => { if (Game.phase !== 'lobby') { this.toast('The shop is open in the lobby.', 'warn'); return; } this.pause(false); this.openScreen('shop', true); };
+    $('bGhost').onclick = () => { Game.ghost ? Game.stopGhost() : Game.goLobby(); };
+    $('bPGhost').onclick = () => { this.pause(false); Game.ghost ? Game.stopGhost() : Game.goLobby(); };
     $('bPCustom').onclick = () => { if (Game.phase !== 'lobby') { this.toast('You can only change outfits in the lobby.', 'warn'); return; } this.pause(false); this.openScreen('customize', true); };
     $('bErrOk').onclick = () => $('err').classList.add('hidden');
     // chat
@@ -5194,6 +5278,12 @@ const UI = {
 
   /* ---------------- menus ---------------- */
   owns(kind, i) { const list = kind === 'hat' ? LOOK.hats : kind === 'knife' ? LOOK.knives : LOOK.guns; return !list[i] || list[i].p === 0 || !!Game.owned[kind + i]; },
+  /** Dead during a round: 'Go to Lobby' while spectating, 'Spectate' while in the lobby. */
+  ghostBar() {
+    const dead = Game.mode === 'game' && !Game.me.alive && (Game.phase === 'play' || Game.phase === 'intro');
+    $('ghostBar').classList.toggle('hidden', !dead); $('bPGhost').classList.toggle('hidden', !dead);
+    $('bGhost').textContent = Game.ghost ? '👁️ Spectate (L)' : '🏛️ Go to Lobby (L)'; $('bPGhost').textContent = Game.ghost ? '👁️ Spectate the round' : '🏛️ Go to Lobby';
+  },
   phonesBtn() { const b = $('bPhones'); if (!b) return; b.classList.toggle('gold', !!Game.phones); b.textContent = Game.phones ? '🎧 Headphones ON' : '🎧 Headphones'; },
   openScreen(s, inGame) {
     this.screen = s; this.inGameScreen = !!inGame && !!s;
@@ -5353,7 +5443,7 @@ const UI = {
     else $('hint').classList.remove('hidden');
   },
   pause(on) {
-    $('pause').classList.toggle('hidden', !on); if (!on) return;
+    $('pause').classList.toggle('hidden', !on); if (!on) return; this.ghostBar();
     $('pauseCode').textContent = Net.offline ? 'Solo game' : Game.publicCode ? `Public Server ${CONFIG.PUBLIC_CODES.indexOf(Game.publicCode) + 1}` : `Room code: ${Game.code || ''}`;
     const canBots = Net.isHost && Host.active && !Host.cfg.public; $('pBots').classList.toggle('hidden', !canBots);
     if (canBots) { const n = [...Host.players.values()].filter(p => p.bot).length; $('pBotN').textContent = `${n} bot${n === 1 ? '' : 's'}`; $('bBotAdd').disabled = Host.players.size >= CONFIG.MAX_PLAYERS; $('bBotSub').disabled = n === 0; }
@@ -5425,7 +5515,7 @@ const UI = {
   spectating(name) {
     const el = $('spec');
     if (name === false) { el.classList.add('hidden'); return; }
-    el.classList.remove('hidden'); el.innerHTML = name ? `👁️ Spectating <b>${U.esc(name)}</b> · Q / E or mouse wheel to switch` : '👁️ Spectating…';
+    el.classList.remove('hidden'); el.innerHTML = name ? `👁️ Spectating <b>${U.esc(name)}</b> · Q / E or mouse wheel to switch · L lobby` : '👁️ Spectating… · L lobby';
   },
   chatLine(m) {
     const d = document.createElement('div'); const col = m.from && Game.roster.get(m.from) ? '#e8c26a' : '#fff';
