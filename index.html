@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Omega Arcade</title>
-  
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -452,14 +452,14 @@ pre.code s{color:#4f7386;text-decoration:none}
         <div>
           <p class="f-disp text-[var(--amber)] font-bold tracking-wide mb-1">1 · THE FILES</p>
           <p>Drop <span class="f-mono text-[var(--cyan)]">yourgame.html</span> next to <span class="f-mono text-[var(--cyan)]">arcade.html</span> in the repo root (or set <span class="f-mono">CFG.folder</span>).
-          Anything ending in <span class="f-mono">.html</span> appears automatically, except the exclusions in
-          <span class="f-mono">CFG.exclude</span> — <span class="f-mono">index.html</span> is always skipped.</p>
+          A shelf card requires <strong>both</strong> the game <span class="f-mono">.html</span> in the repo <em>and</em> a matching entry in
+          <span class="f-mono">info.json</span> (or the baked-in <span class="f-mono">GAMES</span> list). Orphan HTML files never appear alone.</p>
           <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · METADATA (<span class="f-mono">info.json</span>)</p>
           <p>Commit <span class="f-mono text-[var(--cyan)]">info.json</span> next to <span class="f-mono">arcade.html</span> with a
           <span class="f-mono">games</span> array — one object per game (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
           <span class="f-mono">tagline</span>, <span class="f-mono">bio</span> (HTML allowed), <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
           Titles and bios support inline HTML/CSS (e.g. <span class="f-mono">&lt;h1 style="color:#ffd46b"&gt;…&lt;/h1&gt;</span>); scripts are stripped.
-          Entries only appear on the shelf after the matching <span class="f-mono">.html</span> file exists in the repo (metadata alone does not create a card).
+          JSON-only entries stay hidden until the <span class="f-mono">.html</span> exists; HTML-only files stay hidden until listed in JSON.
           Copy from <span class="f-mono">info.template.json</span> in the repo. Without a title, the shelf falls back to the game file’s
           <span class="f-mono">&lt;title&gt;</span> tag, then the filename.</p>
         </div>
@@ -875,7 +875,7 @@ const ARCADE = (() => {
     };
   }
 
-  /* ---------- merge repo listing with info.json + GAMES (metadata only; no phantom cards) ---------- */
+  /* ---------- shelf = intersection(repo .html files, info.json + GAMES listings) ---------- */
   async function build(forceScan = false) {
     S.loading = true;
     render();
@@ -890,6 +890,10 @@ const ARCADE = (() => {
       const foundSet = new Set(found.map(f => key(f)));
       const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
       const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
+      const jsonListed = new Set([
+        ...repoInfo.map(g => key(g.file)).filter(Boolean),
+        ...GAMES.map(g => key(g.file)).filter(Boolean),
+      ]);
       const declaredOnly = [...repoInfo.filter(g => !g.hidden).map(g => g.file), ...GAMES.filter(g => !g.hidden).map(g => g.file)]
         .filter(Boolean)
         .filter(f => !foundSet.has(key(f)));
@@ -899,8 +903,17 @@ const ARCADE = (() => {
         log(`waiting for ${declaredOnly.length} file(s) in repo before showing shelf cards: ${sample}${more}`, "dim");
       }
 
+      const orphanHtml = [...new Set(found)]
+        .filter(f => /\.html?$/i.test(f) && isHtml(f) && !jsonListed.has(key(f)));
+      if (orphanHtml.length) {
+        const sample = orphanHtml.slice(0, 6).map(f => esc(f)).join(", ");
+        const more = orphanHtml.length > 6 ? ` … +${orphanHtml.length - 6}` : "";
+        log(`skipped ${orphanHtml.length} .html not listed in ${CFG.infoFile || "info.json"} or GAMES: ${sample}${more}`, "dim");
+      }
+
       const all = [...new Set(found)]
         .filter(f => /\.html?$/i.test(f))
+        .filter(f => jsonListed.has(key(f)))
         .sort((a, b) => a.localeCompare(b));
 
       const mergedList = all.map(f => {
