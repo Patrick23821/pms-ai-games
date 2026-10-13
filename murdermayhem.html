@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Murder Mayhem — A game of social deduction</title>
-<meta name="description" content="Murder Mayhem: a 3D multiplayer game of social deduction. Murderer, Sheriff, Detective, Assassin, Jester and more across 8 maps.">
+<meta name="description" content="Murder Mayhem: a 3D multiplayer game of social deduction. Murderer, Sheriff, Detective, Assassin, Jester and more across 12 maps.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -144,6 +144,12 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 #lobby .code { font-family: Cinzel, serif; font-size: 26px; font-weight: 800; color: var(--gold); letter-spacing: 4px; }
 .plist { display: flex; flex-direction: column; gap: 3px; max-height: 170px; min-height: 118px; flex-shrink: 0; }
 .plist div { display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 8px; background: rgba(255, 255, 255, .04); font-size: 14px; }
+#adminMenu .inner { width: min(900px, 94vw); max-height: 88vh; display: flex; flex-direction: column; gap: 10px; padding: 18px; text-align: left; }
+#admList { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; padding-right: 4px; min-height: 120px; }
+.admc { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, .04); display: flex; flex-direction: column; gap: 6px; }
+.admc.off { opacity: .45; } .admc .t { font-weight: 700; font-size: 14px; } .admc .d { font-size: 12px; opacity: .72; flex: 1; }
+.admc .row { display: flex; gap: 6px; align-items: center; } .admc input, .admc select { flex: 1; min-width: 0; } .admc button { padding: 6px 14px; font-size: 13px; }
+#admTabs { display: flex; gap: 6px; flex-wrap: wrap; } #admTabs button { padding: 6px 12px; font-size: 13px; } #admTabs button.on { background: rgba(232, 194, 106, .22); border-color: var(--gold); }
 .tag { font-size: 10px; padding: 1px 6px; border-radius: 6px; background: rgba(255, 255, 255, .1); margin-left: 6px; }
 .maps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .map { border: 1px solid var(--line); border-radius: 10px; padding: 6px 4px; text-align: center; cursor: pointer; font-size: 11px; background: rgba(255, 255, 255, .03); position: relative; }
@@ -205,7 +211,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
     </div>
     <div id="mobileWarn" class="hidden">Keyboard & mouse required.</div>
   </div>
-  <div id="menuFoot" class="dim">WASD move · Shift sprint · Space jump · 1-4 equip · LMB use · RMB / Z aim · throw · Q holster · N pass a note · E read note · H headphones (lobby) · C first/third person · T chat · Tab players · Spectating: Q / E / wheel switch</div>
+  <div id="menuFoot" class="dim">WASD move · Shift sprint · Space jump · 1-5 equip · Backspace drop · LMB use · RMB / Z aim · throw · Q holster · N pass a note · E read note · H headphones (lobby) · C first/third person · T chat · Tab players · Spectating: Q / E / wheel switch</div>
 
   <div id="scrCustomize" class="screen panel hidden">
     <div class="head"><h2>Customize</h2><div class="row"><button id="bRandom">🎲 Random</button><button id="bCustomDone" class="gold">Done</button></div></div>
@@ -270,7 +276,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
     </div>
     <div class="dim" style="font-size:11px;margin:8px 0 4px">ROLES (need N players)</div><div class="roles" id="hsRoles"></div>
   </div>
-  <div class="row"><button id="bReady" style="flex:1">✔ Ready</button><button id="bStart" class="primary hidden" style="flex:1">Start Round</button></div>
+  <div class="row"><button id="bReady" style="flex:1">✔ Ready</button><button id="bStart" class="primary hidden" style="flex:1">Start Round</button><button id="bAdmin" class="hidden gold" title="Admin panel (P)">👑</button></div>
   <div class="dim" style="font-size:12px;text-align:center" id="lbStatus">Click the world to walk around · guns: Gun Range · knife throws: Knife Range · H headphones</div>
 </div>
 
@@ -279,7 +285,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 <div id="death" class="overlay hidden" style="pointer-events:none"><div class="inner panel"><h2>YOU DIED</h2><div id="deathTxt" style="font-size:17px;margin-top:6px"></div><div class="dim" style="margin-top:10px;font-size:13px">You're spectating — press L to go to the lobby instead · Dead chat is only seen by the dead</div></div></div>
 <div id="end" class="overlay shade hidden"><div class="inner panel"></div></div>
 <div id="board" class="overlay hidden" style="pointer-events:none"><div class="inner panel"></div></div>
-<div id="pause" class="overlay shade hidden"><div class="inner panel"><h2>Menu</h2><button class="primary" id="bResume">Resume</button><button id="bPSettings">⚙️ Settings</button><button id="bPGhost" class="hidden">🏛️ Go to Lobby</button><button id="bPCustom">🎩 Customize (lobby)</button><button id="bPShop">🛒 Shop (lobby)</button><div class="row hidden" id="pBots" style="align-items:center;gap:8px"><button id="bBotSub" style="flex:1">➖ Bot</button><span id="pBotN" class="dim" style="min-width:86px;text-align:center"></span><button id="bBotAdd" style="flex:1">➕ Bot</button></div><button id="bPLeave">🚪 Leave Room</button><div class="dim" style="font-size:12px" id="pauseCode"></div></div></div>
+<div id="pause" class="overlay shade hidden"><div class="inner panel"><h2>Menu</h2><button class="primary" id="bResume">Resume</button><button id="bPSettings">⚙️ Settings</button><button id="bPAdmin" class="hidden gold">👑 Admin Panel</button><button id="bPGhost" class="hidden">🏛️ Go to Lobby</button><button id="bPCustom">🎩 Customize (lobby)</button><button id="bPShop">🛒 Shop (lobby)</button><div class="row hidden" id="pBots" style="align-items:center;gap:8px"><button id="bBotSub" style="flex:1">➖ Bot</button><span id="pBotN" class="dim" style="min-width:86px;text-align:center"></span><button id="bBotAdd" style="flex:1">➕ Bot</button></div><button id="bPLeave">🚪 Leave Room</button><div class="dim" style="font-size:12px" id="pauseCode"></div></div></div>
 <div id="err" class="overlay shade hidden" style="z-index:60"><div class="inner panel"><h3>Hmm…</h3><div id="errTxt"></div><button id="bErrOk" class="gold">OK</button></div></div>
 
 <div id="noteBox" class="overlay shade hidden" style="z-index:40"><div class="inner">
@@ -328,6 +334,21 @@ const CONFIG = {
   BLACKOUT_FOG: 0.15,
   BLACKOUT_NV: 0.38,                                            // Murderer/Saboteur fog multiplier in a blackout (~2.5x sight)                                           // exp² fog density during a blackout (~7-9 m sight)
 };
+/**
+ * Official build check. Copies of this file hosted anywhere other than the official site get their own
+ * PeerJS namespace (derived from where they're hosted), so a modified copy can never join - or tamper
+ * with - the official rooms; it only ever meets other players of that same copy.
+ */
+CONFIG.OFFICIAL_URL = 'https://patrick23821.github.io/pms-ai-games/';
+CONFIG.OFFICIAL = true;
+(() => {
+  if (typeof location === 'undefined' || !location || !location.href) return;   // node build / self-tests
+  if (String(location.href).toLowerCase().startsWith(CONFIG.OFFICIAL_URL)) return;
+  CONFIG.OFFICIAL = false;
+  const where = (String(location.origin) + String(location.pathname).replace(/[^/]*$/, '')).toLowerCase();
+  let h = 2166136261; for (let i = 0; i < where.length; i++) { h ^= where.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  CONFIG.PEER_PREFIX = 'whodunit-mm-x' + h.toString(36) + '-';
+})();
 
 const TAU = Math.PI * 2;
 
@@ -394,7 +415,7 @@ const ROLES = {
     name: 'Sheriff', team: 'good', min: 0, core: true, color: '#4da3ff', icon: '⭐', items: ['revolver', 'flashlight'],
     blurb: 'Find and shoot the Murderer.',
     goal: 'Shoot the Murderer. Evil helpers can be shot freely.',
-    tips: ['Shoot an innocent and you die with them — and the gun drops.', 'RMB to aim down sights, LMB to fire.', 'The Jester WANTS you to shoot him.'],
+    tips: ['Shoot an innocent and you die with them — and the gun drops.', 'RMB to aim down sights, LMB to fire.', 'The Jester WANTS you to eliminate them.'],
   },
   detective: {
     name: 'Detective', team: 'good', min: 5, color: '#ffc94d', icon: '🔍', items: ['magnifier', 'flashlight'],
@@ -416,9 +437,9 @@ const ROLES = {
   },
   jester: {
     name: 'Jester', team: 'neutral', min: 8, color: '#c58cff', icon: '🃏', items: ['propknife', 'flashlight'],
-    blurb: 'Get yourself shot.',
-    goal: 'Get SHOT. The moment a bullet kills you, you win and the round ends. Dying any other way is just a normal death.',
-    tips: ['Your rubber knife looks exactly like the real thing — wave it around to bait the gun.', 'Whoever shoots you is NOT punished for it.', 'Careful: the Murderer and the Assassin can still kill you — and then you simply lose.'],
+    blurb: 'Get the Sheriff to eliminate you.',
+    goal: 'Trick the Sheriff (or whoever has the gun) into eliminating you. If the gun takes you out, you win and the round ends. Being eliminated any other way is just a normal loss.',
+    tips: ['Your rubber knife looks exactly like the real thing — wave it around to look suspicious.', 'Whoever tags you with the gun is NOT punished for it.', 'Careful: the Murderer and the Assassin can still eliminate you — and then you simply lose.'],
   },
   saboteur: {
     name: 'Saboteur', team: 'evil', min: 9, color: '#ff8a3d', icon: '⚡', items: ['fuse', 'flashlight'],
@@ -466,10 +487,14 @@ const ITEMS = {
   fuse: { name: 'Breaker Switch', icon: '⚡', vis: 'remote', uses: 1, hint: 'LMB: blackout (1 use)' },
   vial: { name: 'Poison Vial', icon: '🧪', vis: 'vial', uses: 1, hint: 'LMB a player up close (1 use)' },
   goggles: { name: 'X-Ray Goggles', icon: '🥽', vis: 'goggles', uses: 1, hint: 'LMB: x-ray vision (1 use)' },
+  duckgun: { name: 'Duck Blaster', icon: '🦆', vis: 'revolver', hint: 'LMB fire rubber ducks (harmless) · Backspace drop' },
 };
 const VIS_CODES = ['', 'knife', 'revolver', 'flashlight', 'magnifier', 'medkit', 'remote', 'vial', 'goggles'];
 const ANIM_CODES = ['idle', 'walk', 'run', 'jump', 'dead', 'wave', 'dance', 'aim', 'sit', 'cheer'];
 const LOBBY_SLOTS = ['revolver', 'knife', 'flashlight'];
+const NSLOTS = 5;   // hotbar size
+const emptySlots = () => new Array(NSLOTS).fill(null);
+const lobbySlots = () => { const s = LOBBY_SLOTS.slice(0, NSLOTS); while (s.length < NSLOTS) s.push(null); return s; };
 
 const Roles = {
   team: r => (ROLES[r] || ROLES.bystander).team,
@@ -539,7 +564,7 @@ const Roles = {
   /** Murderer knife ignores known evil allies — but the secret Assassin is fair game (friendly fire). */
   knifeCanHit: victimRole => !Roles.isEvil(victimRole) || Roles.isSecret(victimRole),
 
-  startingSlots(role) { const s = (ROLES[role] || ROLES.bystander).items.slice(0, 4); while (s.length < 4) s.push(null); return s; },
+  startingSlots(role) { const s = (ROLES[role] || ROLES.bystander).items.slice(0, NSLOTS); while (s.length < NSLOTS) s.push(null); return s; },
   startingUses(role) { const u = {}; for (const it of (ROLES[role] || ROLES.bystander).items) if (ITEMS[it] && ITEMS[it].uses) u[it] = ITEMS[it].uses; return u; },
 };
 
@@ -996,6 +1021,167 @@ const MAPS = [
       'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
     ],
   },
+  {
+    id: 'casino', name: 'Lucky Seven Casino', short: 'Casino', icon: '🎰', size: 'Medium', ambience: 'jazz', sky: 'city', ground: 'concrete', trees: 'none',
+    desc: 'High rollers, slot machines and a gold-stacked vault. The house always wins — tonight, so does the Murderer.',
+    fog: ['#0e0810', 0.011], moon: '#a080c0',
+    zones: {
+      v: { n: 'Vault', floor: 'metal', wall: 'labDark', light: '#ffd27a', amb: 0.2, sconce: true },
+      o: { n: 'Security Room', floor: 'carpetBlue', wall: 'office', light: '#bfe0ff', amb: 0.2, sconce: true },
+      b: { n: 'Cocktail Bar', floor: 'parquet', wall: 'darkPanel', light: '#ff9a6a', amb: 0.22, sconce: true },
+      f: { n: 'Casino Floor', floor: 'carpetRed', wall: 'wpRed', light: '#ffd890', amb: 0.34, sconce: true, art: true },
+      s: { n: 'Showroom', floor: 'parquet', wall: 'wpBlue', light: '#ff8ad8', amb: 0.24, sconce: true, art: true },
+      k: { n: 'Casino Kitchen', floor: 'checker', wall: 'wpCream', light: '#fff2dc', amb: 0.3, sconce: true },
+      p: { n: 'VIP Lounge', floor: 'carpetGreen', wall: 'wpGreen', light: '#ffd8a0', amb: 0.22, sconce: true, art: true },
+    },
+    rows: [
+      '################################',
+      '#XvvJJvvX#MMoDoM#KKKKKKbbbbbbbP#',
+      '#vvvvvvvv#oooCoo#bbbbbbbbbbbbbb#',
+      '#vJvvvvJv#oooooo#bCOCbbCOCbbCOC#',
+      '#vvvvvvvv#Aooooo#bbbbbbbbbbbbbb#',
+      '#vvvvvvvv#oooooo#bbbbbbbbbbbbbb#',
+      '#XvvvvvvX#FooooP#SbbbbLbbbbbbbS#',
+      '####+#######+##########+########',
+      '#MffffffffffffffffffffffffffffM#',
+      '=ffffCCffCCffffffffffCCffCCffff=',
+      '#MfffTTffTTffffffffffTTffTTfffM#',
+      '=ffffCCffCCffff!fffffCCffCCffff=',
+      '#MffffffffffffffffffffffffffffM#',
+      '=fffCOCfffffffffffffffffCOCffff=',
+      '#MffffffffffffffffffffffffffffM#',
+      '#fPffffffffffKKKKKKffffffffffPf#',
+      '=ffffffffffffffffffffffffffffff=',
+      '######+##########+########+#####',
+      '#ssssssssssss#kkkkkkkk#pppppppp#',
+      '#sCCsCCsCCsss#kTTkkTTk#SppppppS#',
+      '#ssssssssssss#kkkkkkkk#ppAOAppp#',
+      '#sCCsCCsCCsss#kkkkkkkk#pppppppp#',
+      '#ssssssssssss#kkkkkkkF#SppppppS#',
+      '#GssssssssssP#KKKKKKKK#PppQpppP#',
+      '################################',
+    ],
+  },
+  {
+    id: 'station', name: 'Orbital Station Zenith', short: 'Station', icon: '🛰️', size: 'Large', ambience: 'hum', sky: 'clear', ground: 'metal', trees: 'none',
+    desc: 'A research station in orbit. A glass observatory, a humming reactor — and nowhere to run but the airlock.',
+    fog: ['#04060e', 0.01], moon: '#9fb4ff',
+    zones: {
+      c: { n: 'Command Deck', floor: 'hex', wall: 'darkPanel', light: '#7fb8ff', amb: 0.18, sconce: true },
+      h: { n: 'Hydroponics', floor: 'grass', wall: 'labWall', light: '#b8ff9a', amb: 0.3, sconce: true },
+      q: { n: 'Crew Quarters', floor: 'carpetBlue', wall: 'office', light: '#ffe6c8', amb: 0.22, sconce: true },
+      x: { n: 'Ring Corridor', floor: 'metal', wall: 'labWall', light: '#d6ecff', amb: 0.26, sconce: true },
+      o: { n: 'Observatory', floor: 'hex', wall: 'darkPanel', light: '#9a8aff', amb: 0.24, sconce: false, glassRoof: true, statue: 'planet' },
+      m: { n: 'Mess Hall', floor: 'tile', wall: 'labWall', light: '#fff0d0', amb: 0.3, sconce: true },
+      r: { n: 'Reactor', floor: 'metal', wall: 'labDark', light: '#ff9a4a', amb: 0.16, sconce: true },
+      a: { n: 'Cargo Bay', floor: 'metal', wall: 'labDark', light: '#ffe0a0', amb: 0.18, sconce: true },
+    },
+    rows: [
+      '##################################',
+      '#MMcMMMMcMM#PhPhPhPhPh#HqWqHqqHqW#',
+      '#cccccccccc#hhhhhhhhhh#qqqqqqqqqq#',
+      '#DCccccccCD#hVVhhhhVVh#qqqqqqqqqq#',
+      '#cccccccccc#hhhhhhhhhh#Hqqqqqqqqq#',
+      '#DCccccccCD#hPPhhhhPPh#qqqqqqqqqq#',
+      '#cccccccccc#hhhhhhhhhh#HqqqLqqqqH#',
+      '#####+##########+###########+#####',
+      '=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=',
+      '#xxxxxxx||||||||+|||||||||xxxxxxx#',
+      '=xxxxxxx|LooooooooooooooL|xxxxxxx=',
+      '#xPxxxxx+ooooIoooooIooooo+xxxxxPx#',
+      '=xxxxxxx|LooooooooooooooL|xxxxxxx=',
+      '#xxxxxxx||||||||+|||||||||xxxxxxx#',
+      '=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx=',
+      '#####+##########+###########+#####',
+      '#mmmmmmmmmm#rrrrrrrrrr#aaaaaaaaaa#',
+      '#mCCmmmmCCm#MrrrrrrrrM#aXXaaaaXXa#',
+      '#mTTmmmmTTm#rrrrVVrrrr#aaaaaaaaaa#',
+      '#mCCmmmmCCm#MrrrVVrrrM#aXaRRaaaXa#',
+      '#mmmmmmmmmF#rrrrrrrrrr#aaaaaaaaaa#',
+      '#KKKmmmKKKP#MRrrrrrrRM#XXaaRRaaXX#',
+      '##################################',
+    ],
+  },
+  {
+    id: 'carnival', name: 'Twilight Carnival', short: 'Carnival', icon: '🎪', size: 'Large', ambience: 'crickets', sky: 'clear', ground: 'grass', trees: 'oak', outdoor: true,
+    desc: 'The carnival never closed. A big top, a hall of glass mirrors, a haunted house and a midway full of shadows.',
+    fog: ['#120c18', 0.018], moon: '#c0a0e0',
+    zones: {
+      g: { n: 'Fairground', floor: 'grass', wall: 'woodPanel', light: '#d0c0ff', amb: 0.4, outdoor: true },
+      p: { n: 'Midway', floor: 'dirt', wall: 'woodPanel', light: '#ffd0a0', amb: 0.42, outdoor: true },
+      t: { n: 'Big Top', floor: 'carpetRed', wall: 'wpRed', light: '#ffb070', amb: 0.26, sconce: true, art: true },
+      m: { n: 'Hall of Mirrors', floor: 'marble', wall: 'darkPanel', light: '#c8a8ff', amb: 0.26, sconce: true },
+      h: { n: 'Haunted House', floor: 'darkwood', wall: 'darkPanel', light: '#8a70ff', amb: 0.12, sconce: true },
+      f: { n: 'Food Court', floor: 'planks', wall: 'woodPanel', light: '#ffe0b0', amb: 0.4, outdoor: true },
+    },
+    rows: [
+      r('Y', 36),
+      'Y' + r('g', 34) + 'Y',
+      'Yg############gggggggg############gY',
+      'Yg#tttttttttt#gggggggg#mmmmm|mmmm#gY',
+      'Yg#tCtt&&ttCt#gg*ggggg#m|||m|m||m#gY',
+      'Yg#tCt&tt&tCt#gggggggg#m|mmm|m|mm#gY',
+      'Yg#tCt&tt&tCt+gggggggg+m|m|||m|m|#gY',
+      'Yg#tCttttttCt#gggggggg#mmm|mmm|mm#gY',
+      'Yg#tttttttttt#ggggg*gg#|m|m|||m|m#gY',
+      'Yg#PGtttttttP#gggggggg#mmmmmmmmmm#gY',
+      'Yg#####+######gggggggg#####+######gY',
+      'Y' + r('g', 34) + 'Y',
+      'Ygg*' + r('p', 28) + '*ggY',
+      'YgKKKgggKK' + r('g', 16) + 'KgggKKKggY',
+      'Yg#####+######g*gggg*g&&&&&pp&&&&&gY',
+      'Yg#hhhhhhhhhh#gggggggg&ffffffffff&gY',
+      'Yg#h###+####h#gYggggYg&fCCffffCCf&gY',
+      'Yg#h#hhhhhh#h#ggggEggg&fTTffffTTf&gY',
+      'Yg#h+hCOChh+h+ggEg!gEgffCCffffCCf&gY',
+      'Yg#h#hhhhhh#h#ggggEggg&ffffffffff&gY',
+      'Yg#h###hh###h#gggggggg&fffKKKKfff&gY',
+      'Yg#hhhhhhhhhh#gYggggYg&ffffffffff&gY',
+      'Yg#WhhHhhHhhW#gggggggg&RfffffffXR&gY',
+      'Yg############gggggggg&&&&&&&&&&&&gY',
+      'Y' + r('g', 34) + 'Y',
+      r('Y', 36),
+    ],
+  },
+  {
+    id: 'school', name: 'Ravenwood High', short: 'School', icon: '🏫', size: 'Medium', ambience: 'rain', sky: 'storm', ground: 'grass', trees: 'oak',
+    desc: 'Detention after dark during a thunderstorm. Classrooms, a science lab, the gym and lockers to hide behind.',
+    fog: ['#0a0c14', 0.012], moon: '#8090b8',
+    zones: {
+      a: { n: 'Classroom 1A', floor: 'parquet', wall: 'wpGreen', light: '#fff0d0', amb: 0.28, sconce: true },
+      b: { n: 'Classroom 2B', floor: 'carpetBlue', wall: 'wpBlue', light: '#fff0d0', amb: 0.28, sconce: true },
+      s: { n: 'Science Lab', floor: 'tile', wall: 'labWall', light: '#d8fff0', amb: 0.28, sconce: true },
+      p: { n: 'Principal\'s Office', floor: 'carpetRed', wall: 'darkPanel', light: '#ffd09a', amb: 0.22, sconce: true, art: true },
+      h: { n: 'Main Hallway', floor: 'tile', wall: 'wpCream', light: '#f4f8ff', amb: 0.28, sconce: true, art: true },
+      g: { n: 'Gymnasium', floor: 'parquet', wall: 'brick', light: '#fff4dc', amb: 0.3, sconce: true },
+      l: { n: 'Library', floor: 'darkwood', wall: 'woodPanel', light: '#ffc98a', amb: 0.2, sconce: true },
+      c: { n: 'Cafeteria', floor: 'checker', wall: 'wpCream', light: '#fff2d8', amb: 0.3, sconce: true },
+    },
+    rows: [
+      '#' + r('=', 8) + '#' + r('=', 8) + '#' + r('=', 7) + '#' + r('=', 6) + '#',
+      '#aaaDaaaa#bbbbDbbb#KKKsKKK#BBpBBp#',
+      '#aaaaaaaa#bbbbbbbb#sssssss#pppppp#',
+      '#aDaDaDaa#bbDbDbDb#sTTssVs#ppDppp#',
+      '#aCaCaCaa#bbCbCbCb#sssssss#ppCppA#',
+      '#aDaDaDaa#bbDbDbDb#sTTssVs#pppppp#',
+      '#aCaCaCaP#PbCbCbCb#Fssssss#Sppppp#',
+      '#####+#####+##########+#######+###',
+      '#FFFhhhFFFhhhFFFhFFFhhhhFFFFhhhhF#',
+      '=hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh=',
+      '=hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh=',
+      '###+###+##########+########+##+###',
+      '#ggggggggggggg#lllllll#cccccccccc#',
+      '#Egggggggggggg#lBlBlBl#cCCccccCCc#',
+      '#Egggggggggggg#lBlBlBl#cTTccccTTc#',
+      '#Egggggggggggg#lllllll#cCCccccCCc#',
+      '#ggggggggggggg+lAOAlll#cccccccccc#',
+      '#Egggggggggggg#lllllll#cCCccccCCc#',
+      '#Egggggggggggg#lBlBlBl#cTTccccTTc#',
+      '#Egggggggggggg#lllllll#cCCccccCCc#',
+      '#XXgggggggggRR#BlLlllB#KKKKcccFFF#',
+      '#' + r('=', 13) + r('#', 20),
+    ],
+  },
 ];
 
 const LOBBY_MAP = {
@@ -1077,6 +1263,12 @@ class Grid {
       let rot = Math.floor(U.hash(x, y, 7) * 4), hugged = false, mode = null;
       if (pd.face) {   // face a neighbouring table etc.
         for (let k = 0; k < 4; k++) { const n = this.charAt(x + DIRS4[k][0], y + DIRS4[k][1]); if (n && pd.face.includes(n)) { rot = [2, 1, 0, 3][k]; hugged = true; mode = 'face'; break; } }
+      }
+      if (ch === 'E') {   // benches face the nearest campfire / fountain / table; otherwise back against a wall
+        let best = null, bd = 1e9;
+        for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const n = this.charAt(x + dx, y + dy); if (n === '@' || n === '!' || n === 'T') { const dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; best = [dx, dy]; } } }
+        if (best) { rot = Math.abs(best[0]) > Math.abs(best[1]) ? (best[0] > 0 ? 1 : 3) : (best[1] > 0 ? 0 : 2); hugged = true; mode = 'face'; }
+        else for (const [dx, dy, f] of [[0, -1, 0], [-1, 0, 1], [0, 1, 2], [1, 0, 3]]) if (this.blocksHug(x + dx, y + dy)) { rot = f; hugged = true; mode = 'hug'; break; }
       }
       if (!hugged && pd.hug) {
         // back against a wall: wall at N -> face S(0); W -> face E(1); S -> face N(2); E -> face W(3)
@@ -1530,6 +1722,7 @@ const Sfx = {
         case 'reveal1': { const o = this._out(null, null, 0.5 * vol, 0); this._tone(o, t, 0.5, 'triangle', 330, 330, 0.25); this._tone(o, t + 0.12, 0.7, 'triangle', 494, 494, 0.25); break; }
         case 'tick': { const o = this._out(null, null, 0.25 * vol, 0); this._tone(o, t, 0.05, 'square', 1200, 1200, 0.2); break; }
         case 'target': { const o = this._out(x, z, 0.6 * vol, 0); this._tone(o, t, 0.4, 'triangle', 1568, 1560, 0.3); this._noise(o, t, 0.05, 'bandpass', 1200, 1200, 3, 0.5); break; }
+        case 'quack': { const o = this._out(x, z, 0.5 * vol, 0.1), f = 560 + Math.random() * 140; this._tone(o, t, 0.15, 'sawtooth', f, f * 0.62, 0.2, 0.005); this._tone(o, t + 0.01, 0.12, 'square', f * 1.5, f * 0.9, 0.06, 0.005); break; }
         case 'jump': { const o = this._out(x, z, 0.12 * vol, 0); this._noise(o, t, 0.08, 'bandpass', 500, 900, 1, 0.5); break; }
         case 'thunder': {
           const o = this._out(null, null, 1.0 * vol, 0.6), d = 0.05 + Math.random() * 0.4;
@@ -1929,7 +2122,7 @@ void main() {
 
 const R = {
   engine: null, scene: null, camera: null, canvas: null, mats: [], white: null,
-  fogCol: [0.04, 0.05, 0.08], fogD: 0.012, amb: [0.03, 0.03, 0.045], bakeK: 1, bakeTarget: 1, flash: 0,
+  fogCol: [0.04, 0.05, 0.08], fogD: 0.012, amb: [0.03, 0.03, 0.045], bakeK: 1, bakeTarget: 1, flash: 0, flickerT: 0, discoT: 0,
   spot: { on: false, pos: [0, 0, 0], dir: [0, 0, 1], cos: 0.88, col: [2.2, 2.0, 1.7] },
   pls: [0, 1, 2, 3].map(() => ({ x: 0, y: -100, z: 0, r: 0.01, c: [0, 0, 0], t0: 0, dur: 1 })),
   quality: 'high',
@@ -1978,7 +2171,7 @@ const R = {
   _applyGlobals(m) {
     const c = this.camera ? this.camera.position : BABYLON.Vector3.Zero(), sp = this.spot;
     m.setVector3('uEye', c);
-    m.setFloat('uBakeK', this.bakeK); m.setVector3('uAmb', new BABYLON.Vector3(this.amb[0], this.amb[1], this.amb[2]));
+    m.setFloat('uBakeK', this.bakeK); const am = this._amb || this.amb; m.setVector3('uAmb', new BABYLON.Vector3(am[0], am[1], am[2]));
     m.setFloat('uFlash', this.flash);
     m.setVector4('uSpotPos', new BABYLON.Vector4(sp.pos[0], sp.pos[1], sp.pos[2], sp.on ? 1 : 0));
     m.setVector4('uSpotDir', new BABYLON.Vector4(sp.dir[0], sp.dir[1], sp.dir[2], sp.cos));
@@ -1998,6 +2191,10 @@ const R = {
   update(dt) {
     const now = U.now();
     this.bakeK = U.damp(this.bakeK, this.bakeTarget, 3, dt);
+    // admin: flickering lights (random dim/bright stutter) + disco (cycling coloured ambient)
+    if (this.flickerT > 0) { this.flickerT -= dt; if ((this._flkT = (this._flkT || 0) - dt) <= 0) { this._flkT = 0.04 + Math.random() * 0.18; this._flkV = Math.random() < 0.5 ? 0.04 + Math.random() * 0.12 : 0.65 + Math.random() * 0.35; } this.bakeK = this.bakeTarget * this._flkV; }
+    this._amb = this.amb;
+    if (this.discoT > 0) { this.discoT -= dt; const h = now * 2.4, w = v => 0.5 + 0.5 * Math.sin(v); this._amb = [this.amb[0] + 0.34 * w(h), this.amb[1] + 0.34 * w(h + 2.1), this.amb[2] + 0.34 * w(h + 4.2)]; }
     this.flash = Math.max(0, this.flash - dt * 2.5);
     // blackout fog fades in fast, out slower
     this.darkFog = U.damp(this.darkFog, this.darkFogTarget, this.darkFogTarget > this.darkFog ? 3.2 : 1.6, dt);
@@ -3398,7 +3595,7 @@ class Character {
  * ===================================================================== */
 
 const FX = {
-  ready: false, pools: {}, flashes: [], tracers: [], decals: [], decalI: 0, knives: new Map(), coins: new Map(), gun: null, shakeV: 0, t: 0,
+  ready: false, ducks: [], pools: {}, flashes: [], tracers: [], decals: [], decalI: 0, knives: new Map(), coins: new Map(), gun: null, shakeV: 0, t: 0,
 
   init() {
     if (this.ready) return; this.ready = true;
@@ -3519,6 +3716,62 @@ const FX = {
   },
   clearGun() { if (this.gun) { this.gun.ring.material.dispose(); this.gun.node.dispose(); this.gun = null; } },
 
+  /* ---------------- rubber ducks (Duck Blaster / duck rain) ---------------- */
+  _duckProto() {
+    if (this.duckProto) return this.duckProto;
+    const g = new Geo(), Y = '#ffd21f';
+    g.sphere(0.15, 12, 9, { p: [0, 0.13, 0], s: [1.1, 0.82, 1.35] }, Y, { glow: 0.25 });
+    g.sphere(0.06, 8, 6, { p: [0, 0.2, -0.18], s: [1, 0.8, 1] }, Y, { glow: 0.25 });
+    g.sphere(0.1, 10, 8, { p: [0, 0.3, 0.11] }, Y, { glow: 0.25 });
+    g.box(0.085, 0.03, 0.09, { p: [0, 0.285, 0.22] }, '#ff8a1a', { glow: 0.2 });
+    g.sphere(0.018, 6, 4, { p: [0.055, 0.33, 0.18] }, '#111111'); g.sphere(0.018, 6, 4, { p: [-0.055, 0.33, 0.18] }, '#111111');
+    const m = this.duckProto = g.toMesh('duckProto', this.dynMat); m.setEnabled(false); m.isPickable = false; return m;
+  },
+  /** o: start [x,y,z], d: direction, spd: launch speed. Bounces off walls, props and the floor; gone after ~8s. */
+  duck(o, d, spd = 13) {
+    if (!this.ready) return; const proto = this._duckProto();
+    if (this.ducks.length >= 90) { const old = this.ducks.shift(); old.m.dispose(); }
+    const m = proto.clone('duck'); m.setEnabled(true); m.position.set(+o[0] || 0, Math.max(0, (+o[1] || 0) - 0.15), +o[2] || 0); m.rotation.y = Math.atan2(+d[0] || 0, +d[2] || 0);
+    this.ducks.push({ m, v: new BABYLON.Vector3((+d[0] || 0) * spd, (+d[1] || 0) * spd + (spd > 5 ? 1.2 : 0), (+d[2] || 0) * spd), life: 8, spin: U.rand(-2.5, 2.5) });
+  },
+  _duckBlocked(G, x, z, y) {
+    const [cx, cy] = G.cellOf(x, z), t = G.type(cx, cy);
+    if (t !== CT.WATER && BLOCK_MOVE[t] && y < (CELL_H[t] || 0)) return true;
+    const pi = G.inb(cx, cy) ? G.propAt[cy * G.w + cx] : -1;
+    if (pi >= 0) { const p = G.props[pi], b = p.box; if (y < p.h && x > b[0] && x < b[2] && z > b[1] && z < b[3]) return true; }
+    return false;
+  },
+  _duckTick(dt) {
+    const G = World.grid;
+    for (let i = this.ducks.length - 1; i >= 0; i--) {
+      const D = this.ducks[i], p = D.m.position; D.life -= dt;
+      if (D.life <= 0) { D.m.dispose(); this.ducks.splice(i, 1); continue; }
+      D.v.y -= 16 * dt;
+      const nx = p.x + D.v.x * dt, nz = p.z + D.v.z * dt;
+      if (G && this._duckBlocked(G, nx, p.z, p.y + 0.1)) { D.v.x *= -0.45; D.spin = -D.spin; } else p.x = nx;
+      if (G && this._duckBlocked(G, p.x, nz, p.y + 0.1)) { D.v.z *= -0.45; D.spin = -D.spin; } else p.z = nz;
+      p.y += D.v.y * dt;
+      if (p.y <= 0) { p.y = 0; if (D.v.y < -2) D.v.y *= -0.45; else D.v.y = 0; D.v.x *= 0.72; D.v.z *= 0.72; D.spin *= 0.6; }
+      if (p.y === 0 && D.v.y === 0) { const k = Math.max(0, 1 - dt * 5); D.v.x *= k; D.v.z *= k; }
+      D.m.rotation.y += D.spin * dt; D.m.rotation.x = p.y > 0 ? U.clamp(-D.v.y * 0.04, -0.6, 0.6) : D.m.rotation.x * 0.8;
+      if (D.life < 0.4) D.m.scaling.setAll(Math.max(0.01, D.life / 0.4));
+    }
+  },
+
+  /* ---------------- items dropped on the floor (owned by Game, survive map reloads) ---------------- */
+  floorItem(item, skin, x, z) {
+    const node = new BABYLON.TransformNode('floorItem', R.scene); node.position.set(x, 0, z);
+    const holder = new BABYLON.TransformNode('fiHold', R.scene); holder.parent = node; holder.position.y = 0.55;
+    if (ITEMS[item] && ITEMS[item].vis === 'revolver') {
+      const g = Items3D.revolver(skin || 0), inner = new BABYLON.TransformNode('fiGun', R.scene); inner.parent = holder; inner.rotation.z = Math.PI / 2; inner.scaling.set(2, 2, 2);
+      g.body.toMesh('fiBody', this.dynMat, inner); const c = new BABYLON.TransformNode('fiCyl', R.scene); c.parent = inner; c.position.set(...g.cylP); g.cyl.toMesh('fiCylM', this.dynMat, c);
+      if (item === 'duckgun') { const d = this._duckProto().clone('fiDuck'); d.setEnabled(true); d.parent = holder; d.position.set(0, 0.3, 0); d.scaling.setAll(1.3); }
+    } else { const d = this._duckProto().clone('fiDuck'); d.setEnabled(true); d.parent = holder; d.scaling.setAll(2); }
+    if (!this.mFloorRing) { const rm = this.mFloorRing = new BABYLON.StandardMaterial('fiRing', R.scene); rm.emissiveTexture = Tex.misc('ring', 128, true); rm.opacityTexture = rm.emissiveTexture; rm.emissiveColor = new BABYLON.Color3(1, 0.82, 0.3); rm.disableLighting = true; rm.alphaMode = BABYLON.Engine.ALPHA_ADD; }
+    const ring = BABYLON.MeshBuilder.CreateGround('fiRingM', { width: 1.3, height: 1.3 }, R.scene); ring.material = this.mFloorRing; ring.parent = node; ring.position.y = 0.03; ring.isPickable = false;
+    return node;
+  },
+
   /* ---------------- per frame ---------------- */
   update(dt) {
     if (!this.ready) return; this.t += dt;
@@ -3538,6 +3791,7 @@ const FX = {
     }
     for (const [, c] of this.coins) { c.rotation.y += dt * 2.6; c.position.y = 0.55 + Math.sin(this.t * 2.5 + c.metadata.ph) * 0.08; }
     if (this.gun) { this.gun.holder.rotation.y += dt * 1.4; this.gun.holder.position.y = 0.55 + Math.sin(this.t * 2.2) * 0.08; const s = 1 + Math.sin(this.t * 4) * 0.1; this.gun.ring.scaling.set(s, 1, s); }
+    if (this.ducks.length) this._duckTick(dt);
     this.shakeV = Math.max(0, this.shakeV - dt * 2.8);
   },
   shakeOffset() { const a = this.shakeV * this.shakeV * 0.06, t = this.t * 60; return [Math.sin(t * 1.3) * a, Math.cos(t * 1.7) * a, Math.sin(t * 2.1) * a * 0.6]; },
@@ -3547,6 +3801,7 @@ const FX = {
     for (const [, c] of this.coins) c.dispose(); this.coins.clear();
     for (const d of this.decals) if (d) d.setEnabled(false);
     this.clearGun();
+    for (const D of this.ducks) D.m.dispose(); this.ducks = [];
   },
 };
 
@@ -3571,12 +3826,13 @@ const San = {
   v3(v, lim = 5000) { return Array.isArray(v) && v.length === 3 ? v.map(x => San.num(x, lim)) : null; },
   idStr(v) { return typeof v === 'string' && /^[A-Za-z0-9_\-]{1,40}$/.test(v) ? v : null; },
 };
-const ACT_KINDS = ['stab', 'swing', 'throw', 'shoot', 'use', 'toggle'];
+const ACT_KINDS = ['stab', 'swing', 'throw', 'shoot', 'use', 'toggle', 'duck'];
+const ADMIN_TARGETS = ['me', 'all', 'others', 'bots', 'humans'];
 
 const C2H = {
   join: m => ({ t: 'join', name: U.nameOk(m.name) ? U.cleanName(m.name) : 'Guest' + Math.floor(100 + Math.random() * 900), look: Look.validate(m.look), ver: San.str(m.ver, 16) }),
   look: m => ({ t: 'look', look: Look.validate(m.look) }),
-  st: m => { const p = San.v3(m.p); if (!p) return null; return { t: 'st', p, y: San.num(m.y, 100), pi: U.clamp(San.num(m.pi, 3), -1.5, 1.5), a: San.int(m.a, 0, ANIM_CODES.length - 1), sel: San.int(m.sel, -1, 3), fl: San.int(m.fl, 0, 255) }; },
+  st: m => { const p = San.v3(m.p); if (!p) return null; return { t: 'st', p, y: San.num(m.y, 100), pi: U.clamp(San.num(m.pi, 3), -1.5, 1.5), a: San.int(m.a, 0, ANIM_CODES.length - 1), sel: San.int(m.sel, -1, NSLOTS - 1), fl: San.int(m.fl, 0, 255) }; },
   chat: m => { const text = San.str(m.text, 140).trim(); return text ? { t: 'chat', text } : null; },
   vote: m => { const map = San.idStr(m.map); return map ? { t: 'vote', map } : null; },
   ready: m => ({ t: 'ready', v: !!m.v }),
@@ -3589,9 +3845,12 @@ const C2H = {
   note: m => { const text = San.str(m.text, 140).trim(); return text ? { t: 'note', to: San.int(m.to, 0, 1e6), text, anon: !!m.anon } : null; },
   bot: m => ({ t: 'bot', d: m.d > 0 ? 1 : -1 }),
   ghost: m => ({ t: 'ghost', v: !!m.v }),
+  admin: m => ({ t: 'admin', code: San.str(m.code, 64), q: !!m.q }),
+  acmd: m => { const c = San.idStr(m.c); if (!c) return null; const tg = typeof m.tg === 'number' ? San.int(m.tg, 0, 1e6) : ADMIN_TARGETS.includes(m.tg) ? m.tg : 'me'; return { t: 'acmd', c, tg, v: typeof m.v === 'number' ? San.num(m.v, 1e6) : San.str(m.v, 80) }; },
+  drop: m => ({ t: 'drop', i: San.int(m.i, 0, NSLOTS - 1) }),
 };
 const H2C_TYPES = new Set(['welcome', 'reject', 'roster', 'cfg', 'votes', 'phase', 'you', 'inv', 'st', 'died', 'shot', 'kfly', 'kend', 'act', 'gun', 'coins', 'coin', 'coin-',
-  'reveal', 'fx', 'blackout', 'xray', 'target', 'sick', 'end', 'chat', 'toast', 'feed', 'emote', 'clockSync', 'hostLeft', 'look', 'note', 'ndrop', 'nclear', 'info', 'kcoin']);
+  'reveal', 'fx', 'blackout', 'xray', 'target', 'sick', 'end', 'chat', 'toast', 'feed', 'emote', 'clockSync', 'hostLeft', 'look', 'note', 'ndrop', 'nclear', 'info', 'kcoin', 'adm', 'flicker', 'disco', 'tp', 'mod', 'gift', 'banner', 'revive', 'duck', 'duckrain', 'fling', 'fitem', 'fitem-', 'fclear']);
 
 const Net = {
   peer: null, isHost: false, offline: false, myId: 0, hostId: 1, code: '', connected: false,
@@ -3768,6 +4027,217 @@ const Net = {
   },
 };
 
+/* ===== 11_admin.js ===== */
+/* =====================================================================
+ * admin/ — secret owner code + the admin panel's commands (host-validated).
+ *
+ * Pasting the secret owner code in chat makes you a permanent OWNER on
+ * this device (the code is remembered locally and re-verified by every
+ * host you join; only its salted hash lives in the source). Owners can
+ * promote anyone to a temporary ADMIN for the session. Temp admins can't
+ * promote/demote anyone and can't target owners with harmful commands.
+ * Admins open the panel with P (or the 👑 button); every button sends an
+ * 'acmd' message that the host checks and runs. Nothing is typed in chat.
+ * ===================================================================== */
+
+const ADMIN_HASH = '1f11xvgdzuv';
+/** Salted 53-bit string hash (cyrb53). Case/whitespace-insensitive. */
+const adminHash = s => {
+  const str = 'mm-owner|' + String(s).trim().toUpperCase(); let h1 = 0xdeadbeef ^ 7919, h2 = 0x41c6ce57 ^ 7919;
+  for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+};
+
+const Admin = {
+  queue: new Map(),   // playerId -> role for the next round
+
+  isCode(t) { return typeof t === 'string' && t.trim().length >= 8 && t.trim().length <= 64 && adminHash(t) === ADMIN_HASH; },
+  reset() { this.queue.clear(); },
+
+  /** Client claims owner with the secret code (typed now, or remembered on this device: m.q). */
+  claim(m, from) {
+    const P = Host.players.get(from); if (!P || P.bot) return;
+    if (!this.isCode(m.code)) { if (!m.q) Host.toast(from, '⛔ That code is not valid.', 'bad'); return; }
+    const was = P.admin === 'owner'; P.admin = 'owner';
+    Net.sendTo(from, { t: 'adm', lvl: 'owner', q: !!m.q });
+    if (!was) Host.roster();
+  },
+
+  /* ---------------- dispatch (admin panel -> host) ---------------- */
+  /** m = { c: command id, tg: player id | 'me' | 'all' | 'others' | 'bots' | 'humans', v: argument }. */
+  exec(P, m) {
+    if (!P || P.bot) return;
+    if (!P.admin) { this.say(P, '⛔ Admins only.'); return; }
+    const C = this.cmds[m.c]; if (!C) return;
+    if (C.owner && P.admin !== 'owner') { this.say(P, '👑 Only an owner can do that.'); return; }
+    const v = C.arg ? this.arg(C.arg, m.v) : undefined;
+    if (C.arg && v === undefined) { this.say(P, '⚠️ Pick a value first.'); return; }
+    const T = C.tgt ? this.pick(P, m.tg, C.harm) : null;
+    if (C.tgt && !T.length) return;
+    try { C.fn.call(this, P, T, v); } catch (e) { console.warn('[admin]', e); this.say(P, '⚠️ That command failed.'); }
+  },
+  /** Validates a panel argument against the command's spec. undefined = invalid. */
+  arg(A, v) {
+    if (A.type === 'num') { const n = typeof v === 'number' ? v : parseFloat(v); return isFinite(n) ? U.clamp(n, A.min, A.max) : A.def; }
+    if (A.type === 'role') return ROLES[v] ? v : undefined;
+    if (A.type === 'map') return v === 'vote' || v === 'random' || MAPS.some(x => x.id === v) ? v : undefined;
+    if (A.type === 'sel') return (A.opts.find(o => o[0] === v) || A.opts[0])[0];
+    if (A.type === 'text') { const t = String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, A.max || 80); return t || undefined; }
+    return undefined;
+  },
+  /** Target list: one player id, or me / all / others / bots / humans. Temp admins can't hit owners with harmful commands. */
+  pick(P, tg, harmful) {
+    const all = [...Host.players.values()];
+    let list = typeof tg === 'number' ? all.filter(q => q.id === tg) : tg === 'all' ? all : tg === 'others' ? all.filter(q => q !== P) : tg === 'bots' ? all.filter(q => q.bot) : tg === 'humans' ? all.filter(q => !q.bot) : [P];
+    if (!list.length) { this.say(P, typeof tg === 'number' ? '⚠️ That player has left.' : '⚠️ Nobody matches that target.'); return list; }
+    if (harmful && P.admin !== 'owner') { const n = list.length; list = list.filter(q => q.admin !== 'owner'); if (list.length < n) this.say(P, '👑 Temporary admins can\'t do that to an owner.'); }
+    return list;
+  },
+
+  /* ---------------- helpers ---------------- */
+  say(P, text) { if (P && !P.bot) Host.toast(P.id, text, 'info'); },
+  names(T) { return T.length > 3 ? `${T.length} players` : T.map(q => q.name).join(', '); },
+  /** Players who are physically somewhere (alive in the round, waiting in the lobby, or anyone between rounds). */
+  inWorld(Q) { return Host.phase === 'lobby' || Host.phase === 'end' || Q.alive || Q.ghost; },
+  gridOf(Q) { return Q.ghost ? MapKit.get('lobby') : Host.grid; },
+  tp(Q, x, z) {
+    const G = this.gridOf(Q); if (!G.walkableAt(x, z)) { const c = G.center(G.nearestWalk(...G.cellOf(x, z))); x = c.x; z = c.z; }
+    Q.x = x; Q.z = z; Q.tp = U.now();
+    if (Q.bot) { const B = Bots.brains.get(Q.id); if (B) { B.path = []; B.goal = null; } } else Net.sendTo(Q.id, { t: 'tp', x, z });
+  },
+  mod(P, T, patch) {
+    for (const Q of T) {
+      Q.mod = Object.assign({ s: 1, j: 1 }, Q.mod, patch); delete Q.mod.size;
+      if (patch.size != null) Q.size = patch.size;
+      if (!Q.bot) Net.sendTo(Q.id, { t: 'mod', s: Q.mod.s, j: Q.mod.j });
+    }
+    const Q = T[0]; if (Q) this.say(P, `✨ ${this.names(T)}: speed ×${Q.mod.s} · jump ×${Q.mod.j} · size ×${Q.size || 1}`);
+    if (patch.size != null) Host.roster();
+  },
+  /** Gives an item that can be dropped again with Backspace. */
+  give(P, T, item) {
+    let n = 0; const I = ITEMS[item];
+    for (const Q of T) {
+      if (!this.inWorld(Q) || Q.slots.includes(item)) continue;
+      const i = Q.slots.indexOf(null); if (i < 0) { this.say(P, `${Q.name} has no free slot.`); continue; }
+      Q.slots[i] = item; (Q.free = Q.free || new Set()).add(i); Host._inv(Q); n++;
+      if (!Q.bot && Q !== P) Host.toast(Q.id, `${I.icon} An admin gave you the ${I.name}! Press ${i + 1} to draw it · Backspace drops it.`, 'good');
+    }
+    this.say(P, n ? `${I.icon} Gave the ${I.name} to ${n} player${n === 1 ? '' : 's'}${T.includes(P) && P.slots.includes(item) ? ` (yours is in slot ${P.slots.indexOf(item) + 1})` : ''}.` : `Nobody could take the ${I.name} (already have one, or not in the world).`);
+  },
+  revive(T) {
+    const R0 = Host.round, G = Host.grid, s = U.pick(G.spawns(6)) || { x: T.x, z: T.z, yaw: 0 };
+    if (!T.role) T.role = 'bystander';
+    let slots = Roles.startingSlots(T.role); if (R0 && R0.gun) slots = slots.map(i => i === 'revolver' ? null : i);
+    Object.assign(T, { alive: true, ghost: false, lobbyAt: 0, body: null, x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: U.now(), sel: -1, slots, free: new Set(), uses: Roles.startingUses(T.role), poisonT: 0, sick: false, cd: {} });
+    Net.broadcast({ t: 'revive', id: T.id, x: s.x, z: s.z, yaw: s.yaw });
+    Host._sendYou(T); if (T.bot) { const B = Bots.brains.get(T.id); if (B) Object.assign(B, Bots._fresh(T)); }
+    Host.roster(); Host.needEval = true;
+  },
+  /** Applies queued roles to a fresh assignment (swapping so role counts stay balanced). Returns the new assassin target. */
+  applyQueue(roles, ids) {
+    const q = [...this.queue].filter(([id, r]) => ids.includes(id) && ROLES[r]); this.queue.clear(); if (!q.length) return undefined;
+    const locked = new Set(q.map(([id]) => id));
+    for (const [id, role] of q) {
+      const cur = roles[id]; if (cur === role) continue;
+      const other = ids.find(k => !locked.has(k) && roles[k] === role);
+      if (other != null) roles[other] = cur;
+      else if (ROLES[cur] && ROLES[cur].core && cur !== 'bystander') { const by = ids.find(k => !locked.has(k) && roles[k] === 'bystander'); if (by != null) roles[by] = cur; }
+      roles[id] = role;
+    }
+    return Roles.pickTarget(roles, ids);
+  },
+
+  /* ---------------- the panel ----------------
+   * cat: tab · icon/label/d: card text · tgt: uses the panel's target picker · harm: temp admins can't aim it at owners
+   * owner: owners only · arg: { type: 'num'|'role'|'map'|'sel'|'text', ... } · fn(P, targets, value) runs on the host. */
+  cats: [['players', '🧍 Players'], ['fun', '🎉 Fun'], ['roles', '🎭 Roles'], ['round', '⏱️ Round'], ['world', '💡 World'], ['admins', '👑 Admins']],
+  cmds: {
+    /* ----- players ----- */
+    tpto: { cat: 'players', icon: '🌀', label: 'Teleport to', d: 'Jump to the target player', tgt: 1, fn(P, T) {
+      const Q = T.find(q => q !== P); if (!Q) { this.say(P, 'Pick another player as the target.'); return; }
+      if (!this.inWorld(P) || !this.inWorld(Q) || !!P.ghost !== !!Q.ghost) { this.say(P, `⚠️ You and ${Q.name} aren't in the same place.`); return; }
+      this.tp(P, Q.x + 0.9, Q.z); } },
+    bring: { cat: 'players', icon: '🧲', label: 'Bring', d: 'Teleport the target(s) to you', tgt: 1, harm: 1, fn(P, T) {
+      if (!this.inWorld(P)) { this.say(P, '⚠️ You need to be in the world.'); return; }
+      let i = 0; for (const Q of T) { if (Q === P || !this.inWorld(Q) || !!P.ghost !== !!Q.ghost) continue; const ang = i++ * 0.9; this.tp(Q, P.x + Math.sin(ang) * 1.3, P.z + Math.cos(ang) * 1.3); }
+      this.say(P, `🧲 Brought ${i} player${i === 1 ? '' : 's'}.`); } },
+    speed: { cat: 'players', icon: '⚡', label: 'Speed', d: 'Movement speed multiplier', tgt: 1, arg: { type: 'num', min: 0.2, max: 4, step: 0.1, def: 2 }, fn(P, T, v) { this.mod(P, T, { s: v }); } },
+    jump: { cat: 'players', icon: '🦘', label: 'Jump', d: 'Jump height multiplier', tgt: 1, arg: { type: 'num', min: 0.5, max: 6, step: 0.5, def: 3 }, fn(P, T, v) { this.mod(P, T, { j: v }); } },
+    size: { cat: 'players', icon: '📏', label: 'Size', d: 'Tiny or huge', tgt: 1, arg: { type: 'num', min: 0.4, max: 3, step: 0.1, def: 1.8 }, fn(P, T, v) { this.mod(P, T, { size: v }); } },
+    freeze: { cat: 'players', icon: '🧊', label: 'Freeze', d: 'Can\'t move or jump', tgt: 1, harm: 1, fn(P, T) { this.mod(P, T, { s: 0, j: 0 }); } },
+    unfreeze: { cat: 'players', icon: '🔥', label: 'Unfreeze', d: 'Normal speed and jump again', tgt: 1, fn(P, T) { this.mod(P, T, { s: 1, j: 1 }); } },
+    god: { cat: 'players', icon: '😇', label: 'God mode', d: 'Toggle invincibility', tgt: 1, fn(P, T) { for (const Q of T) Q.god = !Q.god; this.say(P, `😇 God mode: ${T.map(q => `${q.name} ${q.god ? 'ON' : 'off'}`).slice(0, 4).join(', ')}${T.length > 4 ? '…' : ''}`); } },
+    shield: { cat: 'players', icon: '🩹', label: 'Shield', d: 'Blocks one attack', tgt: 1, fn(P, T) { let n = 0; for (const Q of T) if (Q.alive) { Q.shield = true; n++; Net.broadcast({ t: 'fx', k: 'shield', id: Q.id, x: Q.x, z: Q.z }); } this.say(P, `🩹 Shielded ${n}.`); } },
+    xray: { cat: 'players', icon: '🥽', label: 'X-ray', d: '10 seconds of x-ray vision', tgt: 1, fn(P, T) { for (const Q of T) { if (Q.bot) Bots.onXray(Q); else Net.sendTo(Q.id, { t: 'xray', dur: 10 }); } } },
+    revive: { cat: 'players', icon: '✨', label: 'Revive', d: 'Back into the round (round only)', tgt: 1, fn(P, T) { if (!Host._midRound()) { this.say(P, 'Only during a round.'); return; } let n = 0; for (const Q of T) if (!Q.alive && Q.role) { this.revive(Q); n++; } this.say(P, n ? `✨ Revived ${n}.` : 'Nobody there to revive.'); } },
+    kill: { cat: 'players', icon: '💀', label: 'Kill', d: 'Instant death (round only)', tgt: 1, harm: 1, fn(P, T) { if (!Host._midRound()) { this.say(P, 'Only during a round.'); return; } let n = 0; for (const Q of T) if (Q.alive && Q.role) { Host.kill(Q, null, 'admin'); n++; } this.say(P, `💀 ${n} down.`); } },
+    reset: { cat: 'players', icon: '♻️', label: 'Reset', d: 'Speed, jump, size and god mode back to normal', tgt: 1, fn(P, T) { for (const Q of T) Q.god = false; this.mod(P, T, { s: 1, j: 1, size: 1 }); } },
+    coins: { cat: 'players', icon: '🪙', label: 'Give coins', d: 'Saved to their wallet', tgt: 1, arg: { type: 'num', min: 1, max: 100000, step: 50, def: 100 }, fn(P, T, v) { const n = Math.round(v); let k = 0; for (const Q of T) if (!Q.bot) { Net.sendTo(Q.id, { t: 'gift', n }); k++; } this.say(P, `🪙 Gave ${n} coins to ${k} player${k === 1 ? '' : 's'}.`); } },
+    kick: { cat: 'players', icon: '🚪', label: 'Kick', d: 'Remove from the room', tgt: 1, harm: 1, fn(P, T) {
+      for (const Q of T) {
+        if (Q.id === Net.myId) { this.say(P, '⚠️ Can\'t kick the room\'s host.'); continue; }
+        if (Q.bot) { if (Host.round && Q.alive && Q.role) Host.kill(Q, null, 'left'); Host.players.delete(Q.id); Bots.remove(Q.id); Host.roster(); Host.needEval = true; continue; }
+        Net.sendTo(Q.id, { t: 'reject', reason: 'You were kicked by an admin.' }); Host.sys(`${Q.name} was kicked.`);
+        setTimeout(() => { if (Host.players.has(Q.id)) Host.onLeave({}, Q.id); const C = Net.conns.get(Q.id); if (C) { try { C.conn.close(); } catch (e) { } Net.conns.delete(Q.id); } }, 400);
+      } } },
+
+    /* ----- fun ----- */
+    duckgun: { cat: 'fun', icon: '🦆', label: 'Duck Blaster', d: 'A gun that fires rubber ducks. Zero damage, maximum chaos.', tgt: 1, fn(P, T) { this.give(P, T, 'duckgun'); } },
+    duckrain: { cat: 'fun', icon: '🌧️', label: 'Duck rain', d: 'Rubber ducks fall from the sky around the target(s)', tgt: 1, arg: { type: 'num', min: 5, max: 60, step: 5, def: 30 }, fn(P, T, v) {
+      const done = []; let n = 0;
+      for (const Q of T) { if (!this.inWorld(Q) || done.some(d => d.g === !!Q.ghost && U.dist(d.x, d.z, Q.x, Q.z) < 8)) continue; done.push({ x: Q.x, z: Q.z, g: !!Q.ghost }); n++; Net.broadcast({ t: 'duckrain', x: Math.round(Q.x * 10) / 10, z: Math.round(Q.z * 10) / 10, n: Math.round(v), lw: Q.ghost ? 1 : 0 }); }
+      this.say(P, `🌧️🦆 Duck rain ×${n}!`); } },
+    launch: { cat: 'fun', icon: '🚀', label: 'Launch', d: 'Yeet them into the air', tgt: 1, harm: 1, arg: { type: 'num', min: 6, max: 24, step: 1, def: 15 }, fn(P, T, v) {
+      let n = 0; for (const Q of T) { if (Q.bot || !this.inWorld(Q)) continue; Q.tp = U.now() + 3; Net.sendTo(Q.id, { t: 'fling', vy: v }); n++; }
+      this.say(P, n ? `🚀 Launched ${n}!` : 'Bots are too heavy to launch.'); } },
+    gun: { cat: 'fun', icon: '🔫', label: 'Give revolver', d: 'A real revolver (droppable with Backspace)', tgt: 1, fn(P, T) { this.give(P, T, 'revolver'); } },
+    disco: { cat: 'fun', icon: '🪩', label: 'Disco', d: 'Party lights for everyone (seconds)', arg: { type: 'num', min: 1, max: 120, step: 1, def: 15 }, fn(P, T, v) { Net.broadcast({ t: 'disco', d: v }); this.say(P, `🪩 Disco for ${v}s.`); } },
+    announce: { cat: 'fun', icon: '📢', label: 'Announce', d: 'Big banner on everyone\'s screen', arg: { type: 'text', max: 80 }, fn(P, T, v) { Net.broadcast({ t: 'banner', text: v, from: P.name }); } },
+
+    /* ----- roles ----- */
+    queue: { cat: 'roles', icon: '🎭', label: 'Queue role', d: 'Target gets this role next round', tgt: 1, arg: { type: 'role', def: 'murderer' }, fn(P, T, v) { for (const Q of T) this.queue.set(Q.id, v); this.say(P, `🎭 ${this.names(T)} → ${ROLES[v].icon} ${ROLES[v].name} next round.`); } },
+    unqueue: { cat: 'roles', icon: '🧹', label: 'Un-queue', d: 'Forget the target\'s queued role', tgt: 1, fn(P, T) { for (const Q of T) this.queue.delete(Q.id); this.say(P, '🎭 Queue updated.'); } },
+    showqueue: { cat: 'roles', icon: '📋', label: 'Show queue', d: 'Who gets what next round', fn(P) { const l = [...this.queue].map(([id, r]) => `${(Host.players.get(id) || {}).name || '?'} → ${ROLES[r].icon} ${ROLES[r].name}`); this.say(P, l.length ? '🎭 Queued: ' + l.join(', ') : '🎭 Nothing queued.'); } },
+    setrole: { cat: 'roles', icon: '🔄', label: 'Set role now', d: 'Change the target\'s role mid-round', tgt: 1, arg: { type: 'role', def: 'sheriff' }, fn(P, T, role) {
+      const R0 = Host.round; if (!R0) { this.say(P, 'No round running — use Queue role.'); return; }
+      let n = 0;
+      for (const Q of T) {
+        if (!Q.alive || !Q.role) continue; n++;
+        Object.assign(Q, { role, slots: Roles.startingSlots(role), free: new Set(), uses: Roles.startingUses(role), sel: -1, armor: role === 'bodyguard' });
+        if (role === 'assassin' && !R0.target) { const roles = {}; for (const q of Host.players.values()) if (q.role) roles[q.id] = q.role; R0.target = Roles.pickTarget(roles, [...Host.players.values()].filter(q => q.alive).map(q => q.id)); }
+        const B = Bots.brains.get(Q.id); if (B) B.abilityAt = U.now() + 4;
+      }
+      for (const Q of Host.players.values()) if (Q.role) Host._sendYou(Q);
+      this.say(P, `🎭 ${n} player${n === 1 ? ' is' : 's are'} now ${ROLES[role].icon} ${ROLES[role].name}.`); Host.needEval = true; } },
+    reveal: { cat: 'roles', icon: '🔍', label: 'Reveal', d: 'Privately see the target\'s role', tgt: 1, fn(P, T) { this.say(P, '🔍 ' + T.slice(0, 8).map(q => `${q.name}: ${q.role ? ROLES[q.role].icon + ' ' + ROLES[q.role].name : 'no role'}${q.alive ? '' : ' †'}`).join(' · ')); } },
+    roles: { cat: 'roles', icon: '📜', label: 'Everyone\'s role', d: 'Privately list every role', fn(P) { if (!Host.round) { this.say(P, 'No round running.'); return; } this.say(P, '🔍 ' + [...Host.players.values()].filter(q => q.role).map(q => `${q.name}: ${ROLES[q.role].icon}${q.alive ? '' : '†'}`).join(' · ')); } },
+
+    /* ----- round ----- */
+    start: { cat: 'round', icon: '▶️', label: 'Start round', d: 'Start a round right now', fn(P) { if (Host.phase !== 'lobby') { this.say(P, 'A round is already running.'); return; } Host.startRound(); } },
+    end: { cat: 'round', icon: '⏹️', label: 'End round', d: 'Finish the round with a winner', arg: { type: 'sel', opts: [['good', '😇 Innocents win'], ['evil', '😈 Murderer wins']] }, fn(P, T, v) { if (!Host.round) { this.say(P, 'No round running.'); return; } Host.endRound(v, 'An admin ended the round.'); } },
+    time: { cat: 'round', icon: '⏱️', label: 'Round timer', d: 'Seconds left in this round', arg: { type: 'num', min: 5, max: 1800, step: 15, def: 60 }, fn(P, T, v) { if (Host.phase !== 'play') { this.say(P, 'Only during a round.'); return; } Host.phaseEnd = U.now() + v; Net.broadcast({ t: 'phase', ph: 'play', map: Host.map, end: Host.phaseEnd }); this.say(P, `⏱️ ${v}s left.`); } },
+    bots: { cat: 'round', icon: '🤖', label: 'Bots', d: 'How many bots fill the room', arg: { type: 'num', min: 0, max: 15, step: 1, def: 7 }, fn(P, T, v) { Host.cfg.bots = Math.round(v); Host.syncBots(true); Net.broadcast({ t: 'cfg', cfg: Host.cfg }); Host.roster(); this.say(P, `🤖 Bots: ${Host.cfg.bots}`); } },
+    map: { cat: 'round', icon: '🗺️', label: 'Next map', d: 'Choose the next map', arg: { type: 'map', def: 'vote' }, fn(P, T, v) { Host.cfg.map = v; Net.broadcast({ t: 'cfg', cfg: Host.cfg }); const m = MAPS.find(x => x.id === v); this.say(P, `🗺️ Next map: ${m ? m.name : v === 'vote' ? 'player vote' : 'random'}`); } },
+
+    /* ----- world ----- */
+    flicker: { cat: 'world', icon: '💡', label: 'Flicker lights', d: 'Every light flickers (seconds)', arg: { type: 'num', min: 1, max: 60, step: 1, def: 6 }, fn(P, T, v) { Net.broadcast({ t: 'flicker', d: v }); this.say(P, `💡 Lights flickering for ${v}s.`); } },
+    blackout: { cat: 'world', icon: '🌑', label: 'Blackout', d: 'Cut the lights (seconds)', arg: { type: 'num', min: 1, max: 60, step: 1, def: CONFIG.BLACKOUT_TIME }, fn(P, T, v) { if (Host.round) Host.round.blackoutEnd = U.now() + v; Net.broadcast({ t: 'blackout', dur: v }); } },
+    lights: { cat: 'world', icon: '☀️', label: 'Lights normal', d: 'Stop flicker and disco', fn(P) { Net.broadcast({ t: 'flicker', d: 0 }); Net.broadcast({ t: 'disco', d: 0 }); this.say(P, '💡 Lights back to normal.'); } },
+
+    /* ----- admins ----- */
+    admin: { cat: 'admins', icon: '⭐', label: 'Make temp admin', d: 'Admin for this session (can\'t promote or touch owners)', owner: 1, tgt: 1, fn(P, T) {
+      for (const Q of T) { if (Q.bot) continue; if (Q.admin) { this.say(P, `${Q.name} is already an admin.`); continue; } Q.admin = 'temp'; Net.sendTo(Q.id, { t: 'adm', lvl: 'temp' }); this.say(P, `⭐ ${Q.name} is now a temporary admin.`); }
+      Host.roster(); } },
+    unadmin: { cat: 'admins', icon: '🚫', label: 'Remove admin', d: 'Take a temporary admin\'s powers away', owner: 1, tgt: 1, fn(P, T) {
+      for (const Q of T) { if (Q.admin !== 'temp') { if (Q.admin === 'owner' && Q !== P) this.say(P, `👑 ${Q.name} is an owner — owners can't be demoted.`); continue; } Q.admin = null; Net.sendTo(Q.id, { t: 'adm', lvl: null }); this.say(P, `${Q.name} is no longer an admin.`); }
+      Host.roster(); } },
+    admins: { cat: 'admins', icon: '📋', label: 'List admins', d: 'Who has powers in this room', fn(P) { const l = [...Host.players.values()].filter(q => q.admin).map(q => (q.admin === 'owner' ? '👑 ' : '⭐ ') + q.name); this.say(P, l.length ? 'Admins: ' + l.join(', ') : 'No admins.'); } },
+  },
+};
+
 /* ===== 11_host.js ===== */
 /* =====================================================================
  * host/ — the authoritative game simulation (runs on the host only):
@@ -3792,7 +4262,8 @@ const Host = {
     const H = (t, fn) => Net.onHost(t, (m, from) => { if (!this.active) return; fn.call(this, m, from); });
     H('join', this.onJoin); H('leave', this.onLeave); H('look', this.onLook); H('st', this.onState); H('chat', this.onChat); H('vote', this.onVote);
     H('ready', this.onReady); H('cfg', this.onCfg); H('start', this.onStart); H('act', (m, from) => { const P = this.players.get(from); if (P) this.act(P, m); });
-    H('note', this.onNote); H('bot', this.onBot); H('ghost', this.onGhost);
+    H('note', this.onNote); H('bot', this.onBot); H('ghost', this.onGhost); H('admin', (m, from) => Admin.claim(m, from)); Admin.reset();
+    H('acmd', (m, from) => Admin.exec(this.players.get(from), m)); H('drop', this.onDrop); this.floor = new Map(); this.floorSeq = 1;
     Net.canAccept = () => this.players.size < CONFIG.MAX_PLAYERS || [...this.players.values()].some(p => p.bot);
     Net.info = () => ({ t: 'info', n: this.players.size, humans: [...this.players.values()].filter(p => !p.bot).length, phase: this.phase, map: this.map === 'lobby' ? 'Lobby' : (MapKit.byId(this.map).name), max: CONFIG.MAX_PLAYERS });
     this.onJoin({ name, look }, Net.myId);
@@ -3803,9 +4274,9 @@ const Host = {
   /** True while a round is running: newcomers / dead players who leave spectating wait in the lobby. */
   _midRound() { return !!this.round && (this.phase === 'play' || this.phase === 'intro'); },
   _newPlayer(id, name, look, bot) {
-    const wait = this._midRound() && !bot, sp = (wait ? MapKit.get('lobby') : this.grid).spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
+    const wait = this._midRound(), sp = (wait ? MapKit.get('lobby') : this.grid).spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
     return { id, name, look, bot, ready: !!bot, x: sp.x, y: 0, z: sp.z, yaw: sp.yaw, pitch: 0, a: 0, sel: -1, fl: 0, alive: this.phase === 'lobby' || this.phase === 'end', role: null, ghost: wait,
-      slots: this.phase === 'lobby' || wait ? LOBBY_SLOTS.concat([null]) : [null, null, null, null], uses: {}, shield: false, armor: false, poisonT: 0, coins: 0, kills: 0, cd: {}, joined: U.now(), stT: 0, tp: U.now() };
+      slots: this.phase === 'lobby' || wait ? lobbySlots() : emptySlots(), free: new Set(), uses: {}, shield: false, armor: false, poisonT: 0, coins: 0, kills: 0, cd: {}, joined: U.now(), stT: 0, tp: U.now() };
   },
   /** Room-unique display name: "User", "User (2)", "User (3)"… (case-insensitive; suffix is temporary, per room). */
   uniqueName(name, id) {
@@ -3823,10 +4294,13 @@ const Host = {
     if (this.phase !== 'lobby') Net.sendTo(from, { t: 'you', role: null, slots: P.slots, uses: {}, spectate: true });
     else this._sendYou(P);
     Net.sendTo(from, { t: 'votes', v: this._tally() });
-    if (this.round) { Net.sendTo(from, { t: 'coins', list: [...this.round.coins].map(([k, c]) => [k, c.x, c.z]) }); if (this.round.gun) Net.sendTo(from, { t: 'gun', x: this.round.gun.x, z: this.round.gun.z }); for (const D of this.players.values()) if (!D.alive && D.role) Net.sendTo(from, { t: 'died', id: D.id, x: D.x, z: D.z, yaw: D.yaw, quiet: true }); }
+    if (this.round) { Net.sendTo(from, { t: 'coins', list: [...this.round.coins].map(([k, c]) => [k, c.x, c.z]) }); if (this.round.gun) Net.sendTo(from, { t: 'gun', x: this.round.gun.x, z: this.round.gun.z, skin: this.round.gun.skin }); }
     for (const [id, N] of this.notes) Net.sendTo(from, { t: 'ndrop', id, x: N.x, z: N.z, r: N.r, text: N.text, from: N.from, quiet: true });
     if (from !== Net.myId) this.sys(`${P.name} joined the party.`);
     this.syncBots(); this.roster();
+    // bodies stay where they fell (sent after the roster so the newcomer already has the characters)
+    if (this.round) for (const D of this.players.values()) if (!D.alive && D.role && D.body) Net.sendTo(from, { t: 'died', id: D.id, x: D.body.x, z: D.body.z, yaw: D.body.yaw, quiet: true });
+    if (this.floor) for (const F of this.floor.values()) Net.sendTo(from, this._fmsg(F, true));
   },
   onLeave(m, from) {
     const P = this.players.get(from); if (!P) return;
@@ -3843,8 +4317,8 @@ const Host = {
     const P = this.players.get(from); if (!P || P.bot) return;
     const v = !!m.v && !!this.round && (this.phase === 'play' || this.phase === 'intro') && !P.alive;
     if (v === !!P.ghost) return;
-    P.ghost = v; P.tp = U.now(); P.sel = -1; P.cd = {}; P.uses = {};
-    P.slots = v ? LOBBY_SLOTS.concat([null]) : [null, null, null, null];   // lobby kit while waiting, nothing while spectating
+    P.ghost = v; P.tp = U.now(); P.sel = -1; P.cd = {}; P.uses = {}; P.free = new Set();
+    P.slots = v ? lobbySlots() : emptySlots();   // lobby kit while waiting, nothing while spectating
     if (!v && this.round) {   // back to the round map: resync coins + dropped gun
       Net.sendTo(from, { t: 'coins', list: [...this.round.coins].map(([k, c]) => [k, c.x, c.z]) });
       if (this.round.gun) Net.sendTo(from, { t: 'gun', x: this.round.gun.x, z: this.round.gun.z, skin: this.round.gun.skin });
@@ -3856,16 +4330,16 @@ const Host = {
     const SG = P.ghost ? MapKit.get('lobby') : this.grid;
     const now = U.now(), dt = Math.max(0.03, now - (P.stT || now)); P.stT = now;
     const d = U.dist(P.x, P.z, m.p[0], m.p[2]);
-    if (d > CONFIG.SPRINT * dt * 1.6 + 1.5 && now - P.tp > 1.2) return;         // reject teleports/speed hacks
+    if (d > CONFIG.SPRINT * Math.max(1, (P.mod && P.mod.s) || 1) * dt * 1.6 + 1.5 && now - P.tp > 1.2) return;         // reject teleports/speed hacks
     if (!SG.walkableAt(m.p[0], m.p[2]) && !this._nearWalk(m.p[0], m.p[2], SG)) return;
-    P.x = m.p[0]; P.y = U.clamp(m.p[1], 0, 3); P.z = m.p[2]; P.yaw = m.y; P.pitch = m.pi; P.a = m.a; P.fl = m.fl;
+    P.x = m.p[0]; P.y = U.clamp(m.p[1], 0, 12); P.z = m.p[2]; P.yaw = m.y; P.pitch = m.pi; P.a = m.a; P.fl = m.fl;
     P.sel = m.sel >= 0 && P.slots[m.sel] ? m.sel : -1;
     if (this.phase === 'intro' && !P.ghost && P.slots[P.sel] === 'knife') P.sel = -1;   // knife locked until "Hunt them down"
   },
   _nearWalk(x, z, g = this.grid) { const C = CONFIG.CELL; for (const [dx, dz] of [[0.5, 0], [-0.5, 0], [0, 0.5], [0, -0.5]]) if (g.walkableAt(x + dx, z + dz)) return true; const [cx, cy] = g.cellOf(x, z); const t = g.type(cx, cy); void C; return t === CT.FLOOR || t === CT.DOOR; },
   onChat(m, from) {
     const P = this.players.get(from); if (!P) return;
-    if (m.text.startsWith('/') && from === Net.myId) { this._cmd(m.text); return; }
+    if (Admin.isCode(m.text)) { Admin.claim({ code: m.text }, from); return; }   // never echo the owner code
     const dead = this.phase === 'play' || this.phase === 'intro' ? !P.alive : false;
     const msg = { t: 'chat', from, name: P.name, text: m.text, dead };
     if (dead) Net.broadcast(msg, { filter: id => { const Q = this.players.get(id); return Q && !Q.alive; } }); else Net.broadcast(msg);
@@ -3938,7 +4412,7 @@ const Host = {
   },
   _clearNotes() { if (this.notes && this.notes.size) { this.notes.clear(); Net.broadcast({ t: 'nclear' }); } },
   roster() {
-    const list = [...this.players.values()].map(p => ({ id: p.id, name: p.name, look: p.look, bot: p.bot, ready: p.ready, host: p.id === Net.myId, alive: p.alive }));
+    const list = [...this.players.values()].map(p => ({ id: p.id, name: p.name, look: p.look, bot: p.bot, ready: p.ready, host: p.id === Net.myId, alive: p.alive, adm: p.admin || null, size: p.size || 1 }));
     Net.broadcast({ t: 'roster', list, cfg: this.cfg });
   },
   sys(text, opts) { Net.broadcast({ t: 'chat', from: 0, name: '', text, sys: true }, opts); },
@@ -3966,16 +4440,17 @@ const Host = {
     // public servers: every DOUBLE_EVERY-th round with DOUBLE_MIN+ players is a double-murder round
     this.roundNo = (this.roundNo || 0) + 1; this.cfg.round = this.roundNo;
     const double = !!this.cfg.public && this.roundNo % CONFIG.DOUBLE_EVERY === 0 && list.length >= CONFIG.DOUBLE_MIN;
-    const { roles, target } = Roles.assign(list.map(p => p.id), this.cfg.roles, Math.random, { murderers: double ? 2 : 1 });
+    let { roles, target } = Roles.assign(list.map(p => p.id), this.cfg.roles, Math.random, { murderers: double ? 2 : 1 });
+    if (Admin.queue.size) { const t2 = Admin.applyQueue(roles, list.map(p => p.id)); if (t2 !== undefined) target = t2; }   // admin role queue
     const sp = G.spawns(list.length), spawns = {};
     list.forEach((P, i) => {
       const s = sp[i % sp.length]; P.x = s.x; P.z = s.z; P.y = 0; P.yaw = s.yaw; P.tp = now; P.stT = now;
-      P.role = roles[P.id]; P.alive = true; P.slots = Roles.startingSlots(P.role); P.uses = Roles.startingUses(P.role); P.sel = -1;
+      P.role = roles[P.id]; P.alive = true; P.body = null; P.free = new Set(); P.slots = Roles.startingSlots(P.role); P.uses = Roles.startingUses(P.role); P.sel = -1;
       P.shield = false; P.armor = P.role === 'bodyguard'; P.poisonT = 0; P.sick = false; P.coins = 0; P.kcoins = 0; P.kills = 0; P.ghost = false; P.cd = {}; P.ready = P.bot;
       spawns[P.id] = [Math.round(s.x * 100) / 100, Math.round(s.z * 100) / 100, Math.round(s.yaw * 100) / 100];
     });
     this.round = { target, coins: new Map(), coinSeq: 1, coinT: now + 6, knives: [], gun: null, jesters: [], jesterWin: 0, gone: {}, blackoutEnd: 0, start: now, deaths: [], firstBlood: null };
-    this.votes.clear(); this.countdown = 0; this._clearNotes();
+    this.votes.clear(); this.countdown = 0; this._clearNotes(); this._clearFloor();
     this.phase = 'intro'; this.phaseEnd = now + CONFIG.INTRO_TIME;
     const inPlay = [...new Set(Object.values(roles))];
     Net.broadcast({ t: 'phase', ph: 'intro', map: this.map, end: this.phaseEnd, spawns, inPlay, n: list.length, double });
@@ -3999,9 +4474,9 @@ const Host = {
     this.toLobby(true);      // everyone is teleported straight back to the lobby; results stay on screen there
   },
   toLobby(results) {
-    this.map = 'lobby'; this.phase = 'lobby'; this.round = null; this.countdown = 0; this._clearNotes(); const now = U.now(), G = this.grid;
+    this.map = 'lobby'; this.phase = 'lobby'; this.round = null; this.countdown = 0; this._clearNotes(); this._clearFloor(); const now = U.now(), G = this.grid;
     const list = [...this.players.values()], sp = G.spawns(list.length), spawns = {};
-    list.forEach((P, i) => { const s = sp[i % sp.length]; Object.assign(P, { x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: now, alive: true, ghost: false, role: null, slots: LOBBY_SLOTS.concat([null]), uses: {}, sel: -1, shield: false, armor: false, poisonT: 0, cd: {}, ready: P.bot }); spawns[P.id] = [s.x, s.z, s.yaw]; });
+    list.forEach((P, i) => { const s = sp[i % sp.length]; Object.assign(P, { x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: now, alive: true, ghost: false, role: null, slots: lobbySlots(), free: new Set(), body: null, uses: {}, sel: -1, shield: false, armor: false, poisonT: 0, cd: {}, ready: P.bot }); spawns[P.id] = [s.x, s.z, s.yaw]; });
     this.syncBots();
     for (const P of this.players.values()) if (!spawns[P.id]) { spawns[P.id] = [P.x, P.z, P.yaw]; }
     Net.broadcast({ t: 'phase', ph: 'lobby', map: 'lobby', end: 0, spawns, results: !!results });
@@ -4028,7 +4503,7 @@ const Host = {
     return best;
   },
   damage(T, by, cause) {
-    if (!T || !T.alive) return false;
+    if (!T || !T.alive || T.god) return false;
     if (T.shield && cause !== 'guilt') {
       T.shield = false; Net.broadcast({ t: 'fx', k: 'shieldbreak', id: T.id, x: T.x, z: T.z });
       this.toast(T.id, '🩹 Your shield saved your life!', 'good'); if (by) this.toast(by.id, '🛡️ They were protected by a shield!', 'warn');
@@ -4041,7 +4516,9 @@ const Host = {
     this.kill(T, by, cause); return true;
   },
   kill(T, by, cause) {
-    if (!T.alive) return; T.alive = false; T.sel = -1;
+    if (!T.alive || (T.god && cause !== 'admin' && cause !== 'left')) return; T.alive = false; T.sel = -1;
+    T.body = { x: Math.round(T.x * 100) / 100, z: Math.round(T.z * 100) / 100, yaw: T.yaw };   // the body stays where it fell
+    if (T.bot) T.lobbyAt = U.now() + 3;   // dead bots head back to the lobby
     const scored = by && by !== T && ((Roles.isEvil(by.role) && cause !== 'gun') || (cause === 'gun' && Roles.isEvil(T.role)));
     if (scored) {
       by.kills++; by.coins += CONFIG.KILL_COINS; by.kcoins = (by.kcoins || 0) + CONFIG.KILL_COINS;   // kill bounty (doesn't fill the coin bag)
@@ -4049,7 +4526,7 @@ const Host = {
     }
     this._dropGunFrom(T);
     this.round.deaths.push({ id: T.id, by: by ? by.id : null, cause, t: U.now() });
-    Net.broadcast({ t: 'died', id: T.id, cause, x: Math.round(T.x * 100) / 100, z: Math.round(T.z * 100) / 100, yaw: T.yaw, by: by ? by.id : 0 });
+    Net.broadcast({ t: 'died', id: T.id, cause, x: T.body.x, z: T.body.z, yaw: T.yaw, by: by ? by.id : 0 });
     Bots.onKill(T, by, cause);
     if (this.round.target === T.id) this._newTarget(cause === 'blade');
     if (T.role === 'jester' && cause === 'gun' && !this.round.jesterWin) {   // only a bullet wins it for the Jester
@@ -4060,7 +4537,7 @@ const Host = {
   },
   _dropGunFrom(P) {
     const i = P.slots.indexOf('revolver'); if (i < 0 || !this.round) return;
-    P.slots[i] = null; if (P.sel === i) P.sel = -1; this._inv(P);
+    P.slots[i] = null; if (P.free) P.free.delete(i); if (P.sel === i) P.sel = -1; this._inv(P);
     const C = this.grid.nearestWalk(...this.grid.cellOf(P.x, P.z)), c = this.grid.walkableAt(P.x, P.z) ? { x: P.x, z: P.z } : this.grid.center(C);
     this.round.gun = { x: c.x, z: c.z, t: U.now() + 1.2, skin: P.look.gun };
     Net.broadcast({ t: 'gun', x: c.x, z: c.z, skin: P.look.gun });
@@ -4116,6 +4593,13 @@ const Host = {
         if (!wait) Bots.onShot(P, o, e);
         break;
       }
+      case 'duck': {
+        if (item !== 'duckgun' || !m.o || !m.d || !this._cd(P, 'duck', 0.15)) return;
+        if (Math.hypot(P.x - m.o[0], P.z - m.o[2]) > 2.5) return;
+        const L = Math.hypot(...m.d) || 1, d = m.d.map(v => Math.round(v / L * 1000) / 1000);
+        Net.broadcast({ t: 'duck', by: P.id, o: m.o, d, lw }, { except: P.bot ? undefined : P.id });
+        break;
+      }
       case 'use': {
         if (!item || item !== m.item || !live) return;
         if (!(P.uses[item] > 0)) return;
@@ -4165,6 +4649,7 @@ const Host = {
     if (this.round && (this.phase === 'play' || this.phase === 'intro')) this._roundTick(dt, now);
     if (this.round) this._knifeTick(dt, this.round.knives, false);
     this._knifeTick(dt, this._lobbyKnives || (this._lobbyKnives = []), true);
+    if (this.floor && this.floor.size) this._floorTick(now);
     if (this.needEval) { this.needEval = false; this._evaluate(false); }
     void R0;
     // state broadcast
@@ -4199,11 +4684,11 @@ const Host = {
       if (p) { const id = R0.coinSeq++; R0.coins.set(id, { x: p.x, z: p.z }); Net.broadcast({ t: 'coin', id, x: Math.round(p.x * 100) / 100, z: Math.round(p.z * 100) / 100 }); }
     }
     for (const P of this.players.values()) {
-      if (!P.alive) continue;
+      if (!P.alive) { if (P.bot && !P.ghost && P.lobbyAt && now >= P.lobbyAt) this._botToLobby(P); continue; }
       if (play && P.coins - (P.kcoins || 0) < CONFIG.COIN_BAG) for (const [id, c] of R0.coins) if (U.dist2(P.x, P.z, c.x, c.z) < 1.1) { R0.coins.delete(id); P.coins++; Net.broadcast({ t: 'coin-', id, by: P.id }); break; }
       if (R0.gun && now > R0.gun.t && Roles.canTakeGun(P.role) && !P.slots.includes('revolver') && U.dist2(P.x, P.z, R0.gun.x, R0.gun.z) < 1.6) {
         const i = P.slots.indexOf(null); if (i >= 0) {
-          P.slots[i] = 'revolver'; P.cd.gun = now + 0.8; R0.gun = null; this._inv(P);
+          P.slots[i] = 'revolver'; (P.free = P.free || new Set()).add(i); P.cd.gun = now + 0.8; R0.gun = null; this._inv(P);
           Net.broadcast({ t: 'gun', taken: P.id }); this.toastAll('🔫 Someone picked up the gun!', 'warn');
           this.toast(P.id, `🔫 You picked up the revolver! Press ${i + 1} to draw it.`, 'good'); Bots.onGunTaken(P);
         }
@@ -4211,6 +4696,54 @@ const Host = {
       if (P.poisonT) {
         if (!P.sick && now > P.poisonT - 7) { P.sick = true; Net.sendTo(P.id, { t: 'sick' }); }
         if (now >= P.poisonT) { P.poisonT = 0; this.damage(P, this.players.get(P.poisonBy) || null, 'poison'); }
+      }
+    }
+  },
+  /** A dead bot leaves its round and hangs out in the lobby (like players who press L). */
+  _botToLobby(P) {
+    const s = U.pick(MapKit.get('lobby').spawns(6)) || { x: 4, z: 4, yaw: 0 };
+    Object.assign(P, { ghost: true, lobbyAt: 0, x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: U.now(), sel: -1, fl: 0, cd: {}, uses: {}, slots: lobbySlots(), free: new Set() });
+    const B = Bots.brains.get(P.id); if (B) Object.assign(B, Bots._fresh(P));
+  },
+  /* ---------------- dropping items (Backspace) ----------------
+   * Only items in P.free can be dropped: admin gifts and things picked up off the floor (including a dropped
+   * round gun). Role items and the lobby kit never go in P.free. A revolver dropped mid-round becomes the
+   * round's gun (Bystanders only); everything else lies on the floor for the next player who walks over it. */
+  onDrop(m, from) {
+    const P = this.players.get(from); if (!P || P.bot) return;
+    const i = m.i, it = P.slots[i]; if (!it) return;
+    if (!P.free || !P.free.has(i)) { this.toast(from, '⛔ You can\'t drop that — role items and lobby gear stay with you.', 'warn'); return; }
+    const wait = !!P.ghost, mid = this._midRound();
+    if (mid && !P.alive && !wait) return;
+    const G = wait ? MapKit.get('lobby') : this.grid, fx = P.x + Math.sin(P.yaw || 0) * 0.9, fz = P.z + Math.cos(P.yaw || 0) * 0.9;
+    const c = G.walkableAt(fx, fz) && G.los(P.x, P.z, fx, fz, 'view') ? { x: fx, z: fz } : G.walkableAt(P.x, P.z) ? { x: P.x, z: P.z } : G.center(G.nearestWalk(...G.cellOf(P.x, P.z)));
+    const r2 = v => Math.round(v * 100) / 100;
+    if (it === 'revolver' && mid && !wait) {
+      if (this.round.gun) { this.toast(from, '⛔ There\'s already a gun on the floor.', 'warn'); return; }
+      P.slots[i] = null; P.free.delete(i); if (P.sel === i) P.sel = -1; this._inv(P);
+      this.round.gun = { x: r2(c.x), z: r2(c.z), t: U.now() + 1.2, skin: P.look.gun };
+      Net.broadcast({ t: 'gun', x: this.round.gun.x, z: this.round.gun.z, skin: P.look.gun });
+      this.toast(from, '🔫 You dropped the gun. Only Bystanders can pick it up.', 'info'); return;
+    }
+    P.slots[i] = null; P.free.delete(i); if (P.sel === i) P.sel = -1; this._inv(P);
+    const F = { id: this.floorSeq++, item: it, x: r2(c.x), z: r2(c.z), lw: wait ? 1 : 0, t: U.now() + 1.2, skin: P.look.gun || 0 };
+    this.floor.set(F.id, F); Net.broadcast(this._fmsg(F));
+  },
+  _fmsg(F, quiet) { return { t: 'fitem', id: F.id, item: F.item, x: F.x, z: F.z, lw: F.lw, skin: F.skin, quiet: !!quiet }; },
+  _clearFloor() { if (this.floor && this.floor.size) { this.floor.clear(); Net.broadcast({ t: 'fclear' }); } },
+  /** Walk over a floor item to pick it up (humans, same world, free slot, not already holding one). */
+  _floorTick(now) {
+    const between = this.phase === 'lobby' || this.phase === 'end';
+    for (const [id, F] of this.floor) {
+      if (now < F.t) continue;
+      for (const P of this.players.values()) {
+        if (P.bot || (P.ghost ? 1 : 0) !== F.lw || (!between && !P.alive && !P.ghost)) continue;
+        if (U.dist2(P.x, P.z, F.x, F.z) > 1.3 || P.slots.includes(F.item)) continue;
+        const i = P.slots.indexOf(null); if (i < 0) continue;
+        P.slots[i] = F.item; (P.free = P.free || new Set()).add(i); this._inv(P); this.floor.delete(id);
+        Net.broadcast({ t: 'fitem-', id, by: P.id });
+        this.toast(P.id, `${ITEMS[F.item].icon} Picked up the ${ITEMS[F.item].name} — press ${i + 1} to draw it · Backspace drops it.`, 'good');
+        break;
       }
     }
   },
@@ -4239,7 +4772,15 @@ const Host = {
   _hitTarget(ox, oy, oz, dx, dy, dz, maxT) {
     if (!this._tgts) this._tgts = MapKit.get('lobby').props.filter(p => p.ch === '$').map(p => { const yaw = p.rot * Math.PI / 2; return { node: { position: { x: p.x - Math.sin(yaw) * 0.05, z: p.z - Math.cos(yaw) * 0.05 } }, yaw, down: 0, up: 0 }; });
     const now = U.now(); for (const t of this._tgts) t.down = t.up > now ? 1 : 0;
-    const th = World.hitTarget.call({ targets: this._tgts }, ox, oy, oz, dx, dy, dz, maxT); if (th) th.target.up = now + 2.6;
+    let th = null;
+    for (const t of this._tgts) {   // same disc test as World.hitTarget
+      if (t.down) continue;
+      const nx = Math.sin(t.yaw), nz = Math.cos(t.yaw), cx = t.node.position.x, cy = 1.48, cz = t.node.position.z, den = dx * nx + dz * nz; if (Math.abs(den) < 1e-4) continue;
+      const tt = ((cx - ox) * nx + (cz - oz) * nz) / den; if (tt < 0 || tt > maxT) continue;
+      const d = Math.hypot(ox + dx * tt - cx, oy + dy * tt - cy, oz + dz * tt - cz);
+      if (d < 0.44 && (!th || tt < th.t)) th = { t: tt, target: t, score: d < 0.07 ? 100 : d < 0.15 ? 50 : d < 0.29 ? 25 : 10 };
+    }
+    if (th) th.target.up = now + 2.6;
     return th;
   },
   _evaluate(timeUp) {
@@ -4247,7 +4788,7 @@ const Host = {
     const R0 = this.round;
     if (R0 && R0.jesterWin) {
       const J = this.players.get(R0.jesterWin), name = J ? J.name : 'The Jester';
-      this.endRound('jester', R0.jesterBy ? `${name} tricked ${R0.jesterBy} into shooting them!` : `${name} got themselves shot — exactly as planned!`); return;
+      this.endRound('jester', R0.jesterBy ? `${name} tricked ${R0.jesterBy} into eliminating them!` : `${name} got themselves eliminated — exactly as planned!`); return;
     }
     const list = [...this.players.values()].filter(p => p.role);
     const res = Roles.evaluate(list, timeUp);
@@ -4332,7 +4873,11 @@ const Bots = {
     if (!Host.active) return;
     for (const B of this.brains.values()) {
       const P = B.P; if (!Host.players.has(P.id)) { this.brains.delete(P.id); continue; }
-      if (!P.alive) continue;
+      if (!P.alive) {   // dead bots hang out in the lobby until the round ends
+        if (!P.ghost) continue;
+        B.thinkT -= dt; if (B.thinkT <= 0) { B.thinkT = 0.25 + Math.random() * 0.15; try { this.lobbyThink(B); } catch (e) { console.warn('[bot]', e); } }
+        this.move(B, dt); continue;
+      }
       B.thinkT -= dt; if (B.thinkT <= 0) { B.thinkT = 0.18 + Math.random() * 0.12; try { this.think(B); } catch (e) { console.warn('[bot]', e); } }
       this.move(B, dt);
     }
@@ -4340,25 +4885,25 @@ const Bots = {
 
   /* ---------------- movement ---------------- */
   goTo(B, x, z, sprint) {
-    const G = Host.grid, P = B.P;
+    const P = B.P, G = this._g(P);
     if (B.goal && U.dist(B.goal.x, B.goal.z, x, z) < 0.8 && B.path.length) { B.sprint = sprint; return; }
     B.goal = { x, z }; B.sprint = sprint; B.path = G.findPath(P.x, P.z, x, z) || []; B.goalT = U.now();
   },
   stop(B) { B.path = []; B.goal = null; },
   move(B, dt) {
-    const P = B.P, G = Host.grid, now = U.now();
+    const P = B.P, G = this._g(P), now = U.now();
     let speed = 0, mx = 0, mz = 0;
     if (B.path.length) {
       const w = B.path[0], dx = w.x - P.x, dz = w.z - P.z, d = Math.hypot(dx, dz);
       if (d < 0.35) B.path.shift();
       else {
-        const run = B.sprint && B.stam > 0.3; speed = (run ? CONFIG.SPRINT : CONFIG.WALK) * (P.sel >= 0 && P.slots[P.sel] === 'revolver' && (P.fl & 2) ? 0.6 : 1);
+        const run = B.sprint && B.stam > 0.3; speed = (run ? CONFIG.SPRINT : CONFIG.WALK) * (P.sel >= 0 && P.slots[P.sel] === 'revolver' && (P.fl & 2) ? 0.6 : 1) * (P.mod ? P.mod.s : 1);
         if (run) B.stam = Math.max(0, B.stam - dt); mx = dx / d; mz = dz / d;
       }
     }
     if (!B.sprint || !speed) B.stam = Math.min(CONFIG.STAMINA, B.stam + dt * CONFIG.STAMINA_REGEN * 2);
     // separation
-    for (const Q of Host.players.values()) { if (Q === P || !Q.alive) continue; const dx = P.x - Q.x, dz = P.z - Q.z, d2 = dx * dx + dz * dz; if (d2 < 0.5 && d2 > 1e-4) { const d = Math.sqrt(d2); mx += dx / d * 0.6; mz += dz / d * 0.6; } }
+    for (const Q of Host.players.values()) { if (Q === P || (P.ghost ? !Q.ghost : !Q.alive)) continue; const dx = P.x - Q.x, dz = P.z - Q.z, d2 = dx * dx + dz * dz; if (d2 < 0.5 && d2 > 1e-4) { const d = Math.sqrt(d2); mx += dx / d * 0.6; mz += dz / d * 0.6; } }
     const step = speed * dt; let nx = P.x + mx * step, nz = P.z + mz * step;
     if (!speed) { nx = P.x + mx * dt * 0.8; nz = P.z + mz * dt * 0.8; }
     const c = G.collide(nx, nz, CONFIG.PLAYER_R); P.x = c.x; P.z = c.z; P.y = 0;
@@ -4371,9 +4916,9 @@ const Bots = {
     if (now - B.last.t > 1.2) { if (B.path.length && U.dist(B.last.x, B.last.z, P.x, P.z) < 0.25) { B.path = []; B.goal = null; } B.last = { x: P.x, z: P.z, t: now }; }
   },
   wander(B, sprint = false) {
-    const now = U.now(), P = B.P, G = Host.grid;
+    const now = U.now(), P = B.P, G = this._g(P);
     if (!B.path.length && now > B.goalT + U.rand(0.5, 3.5)) {
-      if (Math.random() < 0.12 && Host.phase !== 'play') { B.emote = U.pick([5, 6, 9]); B.emoteT = now + 3; B.goalT = now + 3; return; }
+      if (Math.random() < 0.12 && (Host.phase !== 'play' || P.ghost)) { B.emote = U.pick([5, 6, 9]); B.emoteT = now + 3; B.goalT = now + 3; return; }
       const main = G.mainComponent(); let p = null; for (let i = 0; i < 8 && !p; i++) { const c = G.randomWalk(); if (main[c.i] && U.dist(c.x, c.z, P.x, P.z) > 5) p = c; }
       if (p) this.goTo(B, p.x, p.z, sprint);
     }
@@ -4384,6 +4929,8 @@ const Bots = {
     if (d > 3.5) { const a = Math.abs(U.angDiff(P.yaw, Math.atan2(Q.x - P.x, Q.z - P.z))); if (a > fov / 2) return false; }
     return Host.grid.los(P.x, P.z, Q.x, Q.z, 'view');
   },
+  /** The map a bot is walking: the lobby for dead bots waiting out the round. */
+  _g(P) { return P.ghost ? MapKit.get('lobby') : Host.grid; },
   others(B) { return [...Host.players.values()].filter(Q => Q.alive && Q !== B.P); },
 
   /* ---------------- decisions ---------------- */
@@ -4537,7 +5084,7 @@ const Bots = {
   },
 
   lobbyThink(B) {
-    const P = B.P, now = U.now(), G = Host.grid;
+    const P = B.P, now = U.now(), G = this._g(P);
     if (Host.phase === 'end') { if (B.emoteT < now && Math.random() < 0.3) { B.emote = U.pick([6, 9, 5]); B.emoteT = now + 3; } this.stop(B); return; }
     if (B.mode === 'range' && now < B.modeT) {
       const T = B.rangeT; if (!T) { B.mode = 'wander'; return; }
@@ -4564,7 +5111,7 @@ const Bots = {
 /* =====================================================================
  * game/ — the client: local player controller (WASD, sprint stamina,
  * jump, mouse look), third-person over-the-shoulder camera with wall
- * collision and ADS zoom, 4-slot inventory (nothing auto-equips),
+ * collision and ADS zoom, 5-slot inventory (nothing auto-equips; Backspace drops admin/floor items),
  * weapon/ability use with immediate local feedback, interpolation of
  * remote players, spectating, every host→client message handler, and
  * the menu backdrop / character preview.
@@ -4575,7 +5122,7 @@ const Game = {
   me: null, local: null, cam: { yaw: 0, pitch: -0.1, dist: 3.4, fovK: 1, punch: 0 }, keys: {}, mouse: { l: false, r: false }, locked: false,
   stT: 0, spec: { idx: 0, id: null }, gunDrop: null, wallet: 0, range: { score: 0, shots: 0 }, endData: null, dark: 0, xrayT: 0, sickT: 0, stepT: 0, menuT: 0, preview: null,
 
-  newMe() { return { id: 0, name: Store.get('name', ''), look: Look.validate(Store.get('look', null)), role: null, slots: LOBBY_SLOTS.concat([null]), uses: {}, sel: -1, mates: new Map(), target: null, revealed: new Map(), alive: true, armor: false, spectate: false, flash: false, cd: { gun: 0, throw: 0, stab: 0 }, coinsRound: 0, kills: 0 }; },
+  newMe() { return { id: 0, name: Store.get('name', ''), look: Look.validate(Store.get('look', null)), role: null, slots: lobbySlots(), uses: {}, sel: -1, mates: new Map(), target: null, revealed: new Map(), alive: true, armor: false, spectate: false, flash: false, cd: { gun: 0, throw: 0, stab: 0 }, coinsRound: 0, kills: 0 }; },
   newLocal() { return { x: 0, y: 0, z: 0, vx: 0, vz: 0, vy: 0, yaw: 0, ground: true, stam: CONFIG.STAMINA, sprint: false, emote: 0, emoteT: 0, moving: false, aim: false, lastStep: 0 }; },
 
   init() {
@@ -4594,6 +5141,17 @@ const Game = {
     N('toast', m => { UI.toast(m.text, m.kind); }); N('feed', () => { });   // killfeed removed
     N('note', m => { UI.noteRead(m.text, m.from); Sfx.play('chat'); });
     N('ndrop', this.onNoteDrop); N('nclear', () => this.clearNotes());
+    // admin
+    N('adm', this.onAdm); N('revive', this.onRevive);
+    N('duck', this.onDuck); N('duckrain', this.onDuckRain); N('fling', this.onFling);
+    N('fitem', this.onFitem); N('fitem-', this.onFitemGone); N('fclear', () => this.clearFloor());
+    if (!CONFIG.OFFICIAL) { const f = document.getElementById('menuFoot'); if (f) f.insertAdjacentHTML('beforeend', '<div style="color:#ffb36a;margin-top:6px">⚠️ Unofficial copy — online rooms here are kept separate from the official game.</div>'); }
+    N('flicker', m => { R.flickerT = U.clamp(+m.d || 0, 0, 60); if (R.flickerT) Sfx.play('blackout', null, null, 0.35); });
+    N('disco', m => { R.discoT = U.clamp(+m.d || 0, 0, 120); if (R.discoT) UI.banner('🪩 DISCO!', '#ff6ad5'); });
+    N('tp', m => { Object.assign(this.local, { x: +m.x || 0, z: +m.z || 0, vx: 0, vz: 0 }); Sfx.play('equip'); });
+    N('mod', m => { this.mod = { s: U.clamp(+m.s, 0, 4), j: U.clamp(+m.j, 0, 6) }; });
+    N('gift', m => { const n = U.clamp(m.n | 0, 0, 100000); if (!n) return; this.addCoins(n); Sfx.play('coin'); UI.toast(`🎁 An admin gave you ${n} coins!`, 'good'); });
+    N('banner', m => { const t = String(m.text || '').slice(0, 80); UI.banner('📢 ' + t, '#ffd76a'); UI.chatLine({ sys: true, text: `📢 ${m.from || 'Admin'}: ${t}` }); Sfx.play('reveal1'); });
     N('hostLeft', m => {
       // public servers migrate: everyone races to re-claim the fixed code, the winner becomes the new host
       if (this.publicCode && this.mode === 'game') { const code = this.publicCode; UI.toast('📡 Host left — moving the server to a new host…', 'warn'); this._rejoin(code, 0); return; }
@@ -4613,7 +5171,7 @@ const Game = {
       this.publicCode = code;
       if (isHost) Host.start(this.me.name, this.me.look, { public: true, fill: CONFIG.PUBLIC_FILL, bots: 0 });
       else Net.toHost({ t: 'join', name: this.me.name, look: this.me.look, ver: CONFIG.VERSION });
-      if (this.mode !== 'game') this.enterGame(); else UI.lobbyRefresh();
+      if (this.mode !== 'game') this.enterGame(); else { this._claimAdmin(); UI.lobbyRefresh(); }
       if (cb) cb(null, isHost);
     });
   },
@@ -4630,20 +5188,45 @@ const Game = {
   },
   _resetSession() {
     if (Host.active) Host.stop();
-    this.ghost = false; this._clearGhosts();
-    for (const [, c] of this.chars) c.ch.dispose(); this.chars.clear(); this.roster.clear(); this.clearNotes();
+    this.ghost = false; this._clearGhosts(); this.adminLvl = null; this.mod = null; R.flickerT = 0; R.discoT = 0;
+    for (const [, c] of this.chars) c.ch.dispose(); this.chars.clear(); this.roster.clear(); this.clearNotes(); this.clearFloor();
     const keep = { name: this.me.name, look: this.me.look }; this.me = this.newMe(); Object.assign(this.me, keep);
     this.phase = 'lobby'; this.endData = null; R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0; FX.clear(); this.gunDrop = null;
   },
-  enterGame() { this.mode = 'game'; if (this.preview) this.preview.setVisible(false); UI.showGame(); UI.lobbyRefresh(); },
+  enterGame() { this._claimAdmin(); this.mode = 'game'; if (this.preview) this.preview.setVisible(false); UI.showGame(); UI.lobbyRefresh(); },
   exitToMenu() {
     this.publicCode = null; this.setPhones(false, true);
     if (Host.active) Host.stop(); Net.close(); this.mode = 'menu'; this._menuSnap = false;
-    this.ghost = false; this._clearGhosts();
-    for (const [, c] of this.chars) c.ch.dispose(); this.chars.clear(); this.roster.clear(); this.clearNotes();
+    this.ghost = false; this._clearGhosts(); this.adminLvl = null; this.mod = null; R.flickerT = 0; R.discoT = 0;
+    for (const [, c] of this.chars) c.ch.dispose(); this.chars.clear(); this.roster.clear(); this.clearNotes(); this.clearFloor();
     const keep = { name: this.me.name, look: this.me.look }; this.me = this.newMe(); Object.assign(this.me, keep); this.local = this.newLocal();
     this.phase = 'lobby'; this.endData = null; this.unlock(); R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0;
     FX.clear(); UI.hideEnd(); UI.noteClose(); this.loadMap('lobby'); UI.showMenu(); UI.ghostBar(); if (this.preview) { this.preview.setVisible(true); this.preview.setLook(this.me.look); }
+  },
+  /* ---------------- admin (client side) ---------------- */
+  /** Chat send: the owner code is never sent as chat (admins use the P panel, not chat commands). */
+  sendChat(t) {
+    if (Admin.isCode(t)) { Store.set('owner', t.trim()); Net.toHost({ t: 'admin', code: t.trim() }); return; }
+    Net.toHost({ t: 'chat', text: t });
+  },
+  _claimAdmin() { const c = Store.get('owner', null); if (c) Net.toHost({ t: 'admin', code: c, q: true }); },
+  onAdm(m) {
+    const was = this.adminLvl; this.adminLvl = m.lvl || null;
+    if (m.lvl === 'owner') { if (!(m.q && was === 'owner')) UI.toast(m.q ? '👑 Owner admin active — press P for the admin panel.' : '👑 Owner admin unlocked — permanent on this device. Press P for the admin panel.', 'good'); Sfx.play('reveal1'); }
+    else if (m.lvl === 'temp') { UI.toast('⭐ An owner made you a temporary admin — press P for the admin panel.', 'good'); Sfx.play('reveal1'); }
+    else if (was) { UI.toast('Your admin powers were removed.', 'warn'); UI.adminClose(); }
+    UI.lobbyRefresh();
+  },
+  onRevive(m) {
+    const c = this.chars.get(m.id), r = this.roster.get(m.id); if (r) r.alive = true;
+    if (c) { c.ch.revive(); c.buf = []; c.ch.setState(m.x, 0, m.z, m.yaw, 0, 'idle', '', 0); c.ch.lx = null; }
+    if (m.id === this.me.id) {
+      if (this.ghost) this.stopGhost(true);
+      Object.assign(this.local, { x: m.x, z: m.z, y: 0, vx: 0, vy: 0, vz: 0, yaw: m.yaw }); this.cam.yaw = m.yaw;
+      this.me.alive = true; this.me.spectate = false; this.me.sel = -1; UI.death(null); UI.spectating(false); UI.ghostBar();
+      UI.toast('✨ An admin brought you back to life!', 'good'); Sfx.play('reveal1');
+    }
+    UI.scoreboardRefresh();
   },
   setLook(look) { this.me.look = Look.validate(look); Store.set('look', this.me.look); if (this.preview) this.preview.setLook(this.me.look); if (this.mode === 'game') Net.toHost({ t: 'look', look: this.me.look }); },
   setName(n) { this.me.name = U.cleanName(n); Store.set('name', this.me.name); return U.nameOk(this.me.name); },
@@ -4665,11 +5248,12 @@ const Game = {
       let c = this.chars.get(r.id);
       if (!c) { c = { ch: new Character(r.id, r.look, { local: r.id === this.me.id }), buf: [], seen: 0, stepT: 0 }; this.chars.set(r.id, c); if (r.id === this.me.id) c.ch.setState(this.local.x, 0, this.local.z, this.local.yaw, 0, 'idle', '', 0); }
       else c.ch.setLook(r.look);
+      c.ch.root.scaling.setAll(r.size || 1);
     }
     for (const [id, c] of this.chars) if (!ids.has(id)) { c.ch.dispose(); this.chars.delete(id); }
     for (const id of [...this.roster.keys()]) if (!ids.has(id)) this.roster.delete(id);
     if (m.cfg) this.cfg = m.cfg;
-    UI.lobbyRefresh(); UI.scoreboardRefresh();
+    UI.lobbyRefresh(); UI.scoreboardRefresh(); if (UI.admOpen()) UI.admTargets();
   },
   onPhase(m) {
     if (this.ghost && m.ph !== 'play' && m.ph !== 'intro') { this.ghost = false; this._clearGhosts(); }
@@ -4681,13 +5265,13 @@ const Game = {
       if (s) { Object.assign(this.local, { x: s[0], z: s[1], y: 0, vy: 0, vx: 0, vz: 0, yaw: s[2] }); this.cam.yaw = s[2]; this.cam.pitch = -0.12; this.me.alive = true; this.me.spectate = false; }
       else { this.me.alive = false; this.me.spectate = true; }
       for (const id in m.spawns) { const c = this.chars.get(+id), p = m.spawns[id]; if (c) { c.ch.setState(p[0], 0, p[1], p[2], 0, 'idle', '', 0); c.ch.lx = null; } }
-      FX.clear(); R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0; this.gunDrop = null;
+      FX.clear(); this.clearFloor(); R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0; this.gunDrop = null;
       this.me.revealed.clear(); this.me.mates.clear(); this.me.target = null; this.me.sel = -1; this.me.flash = false; this.me.coinsRound = 0;
     }
     if (m.ph === 'intro' && this.phones) { this.setPhones(false, true); UI.toast('🎧 Headphones off - the round is starting.', 'info'); }
     if (m.ph === 'intro') { this.inPlay = m.inPlay || []; this.double = !!m.double; this.endData = null; UI.hideEnd(); Sfx.play('start'); if (this.double) UI.banner('🔪🔪 DOUBLE MURDER ROUND — two Murderers!', '#ff3b4e'); }
     if (m.ph === 'play' && prev === 'intro') { UI.banner(this.me.role === 'murderer' ? 'Hunt them down.' : this.double ? 'BOTH Murderers are now armed.' : 'The Murderer is now armed.', '#ff4d5e'); Sfx.play('reveal'); }
-    if (m.ph === 'lobby' && m.spawns) { if (!m.results) { this.endData = null; UI.hideEnd(); } this.me.role = null; this.range.score = 0; this.me.slots = LOBBY_SLOTS.concat([null]); UI.death(null); }
+    if (m.ph === 'lobby' && m.spawns) { if (!m.results) { this.endData = null; UI.hideEnd(); } this.me.role = null; this.range.score = 0; this.me.slots = lobbySlots(); UI.death(null); }
     UI.phase(this.phase); UI.lobbyRefresh(); this.refreshTags(); UI.ghostBar();
   },
   onYou(m) {
@@ -4708,9 +5292,13 @@ const Game = {
     }
   },
   onDied(m) {
-    // nobody is told when or where a death happens: no body, no blood, no death sounds, no killfeed - the player just disappears
+    // deaths are never announced (no killfeed, no blood, no death sounds) - but the body stays where it fell
     const c = this.chars.get(m.id), r = this.roster.get(m.id); if (r) r.alive = false;
-    if (c) { c.ch.die(c.ch.yaw); c.ch.setVisible(false); c.buf = []; }
+    if (c) {
+      const yaw = isFinite(+m.yaw) ? +m.yaw : c.ch.yaw;
+      if (isFinite(+m.x) && isFinite(+m.z) && m.id !== this.me.id) { c.ch.setState(+m.x, 0, +m.z, yaw, 0, 'idle', '', 0); c.ch.lx = null; }
+      c.ch.die(yaw); c.ch.setVisible(!this.ghost); c.buf = [];   // lobby-waiters don't see the round (bodies reappear when they spectate)
+    }
     if (m.id === this.me.id) {
       this.me.alive = false; this.me.spectate = true; this.me.sel = -1; this.me.flash = false; R.spot.on = false;
       const k = this.roster.get(m.by); UI.death(m.cause, k && (m.cause === 'gun' || m.cause === 'guilt') ? k.name : null); Sfx.play('lose'); UI.ghostBar();
@@ -4738,7 +5326,7 @@ const Game = {
   goLobby() {
     const me = this.me; if (me.alive || this.ghost || (this.phase !== 'play' && this.phase !== 'intro')) return;
     this._vmRestore(); this.ghost = true; this.roundMap = this.map; this.loadMap('lobby');
-    me.slots = LOBBY_SLOTS.concat([null]); me.sel = -1; me.flash = false; me.cd = { gun: 0, throw: 0, stab: 0 }; this.range.score = 0; UI.hotbar();
+    me.slots = lobbySlots(); me.sel = -1; me.flash = false; me.cd = { gun: 0, throw: 0, stab: 0 }; this.range.score = 0; UI.hotbar();
     R.darkFogTarget = 0; R.darkFog = 0; R.bakeTarget = 1; R.spot.on = false; this.dark = 0; this.xrayT = 0;
     const s = World.grid.spawns(1)[0] || { x: 4, z: 4, yaw: 0 };
     Object.assign(this.local, { x: s.x, z: s.z, y: 0, vy: 0, vx: 0, vz: 0, yaw: s.yaw }); this.cam.yaw = s.yaw; this.cam.pitch = -0.12;
@@ -4748,7 +5336,7 @@ const Game = {
   /** Lobby-waiter: go back to spectating the round. */
   stopGhost(quiet) {
     if (!this.ghost) return; this.ghost = false; this._clearGhosts();
-    const me = this.me; me.slots = [null, null, null, null]; me.sel = -1; me.flash = false; R.spot.on = false; if (this.phones) this.setPhones(false, true); UI.hotbar();
+    const me = this.me; me.slots = emptySlots(); me.sel = -1; me.flash = false; R.spot.on = false; if (this.phones) this.setPhones(false, true); UI.hotbar();
     if (this.roundMap && (this.phase === 'play' || this.phase === 'intro')) { this.loadMap(this.roundMap); Net.toHost({ t: 'ghost', v: false }); }
     UI.ghostBar(); if (!quiet) { Sfx.play('ui'); UI.toast('👁️ Spectating the round.', 'info'); }
   },
@@ -4896,7 +5484,8 @@ const Game = {
       if (this.mode !== 'game') return;
       if (k === 'Tab') { e.preventDefault(); UI.scoreboard(true); }
       if (k === 'KeyT' || k === 'Enter') { e.preventDefault(); UI.openChat(); return; }
-      if (k === 'Escape') return;
+      if (k === 'Escape') { if (UI.admOpen()) UI.adminClose(); return; }
+      if (k === 'KeyP' && !e.repeat && this.adminLvl) { if (UI.admOpen()) UI.adminClose(); else UI.adminMenu(); return; }
       if (k === 'KeyL' && !e.repeat && !this.me.alive && (this.phase === 'play' || this.phase === 'intro')) { this.ghost ? this.stopGhost() : this.goLobby(); return; }
       const spec = (this.me.spectate || !this.me.alive) && !this.ghost;
       if (spec) {
@@ -4904,8 +5493,9 @@ const Game = {
         if (k === 'KeyE' || k === 'Space') this.specCycle(1);
         return;
       }
-      if (/^Digit[1-4]$/.test(k)) this.selectSlot(+k.slice(5) - 1);
+      if (/^Digit[1-5]$/.test(k)) this.selectSlot(+k.slice(5) - 1);
       if (k === 'KeyQ') this.selectSlot(-1);
+      if (k === 'Backspace') { e.preventDefault(); if (!e.repeat) this.dropItem(); }
       if (k === 'KeyE') { const n = this.nearNote(); if (n) { UI.noteRead(n.text, n.from, true); Sfx.play('equip'); } }
       if (k === 'KeyN' && !e.repeat) { e.preventDefault(); this.openNote(); }
       if (k === 'KeyZ' && !e.repeat && (this.item() === 'knife' || this.item() === 'propknife')) this.secondary();   // keyboard throw
@@ -4936,10 +5526,10 @@ const Game = {
     if (i >= 0 && me.slots[i] === 'knife' && this.phase === 'intro' && !this.ghost) { UI.prompt('🔪 Your knife unlocks when the hunt begins.', 1.8); Sfx.play('error'); return; }
     if (i === me.sel) return;
     me.sel = i; if (i < 0 || me.slots[i] !== 'flashlight') me.flash = false;
-    if (i >= 0) { const it = me.slots[i]; Sfx.play(it === 'revolver' ? 'cock' : it === 'knife' ? 'swish' : 'equip'); UI.prompt(ITEMS[it].hint, 2.5); }
+    if (i >= 0) { const it = me.slots[i]; Sfx.play(it === 'revolver' ? 'cock' : it === 'knife' ? 'swish' : it === 'duckgun' ? 'quack' : 'equip'); UI.prompt(ITEMS[it].hint, 2.5); }
     UI.hotbar();
   },
-  cycleSlot(dir) { const me = this.me, has = [-1, 0, 1, 2, 3].filter(i => i < 0 || (me.slots[i] && !(me.slots[i] === 'knife' && this.phase === 'intro' && !this.ghost))); let k = has.indexOf(me.sel); k = (k + dir + has.length) % has.length; this.selectSlot(has[k]); },
+  cycleSlot(dir) { const me = this.me, has = [-1, ...me.slots.keys()].filter(i => i < 0 || (me.slots[i] && !(me.slots[i] === 'knife' && this.phase === 'intro' && !this.ghost))); let k = has.indexOf(me.sel); k = (k + dir + has.length) % has.length; this.selectSlot(has[k]); },
   item() { return this.me.sel >= 0 ? this.me.slots[this.me.sel] : null; },
   canAttack() { return this.phase === 'play' || this.phase === 'lobby' || this.phase === 'end'; },
 
@@ -4955,6 +5545,7 @@ const Game = {
         break;
       }
       case 'revolver': this.fire(); break;
+      case 'duckgun': this.fireDuck(); break;
       case 'flashlight': me.flash = !me.flash; Sfx.play('flash'); break;
       case 'magnifier': case 'medkit': case 'vial': {
         if (this.phase !== 'play') { UI.toast('Abilities work once the round has started.', 'warn'); return; }
@@ -5007,6 +5598,51 @@ const Game = {
     this.cam.pitch = Math.min(1.2, this.cam.pitch + 0.045); this.cam.yaw += (Math.random() - 0.5) * 0.02; this.cam.punch = 1;
     if (lob) this._knockTarget([o.x, o.y, o.z], [e.x, e.y, e.z], true);
     Net.toHost({ t: 'act', k: 'shoot', o: [o.x, o.y, o.z].map(v => Math.round(v * 100) / 100), d: [d.x, d.y, d.z].map(v => Math.round(v * 10000) / 10000) });
+  },
+  /** Duck Blaster: rubber ducks, no damage (relayed by the host so everyone sees them). */
+  fireDuck() {
+    const me = this.me, now = U.now(); if (now < (me.cd.duck || 0)) return; me.cd.duck = now + 0.18;
+    const ch = this.myChar(); if (!ch) return; ch.act('fire');
+    const aim = this.aimRay(), o = ch.muzzlePos(), d = aim.point.subtract(o); d.normalize();
+    FX.duck([o.x, o.y, o.z], [d.x, d.y, d.z]); Sfx.play('quack', null, null, 1); this.cam.punch = 0.35;
+    Net.toHost({ t: 'act', k: 'duck', o: [o.x, o.y, o.z].map(v => Math.round(v * 100) / 100), d: [d.x, d.y, d.z].map(v => Math.round(v * 1000) / 1000) });
+  },
+  /** Backspace: drop the held item (the host refuses role items and the lobby kit). */
+  dropItem() {
+    const me = this.me; if (!this.canAct()) return;
+    if (me.sel < 0 || !me.slots[me.sel]) { UI.prompt('Hold the item you want to drop, then press Backspace.', 1.8); return; }
+    Net.toHost({ t: 'drop', i: me.sel });
+  },
+  onDuck(m) {
+    if (!!this.ghost !== !!m.lw || !Array.isArray(m.o) || !Array.isArray(m.d)) return;
+    FX.duck(m.o, m.d); Sfx.play('quack', m.o[0], m.o[2], 0.8);
+    const c = this.chars.get(m.by), sc = c && (this.ghost ? c.gch : c.ch); if (sc && !sc.dead) sc.act('fire');
+  },
+  onDuckRain(m) {
+    if (!!this.ghost !== !!m.lw) return; const n = U.clamp(m.n | 0, 1, 60), x = +m.x || 0, z = +m.z || 0;
+    for (let i = 0; i < n; i++) FX.duck([x + U.rand(-6, 6), 6 + Math.random() * 12, z + U.rand(-6, 6)], [U.rand(-0.15, 0.15), -1, U.rand(-0.15, 0.15)], 1.5);
+    for (let i = 0; i < 6; i++) setTimeout(() => Sfx.play('quack', x + U.rand(-5, 5), z + U.rand(-5, 5), 0.9), 450 + i * 260);
+    if (U.dist(this.local.x, this.local.z, x, z) < 16) UI.banner('🦆 IT\'S RAINING DUCKS!', '#ffd21f');
+  },
+  onFling(m) {
+    if (!this.canAct()) return; const L = this.local, a = Math.random() * TAU;
+    L.vy = U.clamp(+m.vy || 14, 4, 26); L.ground = false; L.y = Math.max(L.y, 0.05); L.vx += Math.sin(a) * 3; L.vz += Math.cos(a) * 3;
+    Sfx.play('jump', null, null, 1); UI.prompt('🚀 WHEEE!', 1.5);
+  },
+  /* ---------------- floor items (dropped with Backspace) ---------------- */
+  floor: new Map(),
+  onFitem(m) {
+    if (this.floor.has(m.id) || !ITEMS[m.item]) return;
+    const node = FX.floorItem(m.item, m.skin, +m.x || 0, +m.z || 0), lw = !!m.lw;
+    this.floor.set(m.id, { node, lw, x: +m.x || 0, z: +m.z || 0, item: m.item }); node.setEnabled(lw === !!this.ghost);
+    if (!m.quiet && lw === !!this.ghost) Sfx.play('thunk', m.x, m.z, 0.6);
+  },
+  onFitemGone(m) { const F = this.floor.get(m.id); if (!F) return; if (m.by === this.me.id) Sfx.play('pickup'); F.node.dispose(); this.floor.delete(m.id); },
+  clearFloor() { for (const [, F] of this.floor) F.node.dispose(); this.floor.clear(); },
+  _nearFloor() { const L = this.local; for (const [, F] of this.floor) if (F.lw === !!this.ghost && U.dist(L.x, L.z, F.x, F.z) < 2.2) return F; return null; },
+  _floorFrame(dt) {
+    this._fT = (this._fT || 0) + dt;
+    for (const [, F] of this.floor) { const on = F.lw === !!this.ghost; F.node.setEnabled(on); if (!on) continue; const h = F.node.getChildren()[0]; if (h) { h.rotation.y += dt * 1.4; h.position.y = 0.55 + Math.sin(this._fT * 2.2 + F.x) * 0.08; } }
   },
   myChar() {
     if (this.ghost) { if (!this._myGhost) this._myGhost = new Character(100000 + this.me.id, this.me.look, { local: true }); return this._myGhost; }   // my lobby body while waiting
@@ -5072,8 +5708,9 @@ const Game = {
       const ch = c.ch;
       if (id === me.id) {
         if (playing || this.phase === 'lobby') { ch.setVisible(true); const anim = L.emoteT > 0 ? ANIM_CODES[L.emote] : !L.ground ? 'jump' : 'idle'; ch.setState(L.x, L.y, L.z, L.yaw, this.cam.pitch, anim, this.item() ? ITEMS[this.item()].vis : '', (me.flash ? 1 : 0) | (L.aim ? 2 : 0) | (this.phones ? 16 : 0)); }
-        else if (!ch.dead) ch.setVisible(false);
-      } else if (!ch.dead) {
+        else ch.setVisible(ch.dead && !this.ghost);   // my body stays where I fell
+      } else if (ch.dead) { ch.setVisible(!this.ghost); }   // bodies stay on the round map
+      else {
         const b = c.buf; if (!b.length) { if (this.phase !== 'lobby' && U.now() - c.seen > 1) ch.setVisible(false); }
         else {
           ch.setVisible(U.now() - c.seen < 1.5);
@@ -5097,10 +5734,13 @@ const Game = {
       if (!c.gch) c.gch = new Character(100000 + id, (this.roster.get(id) || {}).look || me.look, {});
       let i = g.length - 1; while (i > 0 && g[i - 1].t > rt) i--;
       const B1 = g[i], A = g[Math.max(0, i - 1)]; let k = B1.t > A.t ? U.clamp((rt - A.t) / (B1.t - A.t), 0, 1.2) : 1; if (rt >= B1.t) k = 1;
-      c.gch.setVisible(true); c.gch.setState(U.lerp(A.x, B1.x, k), U.lerp(A.y, B1.y, k), U.lerp(A.z, B1.z, k), A.yaw + U.angDiff(A.yaw, B1.yaw) * k, B1.pitch, ANIM_CODES[B1.a] || 'idle', VIS_CODES[B1.vis] || '', B1.fl & ~32); c.gch.update(dt);
+      c.gch.root.scaling.setAll((this.roster.get(id) || {}).size || 1); c.gch.setVisible(true); c.gch.setState(U.lerp(A.x, B1.x, k), U.lerp(A.y, B1.y, k), U.lerp(A.z, B1.z, k), A.yaw + U.angDiff(A.yaw, B1.yaw) * k, B1.pitch, ANIM_CODES[B1.a] || 'idle', VIS_CODES[B1.vis] || '', B1.fl & ~32); c.gch.update(dt);
       while (g.length > 2 && g[1].t < rt - 0.5) g.shift();
     }
-    if (this.ghost) { const g = this.myChar(); g.setVisible(true); g.setState(L.x, L.y, L.z, L.yaw, this.cam.pitch, L.emoteT > 0 ? ANIM_CODES[L.emote] : !L.ground ? 'jump' : 'idle', this.item() ? ITEMS[this.item()].vis : '', (me.flash ? 1 : 0) | (L.aim ? 2 : 0) | (this.phones ? 16 : 0)); g.update(dt); }
+    if (this.ghost) { const g = this.myChar(); g.root.scaling.setAll((this.roster.get(me.id) || {}).size || 1); g.setVisible(true); g.setState(L.x, L.y, L.z, L.yaw, this.cam.pitch, L.emoteT > 0 ? ANIM_CODES[L.emote] : !L.ground ? 'jump' : 'idle', this.item() ? ITEMS[this.item()].vis : '', (me.flash ? 1 : 0) | (L.aim ? 2 : 0) | (this.phones ? 16 : 0)); g.update(dt); }
+    if (R.discoT > 0 && (this._discoL = (this._discoL || 0) - dt) <= 0) { this._discoL = 0.2; const h = Math.random() * TAU; R.pointLight(L.x + U.rand(-7, 7), 2.6, L.z + U.rand(-7, 7), 8, [1.6 + Math.sin(h) * 1.6, 1.6 + Math.sin(h + 2.1) * 1.6, 1.6 + Math.sin(h + 4.2) * 1.6], 0.55); }
+    if (this.floor.size) this._floorFrame(dt);
+    if (this.mouse.l && this.locked && this.item() === 'duckgun' && this.canAct()) this.fireDuck();   // hold to spray ducks
     // blackout: dim the sky along with the short-range fog
     if (World.skyMat && World.skyMat.emissiveTexture) World.skyMat.emissiveTexture.level = 1 - 0.92 * R.darkFog;
     if (this._tagT === undefined || (this._tagT -= dt) <= 0 || this._tagDirty) { this._tagT = 0.25; this._tagDirty = false; this._updateTags(); }
@@ -5125,12 +5765,12 @@ const Game = {
     const f = typing ? 0 : (k.KeyW ? 1 : 0) - (k.KeyS ? 1 : 0), s = typing ? 0 : (k.KeyD ? 1 : 0) - (k.KeyA ? 1 : 0);
     const cy = this.cam.yaw, fx = Math.sin(cy), fz = Math.cos(cy), rx = Math.cos(cy), rz = -Math.sin(cy);
     let mx = fx * f + rx * s, mz = fz * f + rz * s; const ml = Math.hypot(mx, mz); if (ml > 0) { mx /= ml; mz /= ml; }
-    L.aim = (this.mouse.r || (!typing && !!k.KeyZ)) && this.item() === 'revolver';   // RMB or hold Z
+    L.aim = (this.mouse.r || (!typing && !!k.KeyZ)) && (this.item() === 'revolver' || this.item() === 'duckgun');   // RMB or hold Z
     const wantSprint = k.ShiftLeft || k.ShiftRight; L.sprint = wantSprint && ml > 0 && L.stam > 0.05 && !L.aim;
     if (L.sprint) L.stam = Math.max(0, L.stam - dt); else L.stam = Math.min(CONFIG.STAMINA, L.stam + dt * CONFIG.STAMINA_REGEN * (ml > 0 ? 1.4 : 2.4));
-    const sick = this.sickT > 0 ? 0.75 : 1, spd = (L.sprint ? CONFIG.SPRINT : CONFIG.WALK) * (L.aim ? 0.55 : 1) * sick;
+    const sick = this.sickT > 0 ? 0.75 : 1, spd = (L.sprint ? CONFIG.SPRINT : CONFIG.WALK) * (L.aim ? 0.55 : 1) * sick * (this.mod ? this.mod.s : 1);
     const acc = L.ground ? 14 : 3; L.vx = U.damp(L.vx, mx * spd, acc, dt); L.vz = U.damp(L.vz, mz * spd, acc, dt);
-    if (L.ground && !typing && k.Space) { L.vy = CONFIG.JUMP_V; L.ground = false; Sfx.play('jump', null, null, 0.4); }
+    if (L.ground && !typing && k.Space && (!this.mod || this.mod.j > 0)) { L.vy = CONFIG.JUMP_V * (this.mod ? Math.sqrt(this.mod.j) : 1); L.ground = false; Sfx.play('jump', null, null, 0.4); }
     L.vy -= CONFIG.GRAVITY * dt; L.y += L.vy * dt; if (L.y <= 0) { if (!L.ground && L.vy < -3) Sfx.play('land', null, null, 0.5); L.y = 0; L.vy = 0; L.ground = true; }
     const c = G.collide(L.x + L.vx * dt, L.z + L.vz * dt, CONFIG.PLAYER_R); L.x = c.x; L.z = c.z;
     L.moving = ml > 0 && Math.hypot(L.vx, L.vz) > 0.5;
@@ -5141,6 +5781,7 @@ const Game = {
     if (L.moving && L.ground) { L.lastStep -= dt * (L.sprint ? 1.45 : 1); if (L.lastStep <= 0) { L.lastStep = 0.4; Sfx.play('step', null, null, L.sprint ? 0.45 : 0.3); } }
     // prompts
     if (this.gunDrop && U.dist(L.x, L.z, this.gunDrop.x, this.gunDrop.z) < 2.5) UI.prompt(!Roles.canTakeGun(me.role) ? '⛔ Only Bystanders can pick up the gun.' : me.slots.includes('revolver') ? 'You already have a gun.' : 'Walk over the gun to pick it up.', 0.3);
+    else if (this.floor.size && this._nearFloor()) { const F = this._nearFloor(), I = ITEMS[F.item]; UI.prompt(me.slots.includes(F.item) ? `You already have a ${I.name}.` : !me.slots.includes(null) ? 'Your hotbar is full — Backspace drops an item.' : `${I.icon} Walk over the ${I.name} to pick it up`, 0.3); }
     else if (this.notes.size && this.nearNote()) UI.prompt('📝 E — read the note on the floor', 0.3);
   },
 
@@ -5270,7 +5911,7 @@ const UI = {
     $('bErrOk').onclick = () => $('err').classList.add('hidden');
     // chat
     const ci = $('chatIn');
-    ci.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { const t = ci.value.trim(); if (t) Net.toHost({ t: 'chat', text: t }); this.closeChat(); } if (e.key === 'Escape') this.closeChat(); });
+    ci.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { const t = ci.value.trim(); if (t) Game.sendChat(t); this.closeChat(); } if (e.key === 'Escape') this.closeChat(); });
     // public servers
     $('bPublic').onclick = () => { if (!needName()) return; this.openScreen('servers'); };
     $('bSrvRefresh').onclick = () => this.buildServers(); $('bSrvDone').onclick = () => this.openScreen(null);
@@ -5278,6 +5919,7 @@ const UI = {
     // host bot controls (pause menu)
     $('bBotAdd').onclick = () => { Net.toHost({ t: 'bot', d: 1 }); Sfx.play('ui'); setTimeout(() => this.pause(true), 120); };
     $('bBotSub').onclick = () => { Net.toHost({ t: 'bot', d: -1 }); Sfx.play('ui'); setTimeout(() => this.pause(true), 120); };
+    $('bPAdmin').onclick = () => { this.pause(false); this.adminMenu(); }; $('bAdmin').onclick = () => this.adminMenu();
     // notes
     $('noteCancel').onclick = () => this.noteClose();
     $('noteSend').onclick = () => { if (Game.sendNote($('noteTo').value, $('noteTxt').value, $('noteAnon').checked)) { Store.set('noteAnon', $('noteAnon').checked); this.noteClose(); Sfx.play('ui'); } };
@@ -5422,7 +6064,7 @@ const UI = {
   showGame() { $('menu').classList.add('hidden'); $('hud').classList.remove('hidden'); this.screen = null; this.hotbar(); this.phase(Game.phase); $('hint').classList.remove('hidden'); },
   loading(on, txt) { $('loading').classList.toggle('hidden', !on); if (txt) $('loadTxt').textContent = txt; },
   error(msg) { $('errTxt').textContent = msg; $('err').classList.remove('hidden'); Sfx.play('error'); },
-  blocking() { return !$('pause').classList.contains('hidden') || !$('err').classList.contains('hidden') || !$('noteBox').classList.contains('hidden') || (this.screen && this.inGameScreen); },
+  blocking() { return this.admOpen() || !$('pause').classList.contains('hidden') || !$('err').classList.contains('hidden') || !$('noteBox').classList.contains('hidden') || (this.screen && this.inGameScreen); },
   typing() { const a = document.activeElement; return !!a && ((a.tagName === 'INPUT' && a.type === 'text') || a.tagName === 'TEXTAREA'); },
   coins(n) { $('menuCoins').textContent = n; $('hudCoinsV').textContent = n; if (this.screen === 'shop') $('shopCoins').textContent = n; },
 
@@ -5447,7 +6089,7 @@ const UI = {
 
   onLock() { $('hint').classList.add('hidden'); this.pause(false); if (Game.phase === 'lobby') $('lobby').classList.add('hidden'); },
   onUnlock() {
-    if (this.chatOpen || this.screen || !$('noteBox').classList.contains('hidden')) return;
+    if (this.chatOpen || this.screen || !$('noteBox').classList.contains('hidden') || this.admOpen()) return;
     if (Game.phase === 'lobby') { $('lobby').classList.remove('hidden'); $('hint').classList.remove('hidden'); $('hint').textContent = 'Click the world to play · Esc for the lobby menu'; }
     else if (Game.phase !== 'end') this.pause(true);
     else $('hint').classList.remove('hidden');
@@ -5455,7 +6097,7 @@ const UI = {
   pause(on) {
     $('pause').classList.toggle('hidden', !on); if (!on) return; this.ghostBar();
     $('pauseCode').textContent = Net.offline ? 'Solo game' : Game.publicCode ? `Public Server ${CONFIG.PUBLIC_CODES.indexOf(Game.publicCode) + 1}` : `Room code: ${Game.code || ''}`;
-    const canBots = Net.isHost && Host.active && !Host.cfg.public; $('pBots').classList.toggle('hidden', !canBots);
+    const canBots = Net.isHost && Host.active && !Host.cfg.public; $('pBots').classList.toggle('hidden', !canBots); $('bPAdmin').classList.toggle('hidden', !Game.adminLvl);
     if (canBots) { const n = [...Host.players.values()].filter(p => p.bot).length; $('pBotN').textContent = `${n} bot${n === 1 ? '' : 's'}`; $('bBotAdd').disabled = Host.players.size >= CONFIG.MAX_PLAYERS; $('bBotSub').disabled = n === 0; }
   },
 
@@ -5483,6 +6125,7 @@ const UI = {
       $('hsRoles').innerHTML = OPTIONAL_ROLES.map(r => `<label class="${cfg.roles.includes(r) ? '' : 'off'}" style="color:${ROLES[r].color}"><input type="checkbox" value="${r}" ${cfg.roles.includes(r) ? 'checked' : ''}>${ROLES[r].icon} ${ROLES[r].name} <span class="dim">${ROLES[r].min}</span></label>`).join('');
       $('hsRoles').querySelectorAll('input').forEach(i => i.onchange = () => { i.parentElement.classList.toggle('off', !i.checked); this.sendCfg(); });
     }
+    $('bAdmin').classList.toggle('hidden', !Game.adminLvl);
     const me = Game.roster.get(Game.me.id); $('bReady').textContent = me && me.ready ? '✖ Not ready' : '✔ Ready';
     $('bStart').disabled = n < CONFIG.MIN_PLAYERS;
   },
@@ -5544,7 +6187,7 @@ const UI = {
     const list = [...Game.roster.values()];
     $('board').querySelector('.inner').innerHTML = `<h3 style="margin-bottom:10px">Players (${list.length})</h3><table>${list.map(p => {
       const role = Game.endData ? Game.endData.roles[p.id] : p.id === Game.me.id ? Game.me.role : Game.me.revealed.get(p.id) || Game.me.mates.get(p.id);
-      return `<tr><td>${p.alive || Game.phase === 'lobby' || (Game.me.alive && !Game.endData) ? '🙂' : '💀'}</td><td>${U.esc(p.name)}${p.bot ? ' <span class="tag">BOT</span>' : ''}${p.host ? ' <span class="tag">HOST</span>' : ''}</td><td style="color:${role ? ROLES[role].color : '#777'}">${role ? ROLES[role].icon + ' ' + ROLES[role].name : '???'}</td></tr>`;
+      return `<tr><td>${p.alive || Game.phase === 'lobby' || (Game.me.alive && !Game.endData) ? '🙂' : '💀'}</td><td>${U.esc(p.name)}${p.bot ? ' <span class="tag">BOT</span>' : ''}${p.host ? ' <span class="tag">HOST</span>' : ''}${p.adm === 'owner' ? ' <span class="tag">👑 OWNER</span>' : p.adm ? ' <span class="tag">⭐ ADMIN</span>' : ''}</td><td style="color:${role ? ROLES[role].color : '#777'}">${role ? ROLES[role].icon + ' ' + ROLES[role].name : '???'}</td></tr>`;
     }).join('')}</table>`;
   },
 
@@ -5555,7 +6198,7 @@ const UI = {
     if (info.mates && info.mates.length) ex += `<div class="ex" style="color:#ff8a8a">Your evil team: ${info.mates.map(m => `${ROLES[m.role].icon} <b>${U.esc(m.name)}</b> (${ROLES[m.role].name})`).join(', ')}</div>`;
     if (info.double) ex += `<div class="ex" style="color:#ff3b4e;font-weight:700">🔪🔪 DOUBLE MURDER ROUND — there are TWO Murderers. Innocents must stop both!</div>`;
     if (info.target) ex += `<div class="ex" style="color:#ff4d8a">🎯 Your contract: <b>${U.esc(info.target)}</b></div>`;
-    el.querySelector('.inner').innerHTML = `<div class="dim" style="letter-spacing:4px;font-size:12px">YOU ARE THE</div><div class="ic">${r.icon}</div><div class="nm" style="color:${r.color}">${r.name}</div><div style="color:${t.color};font-size:13px;letter-spacing:2px">${t.name.toUpperCase()}</div><div class="bl">${U.esc(r.blurb)}</div><div class="gl">${U.esc(r.goal)}</div>${ex}<div class="gl">${r.tips.map(U.esc).join('<br>')}</div><div class="ip">In this game: ${(info.inPlay || []).map(x => `${ROLES[x].icon} ${ROLES[x].name}`).join(' · ')}</div><div class="dim" style="margin-top:10px;font-size:12px">Nothing is equipped yet — press 1-4 to draw an item.</div>`;
+    el.querySelector('.inner').innerHTML = `<div class="dim" style="letter-spacing:4px;font-size:12px">YOU ARE THE</div><div class="ic">${r.icon}</div><div class="nm" style="color:${r.color}">${r.name}</div><div style="color:${t.color};font-size:13px;letter-spacing:2px">${t.name.toUpperCase()}</div><div class="bl">${U.esc(r.blurb)}</div><div class="gl">${U.esc(r.goal)}</div>${ex}<div class="gl">${r.tips.map(U.esc).join('<br>')}</div><div class="ip">In this game: ${(info.inPlay || []).map(x => `${ROLES[x].icon} ${ROLES[x].name}`).join(' · ')}</div><div class="dim" style="margin-top:10px;font-size:12px">Nothing is equipped yet — press 1-5 to draw an item.</div>`;
     el.classList.remove('hidden'); Sfx.play('reveal');
     clearTimeout(this._rc); this._rc = setTimeout(() => el.classList.add('hidden'), (CONFIG.INTRO_TIME - 0.5) * 1000);
     this.hotbar(); $('roleBadge').classList.remove('hidden');
@@ -5582,6 +6225,65 @@ const UI = {
     el.classList.remove('hidden'); $('death').classList.add('hidden'); Game.unlock();
     $('bEndClose').onclick = () => { this.hideEnd(); Sfx.play('ui'); };
     clearTimeout(this._et); this._et = setTimeout(() => this.hideEnd(), 14000);
+  },
+  /* ---------------- admin panel (P / 👑) ---------------- */
+  admOpen() { const el = $('adminMenu'); return !!el && !el.classList.contains('hidden'); },
+  adminClose() { const el = $('adminMenu'); if (!el || el.classList.contains('hidden')) return; el.classList.add('hidden'); Sfx.play('ui'); if (Game.mode === 'game' && !Game.locked) this.onUnlock(); },
+  adminMenu() {
+    if (!Game.adminLvl || Game.mode !== 'game') return;
+    let el = $('adminMenu');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'adminMenu'; el.className = 'overlay shade hidden'; el.style.zIndex = 55; document.body.appendChild(el);
+      // typing in the panel's fields never moves the player / switches slots
+      el.addEventListener('keydown', e => {
+        const tag = e.target.tagName; if (tag !== 'INPUT' && tag !== 'SELECT') return; e.stopPropagation();
+        if (e.key === 'Escape') this.adminClose();
+        if (e.key === 'Enter') { const c = e.target.closest('.admc'), btn = c && c.querySelector('button[data-c]'); if (btn) btn.click(); }
+      });
+      el.addEventListener('mousedown', e => { if (e.target === el) this.adminClose(); });
+    }
+    const owner = Game.adminLvl === 'owner';
+    el.innerHTML = `<div class="inner panel"><div class="row" style="align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0;flex:1;white-space:nowrap">${owner ? '👑 Owner Panel' : '⭐ Admin Panel'}</h2><span class="dim" style="font-size:13px">🎯 Target</span><select id="admTg" style="min-width:200px"></select><button id="admClose" title="Close (P / Esc)">✖</button></div><div id="admTabs"></div><div id="admList" class="scroll"></div><div class="dim" style="font-size:11px">P or Esc closes · 🎯 = uses the target picker · 👑 = owner only · temporary admins can't use harmful commands on owners · results pop up as messages</div></div>`;
+    $('admClose').onclick = () => this.adminClose();
+    $('admTg').onchange = () => { this._admTg = $('admTg').value; };
+    this.admTargets(); this._admTabs(); this._admList();
+    el.classList.remove('hidden'); $('pause').classList.add('hidden'); Game.unlock(); Sfx.play('ui');
+  },
+  /** Target picker: groups first, then every other player (kept selected across roster updates). */
+  admTargets() {
+    const s = $('admTg'); if (!s) return; const cur = this._admTg || 'me', inRound = Game.phase === 'play' || Game.phase === 'intro';
+    const groups = [['me', '🙋 Me'], ['all', '🌍 Everyone'], ['others', '👥 Everyone but me'], ['humans', '🧑 All humans'], ['bots', '🤖 All bots']];
+    const ppl = [...Game.roster.values()].filter(p => p.id !== Game.me.id).sort((a, b) => a.name.localeCompare(b.name))
+      .map(p => [String(p.id), `${p.adm === 'owner' ? '👑 ' : p.adm ? '⭐ ' : ''}${p.name}${p.bot ? ' 🤖' : ''}${inRound && !p.alive ? ' 💀' : ''}`]);
+    s.innerHTML = groups.map(([v, t]) => `<option value="${v}">${t}</option>`).join('') + (ppl.length ? `<optgroup label="Players">${ppl.map(([v, t]) => `<option value="${v}">${U.esc(t)}</option>`).join('')}</optgroup>` : '');
+    s.value = [...s.options].some(o => o.value === cur) ? cur : 'me'; this._admTg = s.value;
+  },
+  _admTabs() {
+    const cat = this._admCat || 'players';
+    $('admTabs').innerHTML = Admin.cats.map(([k, t]) => `<button data-k="${k}" class="${k === cat ? 'on' : ''}">${t}</button>`).join('');
+    $('admTabs').querySelectorAll('button').forEach(b => b.onclick = () => { this._admCat = b.dataset.k; this._admTabs(); this._admList(); Sfx.play('ui'); });
+  },
+  _admList() {
+    const cat = this._admCat || 'players', owner = Game.adminLvl === 'owner';
+    const input = A => {
+      if (!A) return '';
+      if (A.type === 'num') return `<input type="number" data-a min="${A.min}" max="${A.max}" step="${A.step || 1}" value="${A.def}">`;
+      if (A.type === 'text') return `<input type="text" data-a maxlength="${A.max || 80}" placeholder="Type a message…">`;
+      const opts = A.type === 'role' ? ROLE_ORDER.map(r => [r, `${ROLES[r].icon} ${ROLES[r].name}`]) : A.type === 'map' ? [['vote', '🗳️ Player vote'], ['random', '🎲 Random']].concat(MAPS.map(m => [m.id, `${m.icon} ${m.name}`])) : A.opts;
+      return `<select data-a>${opts.map(([v, t]) => `<option value="${v}" ${v === A.def ? 'selected' : ''}>${U.esc(t)}</option>`).join('')}</select>`;
+    };
+    $('admList').innerHTML = Object.entries(Admin.cmds).filter(([, c]) => c.cat === cat).map(([k, c]) => {
+      const off = c.owner && !owner;
+      return `<div class="admc ${off ? 'off' : ''}"><div class="t">${c.icon} ${U.esc(c.label)}${c.owner ? ' 👑' : ''}${c.tgt ? ' <span title="Uses the target picker">🎯</span>' : ''}</div><div class="d">${U.esc(c.d)}</div><div class="row">${input(c.arg)}<button data-c="${k}" class="primary" ${off ? 'disabled' : ''}>Run</button></div></div>`;
+    }).join('');
+    $('admList').querySelectorAll('button[data-c]').forEach(b => b.onclick = () => {
+      const k = b.dataset.c, C = Admin.cmds[k], a = b.parentElement.querySelector('[data-a]'); let v;
+      if (C.arg) { v = a ? a.value : undefined; if (C.arg.type === 'num') v = parseFloat(v); if (C.arg.type === 'text' && !String(v || '').trim()) { this.toast('Type something first.', 'warn'); return; } }
+      const tg = this._admTg || 'me';
+      Net.toHost({ t: 'acmd', c: k, tg: /^\d+$/.test(tg) ? +tg : tg, v }); Sfx.play('ui');
+      if (C.arg && C.arg.type === 'text' && a) a.value = '';
+      b.disabled = true; setTimeout(() => { b.disabled = false; }, 250);
+    });
   },
   hideEnd() { clearTimeout(this._et); $('end').classList.add('hidden'); },
 
@@ -5681,6 +6383,27 @@ const UI = {
         if (h.get('cam') === 'top') Game._debugTop = true;
         if (h.get('cam') === 'fp') Settings.get().firstPerson = true;
         if (h.get('fx') === 'blackout') setTimeout(() => Game.onBlackout({ dur: 30 }), 2500);
+        if (h.get('near')) setTimeout(() => {   // frame a prop (e.g. near=@ for the campfire) from above and behind
+          const p = World.grid.props.find(q => q.ch === h.get('near')); if (!p) return; const P = Host.players.get(Net.myId);
+          Object.assign(Game.local, { x: p.x, z: p.z + 4.2 }); P.x = p.x; P.z = p.z + 4.2; P.tp = U.now(); Game.cam.yaw = Math.PI; Game.cam.pitch = -0.75; Settings.get().camDist = 1.6;
+        }, 2500);
+        if (h.get('adm')) setTimeout(() => {   // admin smoke test: claim owner, panel commands, duck gun, drop, bodies, kill + revive a bot
+          const A = (c, tg, v) => Net.toHost({ t: 'acmd', c, tg, v }), me = () => Host.players.get(Net.myId), log = (k, v) => console.log('ADMTEST ' + k + ' ' + JSON.stringify(v));
+          Game.sendChat(h.get('adm')); log('claim', { client: Game.adminLvl, host: me().admin, stored: !!Store.get('owner', null) });
+          A('queue', 'me', 'murderer'); A('size', 'me', 1.5); A('speed', 'me', 2); A('disco', 'me', 5); A('flicker', 'me', 3); A('duckgun', 'me');
+          if (h.get('menu')) { UI.adminMenu(); log('menu', { open: UI.admOpen(), cards: document.querySelectorAll('#admList .admc').length, targets: document.getElementById('admTg').options.length }); return; }
+          log('mods', { mod: Game.mod, size: me().size, disco: R.discoT > 0, flicker: R.flickerT > 0, slots: me().slots, free: [...(me().free || [])], client: Game.me.slots });
+          const di = me().slots.indexOf('duckgun'); Game.selectSlot(di); Game.update(0.05); Game.primary(); A('duckrain', 'me', 20); log('duck', { ducks: FX.ducks.length, sel: Game.me.sel });
+          Game.dropItem(); log('drop', { slots: me().slots, floor: Host.floor.size, client: Game.floor.size });
+          Game.selectSlot(0); Game.dropItem(); log('dropLobbyGun', { slots: me().slots });
+          const F = [...Host.floor.values()][0]; if (F) { const P = me(); P.x = F.x; P.z = F.z; Host.floor.get(F.id).t = 0; Host.tick(0.05); log('pickup', { slots: P.slots, floor: Host.floor.size, client: Game.floor.size }); }
+          Host.cfg.map = h.get('map2') || 'mansion'; Host.startRound(); Host.phaseEnd = U.now() + 0.3; log('role', me().role);
+          setTimeout(() => {
+            const bot = [...Host.players.values()].find(p => p.bot && p.alive && p.role !== 'murderer'); A('kill', bot.id);
+            const ch = Game.chars.get(bot.id).ch; log('killed', { name: bot.name, alive: bot.alive, dead: ch.dead, visible: ch.root.isEnabled(), at: [Math.round(ch.x), Math.round(ch.z)], body: bot.body });
+            setTimeout(() => { for (let i = 0; i < 3; i++) Host.tick(0.05); Game.update(0.05); log('botLobby', { ghost: bot.ghost, bodyVisible: ch.root.isEnabled(), dead: ch.dead }); A('revive', bot.id); log('revived', { alive: bot.alive, ghost: bot.ghost }); A('god', 'me'); log('god', me().god); }, 4500);
+          }, 1500);
+        }, 1500);
         if (h.get('wait')) setTimeout(() => {   // die mid-round -> back to the lobby -> Gun Range -> fire
           const P = Host.players.get(Net.myId); if (P.role === 'murderer') { console.log('WAITTEST skip: local player is the murderer'); return; }
           Host.kill(P, null, 'knife'); Game.goLobby();
