@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Omega Arcade</title>
-
+  
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Chakra+Petch:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -126,7 +126,9 @@ select.field{cursor:pointer}
 .gcard:hover .edge{background:linear-gradient(150deg,var(--cyan),var(--mag) 50%,var(--ice))}
 .gthumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:#060a13}
 .gimg{width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.06);transition:transform .5s cubic-bezier(.2,.9,.25,1),filter .35s;display:block}
-.gcard:hover .gimg{transform:scale(1.07);filter:saturate(1.3) contrast(1.12)}
+.gcard:hover .gthumb:not(.gthumb-spoiler) .gimg{transform:scale(1.07);filter:saturate(1.3) contrast(1.12)}
+.gcard:hover .gthumb-spoiler .gimg,.gcard:hover .gthumb-spoiler .ginit,.gcard:focus-visible .gthumb-spoiler .gimg,.gcard:focus-visible .gthumb-spoiler .ginit{
+  filter:blur(26px) saturate(.35) contrast(.85);transform:scale(1.12)}
 .ginit{width:100%;height:100%;display:grid;place-items:center;position:relative;overflow:hidden}
 .ginit b{font-family:"Orbitron",sans-serif;font-weight:900;font-size:clamp(52px,26vw,86px);line-height:1;color:rgba(255,255,255,.92);
   text-shadow:0 0 20px rgba(255,255,255,.35),0 6px 22px rgba(0,0,0,.6);position:relative;z-index:1}
@@ -420,7 +422,7 @@ pre.code s{color:#4f7386;text-decoration:none}
         <input type="checkbox" id="set-hide-spoiler-titles">
         <span>
           <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Also hide titles</span>
-          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Unplayed games show <span class="f-mono text-[var(--cyan)]">???</span> until you launch them once (requires No spoiler mode).</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Unplayed games show <span class="f-mono text-[var(--cyan)]">???</span> for the title and filename until you launch them once (requires No spoiler mode).</span>
         </span>
       </label>
       <label class="setting-row notch-s mt-3" for="set-update-notifier">
@@ -1379,7 +1381,7 @@ const ARCADE = (() => {
             <div class="gtagline">${tagHtml}</div>
             <div class="gbio">${bioHtml}</div>
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="gfile"><i class="fa-regular fa-file-code"></i> ${esc(g.file)}</span>
+              <span class="gfile"><i class="fa-regular fa-file-code"></i> ${spoiler && S.hideSpoilerTitles ? "???" : esc(g.file)}</span>
             </div>
             <div class="gfoot">
               <div class="gtags">${g.tags.slice(0, 3).map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}</div>
