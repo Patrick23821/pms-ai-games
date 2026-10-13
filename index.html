@@ -153,6 +153,14 @@ select.field{cursor:pointer}
 .ghead{display:flex;align-items:flex-start;gap:8px}
 .gtitle{font-family:"Orbitron",sans-serif;font-weight:700;font-size:15px;letter-spacing:.03em;color:#eafcff;line-height:1.35;margin:0;flex:1;
   overflow-wrap:anywhere;word-break:break-word}
+.gtitle :is(h1,h2,h3,h4,h5,h6,p,div,span){font:inherit;letter-spacing:inherit;color:inherit;margin:0;line-height:inherit;display:inline}
+.gtitle h1{font-size:1.15em}.gtitle h2{font-size:1.08em}
+.gtagline :is(h1,h2,h3,h4,p,div){margin:0;font-size:inherit;line-height:inherit;color:inherit}
+.gbio{font-size:12px;line-height:1.45;color:#6a8fa3;margin:0}
+.gbio:empty{display:none}
+.gthumb-spoiler .gimg,.gthumb-spoiler .ginit{filter:blur(26px) saturate(.35) contrast(.85);transform:scale(1.12);pointer-events:none}
+.gthumb-spoiler .ginit b{opacity:0}
+.setting-row.disabled{opacity:.45;pointer-events:none}
 .gtagline{font-size:12.5px;line-height:1.45;color:#7f9fb2;margin:0;flex:1 1 auto;
   overflow-wrap:anywhere;word-break:break-word;white-space:normal}
 .gtagline:empty{display:none}
@@ -401,6 +409,27 @@ pre.code s{color:#4f7386;text-decoration:none}
           <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Open clicked games directly in a new browser tab instead of the in-arcade player.</span>
         </span>
       </label>
+      <label class="setting-row notch-s mt-3" for="set-no-spoiler">
+        <input type="checkbox" id="set-no-spoiler">
+        <span>
+          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">No spoiler mode</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Heavily blur thumbnails for games you have not played yet.</span>
+        </span>
+      </label>
+      <label class="setting-row notch-s mt-2" id="set-hide-titles-wrap" for="set-hide-spoiler-titles">
+        <input type="checkbox" id="set-hide-spoiler-titles">
+        <span>
+          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Also hide titles</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Unplayed games show <span class="f-mono text-[var(--cyan)]">???</span> until you launch them once (requires No spoiler mode).</span>
+        </span>
+      </label>
+      <label class="setting-row notch-s mt-3" for="set-update-notifier">
+        <input type="checkbox" id="set-update-notifier">
+        <span>
+          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Update notifier</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Toast when new games appear on the shelf after a rescan or sync. With spoiler mode, only the count is shown.</span>
+        </span>
+      </label>
     </div>
   </div>
 </div>
@@ -426,7 +455,8 @@ pre.code s{color:#4f7386;text-decoration:none}
           <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · METADATA (<span class="f-mono">info.json</span>)</p>
           <p>Commit <span class="f-mono text-[var(--cyan)]">info.json</span> next to <span class="f-mono">arcade.html</span> with a
           <span class="f-mono">games</span> array — one object per game (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
-          <span class="f-mono">tagline</span>, <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
+          <span class="f-mono">tagline</span>, <span class="f-mono">bio</span> (HTML allowed), <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
+          Titles and bios support inline HTML/CSS (e.g. <span class="f-mono">&lt;h1 style="color:#ffd46b"&gt;…&lt;/h1&gt;</span>); scripts are stripped.
           Entries only appear on the shelf after the matching <span class="f-mono">.html</span> file exists in the repo (metadata alone does not create a card).
           Copy from <span class="f-mono">info.template.json</span> in the repo. Without a title, the shelf falls back to the game file’s
           <span class="f-mono">&lt;title&gt;</span> tag, then the filename.</p>
@@ -543,6 +573,9 @@ const ARCADE = (() => {
     favs: new Set(load("arcade.favs", [])),
     direct: new Set(load("arcade.direct", [])),
     directAll: !!load("arcade.directAll", false),
+    noSpoiler: !!load("arcade.noSpoiler", false),
+    hideSpoilerTitles: !!load("arcade.hideSpoilerTitles", false),
+    updateNotifier: !!load("arcade.updateNotifier", false),
     recent: load("arcade.recent", []),
     plays: load("arcade.plays", {}),
     source: "—", ready: false, loading: true, sound: load("arcade.sound", true),
@@ -556,6 +589,29 @@ const ARCADE = (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s = "") => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function stripHtml(s = "") {
+    const t = document.createElement("div");
+    t.innerHTML = String(s || "");
+    return (t.textContent || t.innerText || "").replace(/\s+/g, " ").trim();
+  }
+  /* Allow HTML/CSS in shelf titles, taglines, bios — strip scripts & event handlers only */
+  function richMeta(s = "") {
+    const raw = String(s ?? "");
+    if (!raw.trim()) return "";
+    if (!/[<][a-z!/]/i.test(raw)) return esc(raw);
+    const box = document.createElement("div");
+    box.innerHTML = raw;
+    box.querySelectorAll("script,iframe,object,embed,link,meta,base,form,style").forEach(el => el.remove());
+    box.querySelectorAll("*").forEach(el => {
+      for (const attr of [...el.attributes]) {
+        const n = attr.name.toLowerCase();
+        if (n.startsWith("on")) el.removeAttribute(attr.name);
+        else if ((n === "href" || n === "src" || n === "xlink:href") && /^\s*javascript:/i.test(attr.value)) el.removeAttribute(attr.name);
+      }
+    });
+    return box.innerHTML;
+  }
+  function metaPlain(s = "") { return stripHtml(s) || String(s || "").trim(); }
   const key = f => String(f || "").toLowerCase().replace(/\.html?$/, "").replace(/^\.?\//, "");
   const hash = s => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
   const pretty = f => key(f).replace(/[-_.]+/g, " ").replace(/\b\w/g, m => m.toUpperCase()).trim() || "UNTITLED";
@@ -709,6 +765,7 @@ const ARCADE = (() => {
       file: String(g.file).trim(),
       title: g.title != null ? String(g.title).trim() : "",
       tagline: g.tagline != null ? String(g.tagline).trim() : "",
+      bio: g.bio != null ? String(g.bio).trim() : "",
       tags: Array.isArray(g.tags) ? g.tags : (g.tags ? [g.tags] : []),
       thumb: g.thumb,
       hot: !!g.hot,
@@ -809,6 +866,7 @@ const ARCADE = (() => {
       titleSrc,
       thumb: normThumb(c.thumb),
       tagline: c.tagline || "",
+      bio: c.bio || "",
       tags: Array.isArray(c.tags) ? c.tags : (c.tags ? [c.tags] : []),
       hot: !!c.hot,
       hidden: isHidden,
@@ -849,6 +907,7 @@ const ARCADE = (() => {
       });
 
       S.games = mergedList.filter(g => !g.hidden);
+      notifyGameUpdates();
       renderTags();
       render();
       setStatus(`${S.games.length} game${S.games.length === 1 ? "" : "s"} on the shelf · source ${S.source}`);
@@ -1021,7 +1080,7 @@ const ARCADE = (() => {
           <span class="ann-icon" aria-hidden="true">◆</span>
           <span class="ann-title">${esc(displayTitle)}</span>
         </div>
-        <div class="ann-body">${esc(o.body)}</div>
+        <div class="ann-body">${esc(String(o.body)).replace(/\n/g, "<br>")}</div>
         <div class="ann-progress" aria-hidden="true"><i style="animation-duration:${Math.max(2, o.ms / 1000)}s"></i></div>
       </div>`;
     el.querySelector(".ann-x")?.addEventListener("click", () => dismissAnnEl(el));
@@ -1234,10 +1293,32 @@ const ARCADE = (() => {
   /* ==================================================================
      [MK-0z5t2 + MK-g1n4l9] RENDER / CARD ART / LAUNCHER
      ================================================================== */
+  function gamePlayed(g) { return (S.plays[key(g.file)] || 0) > 0; }
+  function spoilerActive(g) { return S.noSpoiler && !gamePlayed(g); }
+  function shelfTitle(g) {
+    if (spoilerActive(g) && S.hideSpoilerTitles) return "???";
+    return g.title || pretty(g.file);
+  }
+  function notifyGameUpdates() {
+    if (!S.updateNotifier || !S.games.length) return;
+    const cur = S.games.map(g => key(g.file));
+    const prev = load("arcade.shelfSnapshot", null);
+    save("arcade.shelfSnapshot", cur);
+    if (!Array.isArray(prev) || !prev.length) return;
+    const prevSet = new Set(prev);
+    const added = S.games.filter(g => !prevSet.has(key(g.file)));
+    if (!added.length) return;
+    const n = added.length;
+    const body = S.noSpoiler
+      ? `${n} new game${n === 1 ? "" : "s"} added to the vault.`
+      : `${n} new game${n === 1 ? "" : "s"}:\n` + added.map(g => "• " + metaPlain(g.title)).join("\n");
+    showAnnouncement({ title: "Game Updates", body, kind: "gold", ms: 14000 });
+  }
+
   function initialsPlate(g) {
-    const h = hash(g.file + g.title);
+    const h = hash(g.file + metaPlain(g.title));
     const a = h % 360, b = (h * 7 + 140) % 360;
-    const letter = (g.title.trim()[0] || "?").toUpperCase();
+    const letter = (metaPlain(g.title).trim()[0] || "?").toUpperCase();
     return `<div class="ginit" style="background:
         radial-gradient(120% 110% at 22% 12%, hsl(${a} 92% 58% / .55), transparent 62%),
         radial-gradient(130% 120% at 82% 96%, hsl(${b} 96% 55% / .5), transparent 60%),
@@ -1269,27 +1350,34 @@ const ARCADE = (() => {
   const card = g => {
     const fav = S.favs.has(key(g.file));
     const plays = S.plays[key(g.file)] || 0;
+    const spoiler = spoilerActive(g);
+    const titleHtml = spoiler && S.hideSpoilerTitles ? esc("???") : richMeta(shelfTitle(g));
+    const tagHtml = spoiler ? "" : (g.tagline ? richMeta(g.tagline) : "");
+    const bioHtml = spoiler ? "" : (g.bio ? richMeta(g.bio) : "");
+    const ariaTitle = metaPlain(shelfTitle(g));
     return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
-              aria-label="Play ${esc(g.title)}">
+              aria-label="Play ${esc(ariaTitle)}">
       <div class="aura"></div>
       <div class="edge notch">
         <div class="edge-in notch flex flex-col h-full">
-          <div class="gthumb">
+          <div class="gthumb${spoiler ? " gthumb-spoiler" : ""}">
             ${thumbHTML(g)}
             <div class="sweep"></div>
             <span class="crn tl"></span><span class="crn tr"></span><span class="crn bl"></span><span class="crn br"></span>
             ${g.hot ? `<div class="badge" style="top:8px;left:8px;color:var(--mag);border-color:rgba(255,47,135,.6)"><i class="fa-solid fa-bolt"></i> HOT</div>` : ""}
+            ${spoiler ? `<div class="badge" style="top:8px;right:8px;color:var(--ice);border-color:rgba(124,196,255,.45)"><i class="fa-solid fa-eye-slash"></i> UNPLAYED</div>` : ""}
             <div class="playveil"><div class="playbtn"><i class="fa-solid fa-play"></i>Play</div></div>
           </div>
           <div class="gbody p-[13px] gap-2">
             <div class="ghead">
-              <h3 class="gtitle">${esc(g.title)}</h3>
+              <div class="gtitle">${titleHtml}</div>
               <div class="ghead-actions">
                 <button type="button" class="ico-btn notch-s ${fav ? "on" : ""}" data-fav="${esc(g.file)}" title="Favorite">
                   <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
               </div>
             </div>
-            <p class="gtagline">${g.tagline ? esc(g.tagline) : ""}</p>
+            <div class="gtagline">${tagHtml}</div>
+            <div class="gbio">${bioHtml}</div>
             <div class="flex flex-wrap items-center gap-1.5">
               <span class="gfile"><i class="fa-regular fa-file-code"></i> ${esc(g.file)}</span>
             </div>
@@ -1322,15 +1410,17 @@ const ARCADE = (() => {
       if (S.tag === "__fav" && !S.favs.has(key(g.file))) return false;
       if (S.tag !== "ALL" && S.tag !== "__fav" && !g.tags.map(t => t.toLowerCase()).includes(S.tag)) return false;
       if (!q) return true;
-      return (g.title + " " + g.file + " " + g.tagline + " " + g.tags.join(" ")).toLowerCase().includes(q);
+      const blob = metaPlain(g.title) + " " + g.file + " " + metaPlain(g.tagline) + " " + metaPlain(g.bio) + " " + g.tags.join(" ");
+      return blob.toLowerCase().includes(q);
     });
     const rFirst = f => { const i = S.recent.indexOf(f); return i < 0 ? 999 : i; };
+    const byTitle = (a, b) => metaPlain(a.title).localeCompare(metaPlain(b.title));
     out.sort((a, b) =>
-      S.sort === "recent" ? rFirst(a.file) - rFirst(b.file) || a.title.localeCompare(b.title)
-      : S.sort === "plays" ? (S.plays[key(b.file)] || 0) - (S.plays[key(a.file)] || 0) || a.title.localeCompare(b.title)
-      : S.sort === "fav" ? (S.favs.has(key(b.file)) - S.favs.has(key(a.file))) || a.title.localeCompare(b.title)
+      S.sort === "recent" ? rFirst(a.file) - rFirst(b.file) || byTitle(a, b)
+      : S.sort === "plays" ? (S.plays[key(b.file)] || 0) - (S.plays[key(a.file)] || 0) || byTitle(a, b)
+      : S.sort === "fav" ? (S.favs.has(key(b.file)) - S.favs.has(key(a.file))) || byTitle(a, b)
       : S.sort === "file" ? a.file.localeCompare(b.file)
-      : a.title.localeCompare(b.title));
+      : byTitle(a, b));
     return out;
   }
 
@@ -1401,16 +1491,16 @@ const ARCADE = (() => {
     const vis = S.games.filter(g => !g.hidden);
     S.recent.slice(0, 4).forEach(f => {
       const g = vis.find(x => x.file === f);
-      if (g) parts.push(`<span><i class="fa-solid fa-clock-rotate-left text-[var(--mag)]"></i> LAST PLAYED · ${esc(g.title)}</span>`);
+      if (g) parts.push(`<span><i class="fa-solid fa-clock-rotate-left text-[var(--mag)]"></i> LAST PLAYED · ${esc(metaPlain(g.title))}</span>`);
     });
     [...vis]
       .filter(g => (S.plays[key(g.file)] || 0) > 0)
       .sort((a, b) => (S.plays[key(b.file)] || 0) - (S.plays[key(a.file)] || 0))
       .slice(0, 3)
-      .forEach(g => parts.push(`<span><i class="fa-solid fa-ranking-star text-[var(--amber)]"></i> MOST PLAYED · ${esc(g.title.toUpperCase())} ×${S.plays[key(g.file)]}</span>`));
+      .forEach(g => parts.push(`<span><i class="fa-solid fa-ranking-star text-[var(--amber)]"></i> MOST PLAYED · ${esc(metaPlain(g.title).toUpperCase())} ×${S.plays[key(g.file)]}</span>`));
     if (vis.length) {
       parts.push(`<span><i class="fa-solid fa-layer-group text-[var(--cyan)]"></i> VAULT · ${vis.length} GAME${vis.length === 1 ? "" : "S"}</span>`);
-      vis.forEach(g => parts.push(`<span><i class="fa-solid fa-gamepad text-[var(--ice)]"></i> ${esc(g.title.toUpperCase())} <span class="text-[var(--dim)]">· ${esc(g.file)}</span></span>`));
+      vis.forEach(g => parts.push(`<span><i class="fa-solid fa-gamepad text-[var(--ice)]"></i> ${esc(metaPlain(g.title).toUpperCase())} <span class="text-[var(--dim)]">· ${esc(g.file)}</span></span>`));
     } else if (S.ready || S.source !== "—") {
       parts.push(`<span><i class="fa-solid fa-box-open text-[var(--amber)]"></i> NO GAMES IN REPO — ADD .HTML FILES OR RESCAN</span>`);
     }
@@ -1439,7 +1529,7 @@ const ARCADE = (() => {
     if (isDirectOpen(file)) { openGameDirect(file); return; }
     curFile = file;
     const url = fileURL(file);
-    $("#m-title").textContent = g.title;
+    $("#m-title").innerHTML = richMeta(g.title);
     $("#m-file").innerHTML = `<span class="text-[var(--cyan)]">${esc(file)}</span> · ${esc(url.replace(/^https?:\/\//, ""))}`;
     $("#m-loadurl").textContent = url.replace(/^https?:\/\//, "").slice(0, 74);
     $("#m-load").style.display = "grid";
@@ -1486,6 +1576,17 @@ const ARCADE = (() => {
   function syncDirectAllUI() {
     const el = $("#set-direct-all");
     if (el) el.checked = S.directAll;
+    const sp = $("#set-no-spoiler");
+    if (sp) sp.checked = S.noSpoiler;
+    const ht = $("#set-hide-spoiler-titles");
+    if (ht) {
+      ht.checked = S.hideSpoilerTitles;
+      ht.disabled = !S.noSpoiler;
+    }
+    const wrap = $("#set-hide-titles-wrap");
+    if (wrap) wrap.classList.toggle("disabled", !S.noSpoiler);
+    const un = $("#set-update-notifier");
+    if (un) un.checked = S.updateNotifier;
   }
 
   /* ==================== boot sequence ==================== */
@@ -1566,6 +1667,27 @@ const ARCADE = (() => {
       save("arcade.directAll", S.directAll);
       Snd.click();
       render();
+    });
+    $("#set-no-spoiler").addEventListener("change", e => {
+      S.noSpoiler = e.target.checked;
+      if (!S.noSpoiler) { S.hideSpoilerTitles = false; save("arcade.hideSpoilerTitles", false); }
+      save("arcade.noSpoiler", S.noSpoiler);
+      syncDirectAllUI();
+      Snd.click();
+      render();
+    });
+    $("#set-hide-spoiler-titles").addEventListener("change", e => {
+      if (!S.noSpoiler) { e.target.checked = false; return; }
+      S.hideSpoilerTitles = e.target.checked;
+      save("arcade.hideSpoilerTitles", S.hideSpoilerTitles);
+      Snd.click();
+      render();
+    });
+    $("#set-update-notifier").addEventListener("change", e => {
+      S.updateNotifier = e.target.checked;
+      save("arcade.updateNotifier", S.updateNotifier);
+      if (S.updateNotifier && S.games.length) save("arcade.shelfSnapshot", S.games.map(g => key(g.file)));
+      Snd.click();
     });
     $("#settingsshell").addEventListener("click", e => { if (e.target.id === "settingsshell") settings(false); });
     $("#btn-sound").addEventListener("click", e => {
