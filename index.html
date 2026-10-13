@@ -887,30 +887,12 @@ const ARCADE = (() => {
       if (S.source === "LOCAL LIST") {
         found = [...new Set([...found, ...GAMES.map(g => g.file).filter(isHtml)])];
       }
-      const foundSet = new Set(found.map(f => key(f)));
       const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
       const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
       const jsonListed = new Set([
         ...repoInfo.map(g => key(g.file)).filter(Boolean),
         ...GAMES.map(g => key(g.file)).filter(Boolean),
       ]);
-      const declaredOnly = [...repoInfo.filter(g => !g.hidden).map(g => g.file), ...GAMES.filter(g => !g.hidden).map(g => g.file)]
-        .filter(Boolean)
-        .filter(f => !foundSet.has(key(f)));
-      if (declaredOnly.length) {
-        const sample = declaredOnly.slice(0, 6).map(f => esc(f)).join(", ");
-        const more = declaredOnly.length > 6 ? ` … +${declaredOnly.length - 6}` : "";
-        log(`waiting for ${declaredOnly.length} file(s) in repo before showing shelf cards: ${sample}${more}`, "dim");
-      }
-
-      const orphanHtml = [...new Set(found)]
-        .filter(f => /\.html?$/i.test(f) && isHtml(f) && !jsonListed.has(key(f)));
-      if (orphanHtml.length) {
-        const sample = orphanHtml.slice(0, 6).map(f => esc(f)).join(", ");
-        const more = orphanHtml.length > 6 ? ` … +${orphanHtml.length - 6}` : "";
-        log(`skipped ${orphanHtml.length} .html not listed in ${CFG.infoFile || "info.json"} or GAMES: ${sample}${more}`, "dim");
-      }
-
       const all = [...new Set(found)]
         .filter(f => /\.html?$/i.test(f))
         .filter(f => jsonListed.has(key(f)))
