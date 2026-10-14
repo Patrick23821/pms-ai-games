@@ -1403,7 +1403,6 @@ S.Avatar = {
     mesh.parent = rig;
     mesh.material = hairMat;
     mesh.isPickable = false;
-    mesh.renderingGroupId = 1;
     mesh.scaling.set(p.rx * 2 * shell, sy, p.rz * 2 * shell);
     mesh.position.set(0, 0.003, 0);
     mesh.refreshBoundingInfo(true);
@@ -1449,7 +1448,6 @@ S.Avatar = {
     hairMat.specularColor = new BABYLON.Color3(0.08, 0.06, 0.04);
     hairMat.specularPower = 22;
     hairMat.emissiveColor = new BABYLON.Color3(0.02, 0.012, 0.006);
-    hairMat.zOffset = -2;
     const hairBundle = this.buildClassicHair(sc, headRoot, hairMat);
     const hair = hairBundle.primary;
     const crown = hairBundle.crown;
