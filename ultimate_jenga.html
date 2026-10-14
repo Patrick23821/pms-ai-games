@@ -3782,7 +3782,7 @@ function canGun(){ return survivorGunsUnlocked() || (hasAdminMenu() && (G.adminA
 function gunActive(){ return G.gun > 0 && canGun() && isSurvivorActive(); }
 function physgunActive(){ const g = GUNS[G.gun]; return gunActive() && g && g.k === 'physgun'; }
 function gunAdsOn(){ return gunActive() && !physgunActive() && G.rmb; }
-function physFwd(yaw, pitch){ return new V3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)); }
+function physFwd(yaw, pitch){ return new V3(Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch)); }
 function physAimPoint(yaw, pitch, dist, from){ return from.add(physFwd(yaw, pitch).scale(dist)); }
 function physRayBlock(){
   const c = G.local.char?.node?.position; if (!c) return null;
