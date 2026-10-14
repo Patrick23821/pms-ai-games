@@ -26,6 +26,14 @@
       "hidden": false
     },
     {
+      "file": "paintballpro.html",
+      "title": "Paintball Pro",
+      "tagline": "idk what to put here",
+      "tags": ["multiplayer", "fun", "fps"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/paintballpro.webp",
+      "hidden": false
+    },
+    {
       "file": "floodescape.html",
       "title": "Flood Escape",
       "tagline": "Escape the rising flood, self explanatory. Based off of flood escape 2 on Roblox.",
