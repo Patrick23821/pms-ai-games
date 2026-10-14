@@ -3209,13 +3209,13 @@ SCREENS.settings=function(tab,inGame){ tab=tab||UI.setTab||'controls'; UI.setTab
 /* Two secret codes, both stored as salted SHA-256 digests only:
    - SESSION code  -> admin until reload.
    - PERMANENT site-admin code -> writes a token bound to this install's save salt; re-verified on every boot. */
-S.Admin=(function(){ const SALT='a7f3c91e5b2d4086', HASH='97e018b983bb80e453956674c6cd9b0a3a7cc74dcbddc83161609c14eee18d27'; const PSALT='c4e19b7d2f6a8053', PHASH='f6f14881669653904b17c92cc01850ef0c69c68ccd2d4465b61e9ca0939b6d9c'; let on=false, perm=false;
+S.Admin=(function(){ const SALT='a7f3c91e5b2d4086', HASH='831fe4424cc856e168270476948dfc0782315034658889d0185112918bad8f2c'; const PSALT='c4e19b7d2f6a8053', PHASH='76900692f2e9739be33f7637a67717a70d454fddb35f4149cf9714e5d0c15b29'; let on=false, perm=false;
   const tok=()=>S.sha256('PERM|'+sv().salt+'|'+PHASH);
   return Object.freeze({ on:()=>on, perm:()=>perm,
     async restore(){ const a=sv().admin; if(!a||!a.permTok) return false; if(a.permTok===(await tok())){ on=true; perm=true; return true; } a.permTok=''; S.Save.save(); return false; },
     async tryCode(input){ const a=sv().admin; if(Date.now()<a.lockUntil) return {ok:false,locked:a.lockUntil}; const s=String(input||'').trim();
-      if((await S.sha256(SALT+s))===HASH){ a.fails=0; S.Save.save(); on=true; return {ok:true,perm:false}; }
       if((await S.sha256(PSALT+s))===PHASH){ a.fails=0; a.permTok=await tok(); S.Save.save(); on=true; perm=true; return {ok:true,perm:true}; }
+      if((await S.sha256(SALT+s))===HASH){ a.fails=0; S.Save.save(); on=true; return {ok:true,perm:false}; }
       a.fails++; if(a.fails>=5){ const d=[60e3,300e3,1800e3][Math.min(a.lockLevel,2)]; a.lockUntil=Date.now()+d; a.lockLevel++; a.fails=0; S.Save.save(); return {ok:false,locked:a.lockUntil}; } S.Save.save(); return {ok:false}; },
     revokePerm(){ sv().admin.permTok=''; perm=false; on=false; S.Save.save(); },
     local:()=>on&&(G.kind==='offline'||G.kind==='range'), hosted:()=>on&&S.Net.isHost() }); })();
