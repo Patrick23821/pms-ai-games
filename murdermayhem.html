@@ -100,7 +100,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
 #hotbar { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
 .slot { width: 74px; height: 74px; border-radius: 14px; background: rgba(12, 10, 16, .78); border: 2px solid rgba(255, 255, 255, .12); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
 .slot .ic { font-size: 30px; line-height: 1; }
-.slot .nm { font-size: 10px; color: var(--dim); margin-top: 4px; white-space: nowrap; }
+.slot .nm { font-size: 9px; color: var(--dim); margin-top: 3px; max-width: 100%; padding: 0 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box; text-align: center; }
 .slot .k { position: absolute; top: 3px; left: 7px; font-size: 11px; color: var(--dim); font-weight: 700; }
 .slot .u { position: absolute; top: 3px; right: 6px; font-size: 11px; font-weight: 700; color: var(--gold); }
 .slot.sel { border-color: var(--gold); background: rgba(60, 44, 18, .85); transform: translateY(-4px); }
@@ -211,7 +211,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
     </div>
     <div id="mobileWarn" class="hidden">Keyboard & mouse required.</div>
   </div>
-  <div id="menuFoot" class="dim">WASD move · Shift sprint · Space jump · 1-5 equip · Backspace drop · LMB use · RMB / Z aim · throw · Q holster · N pass a note · E read note · H headphones (lobby) · C first/third person · T chat · Tab players · Spectating: Q / E / wheel switch</div>
+  <div id="menuFoot" class="dim">WASD move · Shift sprint · Space jump · 1-5 equip · Backspace drop · LMB use · RMB / Z aim · throw · Q holster · 📝 Sticky Notes (hotbar) click player · N pass note · E read floor note · H headphones (lobby) · C first/third person · T chat · Tab players · Spectating: Q / E / wheel switch</div>
 
   <div id="scrCustomize" class="screen panel hidden">
     <div class="head"><h2>Customize</h2><div class="row"><button id="bRandom">🎲 Random</button><button id="bCustomDone" class="gold">Done</button></div></div>
@@ -293,7 +293,7 @@ h1, h2, h3 { font-family: Cinzel, serif; margin: 0; letter-spacing: 1px; }
   <div class="row"><span style="font-size:13px">To:</span><select id="noteTo" style="flex:1"></select></div>
   <textarea id="noteTxt" maxlength="140" placeholder="Write something… (140 chars)"></textarea>
   <label class="row" style="cursor:pointer"><input type="checkbox" id="noteAnon"> Send anonymously</label>
-  <div style="font-size:11px;opacity:.75">Careful — there's a 30% chance the note slips and lands on the floor where anyone can read it.</div>
+  <div style="font-size:12px;font-weight:600;color:#8a4010">⚠️ Note rule: 30% of notes slip and land on the floor — anyone can read them!</div>
   <div class="row"><button id="noteCancel" style="flex:1;color:#fff">Cancel</button><button id="noteSend" class="gold" style="flex:1">Pass note</button></div>
 </div></div>
 <div id="noteRead" class="overlay hidden" style="z-index:41;pointer-events:none"><div class="inner"><div class="txt" id="noteReadTxt"></div><div class="from" id="noteReadFrom"></div></div></div>
@@ -325,6 +325,7 @@ const CONFIG = {
   GUN_CD: 2.3, GUN_RANGE: 90,
   INVESTIGATE_RANGE: 18, TOUCH_RANGE: 2.6, SHIELD_RANGE: 4.5,
   POISON_DELAY: 20, BLACKOUT_TIME: 16, XRAY_TIME: 8,
+  HYPNOSIS_CD: 15, COPYCAT_TIME: 45,
   COIN_MAX: 30, COIN_BAG: 40, COIN_SPAWN_EVERY: 2.5,
   KILL_COINS: 5,                                                // coins for a legit kill (evil kill, or shooting an evil player)
 
@@ -332,7 +333,8 @@ const CONFIG = {
   PUBLIC_CODES: ['PUB01', 'PUB02', 'PUB03'], PUBLIC_FILL: 10,   // always-joinable rooms, topped up with bots
   DOUBLE_EVERY: 10, DOUBLE_MIN: 8,                              // public rooms: every 10th round with 8+ players has TWO Murderers
   BLACKOUT_FOG: 0.15,
-  BLACKOUT_NV: 0.38,                                            // Murderer/Saboteur fog multiplier in a blackout (~2.5x sight)                                           // exp² fog density during a blackout (~7-9 m sight)
+  BLACKOUT_NV: 0.26,                                            // night-vision fog multiplier in a blackout (~3.5× sight vs innocents)
+  COPYCAT_ALERT_DELAY: 10,
 };
 /**
  * Official build check. Copies of this file hosted anywhere other than the official site get their own
@@ -421,19 +423,19 @@ const ROLES = {
     name: 'Detective', team: 'good', min: 5, color: '#ffc94d', icon: '🔍', items: ['magnifier', 'flashlight'],
     blurb: 'Uncover the truth — once.',
     goal: 'Survive and expose the Murderer.',
-    tips: ['Equip the Magnifier and click any player in sight to learn their TRUE role.', 'One use per round. Choose wisely, then tell everyone in chat.'],
+    tips: ['Equip the Magnifier and click any player in sight to learn their TRUE role.', 'One use per round — then your kit is gone and you can pick up the Sheriff\'s gun like a Bystander.', 'Use Sticky Notes in your hotbar to pass secret messages.'],
   },
   medic: {
     name: 'Medic', team: 'good', min: 6, color: '#7dffb2', icon: '🩹', items: ['medkit', 'flashlight'],
     blurb: 'Protect someone from death.',
     goal: 'Survive and keep the innocents alive.',
-    tips: ['Click a nearby player with the Shield Kit (or click empty air to shield yourself).', 'The shield blocks one fatal attack: knife, blade, poison or bullet.'],
+    tips: ['Click a nearby player with the Shield Kit (or click empty air to shield yourself).', 'One use — then you can grab the dropped gun like a Bystander.', 'Sticky Notes let you whisper to anyone nearby.'],
   },
   assassin: {
-    name: 'Assassin', team: 'evil', min: 7, color: '#d6336c', icon: '🗡️', items: ['blade', 'flashlight'],
+    name: 'Assassin', team: 'evil', min: 7, color: '#d6336c', icon: '🗡️', items: ['hknife', 'flashlight'],
     blurb: 'A secret agent of the Murderer.',
-    goal: 'Kill your target, then survive. You win with the Murderer\'s team if you\'re alive — but nobody on that team knows who you are.',
-    tips: ['You can\'t see the Murderer\'s team, and they can\'t see you. The Murderer CAN knife you!', 'Your hidden blade is invisible and works ONLY on your target (never a Murderer\'s-team member) — or on the Jester.', 'If your target dies first, you get a new contract.', 'The Sheriff can shoot you without penalty.'],
+    goal: 'Kill your target, then survive. You win with the Murderer\'s team if you\'re alive — only the Murderer knows who you are (not the other evil roles).',
+    tips: ['You know who the Murderer is — but not the Saboteur, Poisoner, or other helpers. They don\'t know you.', 'Your knife stays hidden until you strike — you cannot throw it.', 'LMB your contract target up close. One kill per knife.', 'If your target dies first, you get a new contract.', 'The Sheriff can shoot you without penalty.'],
   },
   jester: {
     name: 'Jester', team: 'neutral', min: 8, color: '#c58cff', icon: '🃏', items: ['propknife', 'flashlight'],
@@ -465,15 +467,27 @@ const ROLES = {
     goal: 'Survive and spot the Murderer.',
     tips: ['X-Ray Goggles show everyone through walls (and what they hold) for 8 seconds — once.'],
   },
+  hypnotist: {
+    name: 'Hypnotist', team: 'neutral', min: 13, color: '#b794f6', icon: '🌀', items: ['pendulum', 'flashlight'],
+    blurb: 'Put the whole room under your spell.',
+    goal: 'Hypnotize every survivor, or be the last one awake when the final unhypnotized player falls.',
+    tips: ['Every 15 seconds, swing the pendulum at someone in sight — they never know.', 'You win alone. The Sheriff can shoot you without guilt.', 'If the last person who is not hypnotized dies, you win even if you are already dead.'],
+  },
+  copycat: {
+    name: 'Copycat', team: 'neutral', min: 14, color: '#f6ad55', icon: '🎭', items: ['disguise', 'flashlight'],
+    blurb: 'Become someone else — fast.',
+    goal: 'Within 45 seconds of the hunt starting, copy a player\'s role (anyone except the Sheriff) or you die.',
+    tips: ['Equip the Disguise Kit and click a player up close.', 'You take their items and win condition — but everyone still sees you as the Copycat until you copy.'],
+  },
   bystander: {
     name: 'Bystander', team: 'good', min: 0, color: '#d9dde8', icon: '👤', items: ['flashlight'],
     blurb: 'Stay alive.',
     goal: 'Survive until dawn or until the Murderer is stopped.',
-    tips: ['Collect coins, stick together, and watch for drawn knives.', 'If the Sheriff dies, grab the dropped revolver - only Bystanders can pick it up!'],
+    tips: ['Collect coins, stick together, and watch for drawn knives.', 'If the Sheriff dies, grab the dropped revolver — Bystanders always can; Detective & Medic can after using their one-time kit.', 'Sticky Notes (hotbar): click a player to pass a message — but 30% slip to the floor!'],
   },
 };
 /** Assignment priority. Core roles first, then optional roles in threshold order. */
-const ROLE_ORDER = ['murderer', 'sheriff', 'detective', 'medic', 'assassin', 'jester', 'saboteur', 'bodyguard', 'poisoner', 'lookout'];
+const ROLE_ORDER = ['murderer', 'sheriff', 'detective', 'medic', 'assassin', 'jester', 'saboteur', 'bodyguard', 'poisoner', 'lookout', 'hypnotist', 'copycat'];
 const OPTIONAL_ROLES = ROLE_ORDER.filter(r => !ROLES[r].core);
 
 const ITEMS = {
@@ -482,14 +496,17 @@ const ITEMS = {
   flashlight: { name: 'Flashlight', icon: '🔦', vis: 'flashlight', hint: 'LMB toggle beam' },
   magnifier: { name: 'Magnifier', icon: '🔍', vis: 'magnifier', uses: 1, hint: 'LMB a player: reveal role (1 use)' },
   medkit: { name: 'Shield Kit', icon: '🩹', vis: 'medkit', uses: 1, hint: 'LMB a player / air: shield (1 use)' },
-  blade: { name: 'Hidden Blade', icon: '🗡️', vis: '', uses: 1, hint: 'LMB your target up close (1 use)' },
+  hknife: { name: 'Hidden Knife', icon: '🔪', vis: '', uses: 1, hint: 'LMB your target — pocket stab, invisible to others' },
   propknife: { name: 'Rubber Knife', icon: '🔪', vis: 'knife', hint: 'Looks real. Bait the gun!' },
+  notepad: { name: 'Sticky Notes', icon: '📝', hint: 'LMB a nearby player — or N — to pass a note (30% may drop on the floor!)' },
   fuse: { name: 'Breaker Switch', icon: '⚡', vis: 'remote', uses: 1, hint: 'LMB: blackout (1 use)' },
   vial: { name: 'Poison Vial', icon: '🧪', vis: 'vial', uses: 1, hint: 'LMB a player up close (1 use)' },
   goggles: { name: 'X-Ray Goggles', icon: '🥽', vis: 'goggles', uses: 1, hint: 'LMB: x-ray vision (1 use)' },
+  pendulum: { name: 'Pendulum', icon: '🌀', vis: 'pendulum', hint: 'Hypnotic pendulum — LMB a player in sight (15s cooldown)' },
+  disguise: { name: 'Disguise Kit', icon: '🎭', vis: 'disguise', hint: 'LMB a player up close: copy their role (not Sheriff)' },
   duckgun: { name: 'Duck Blaster', icon: '🦆', vis: 'revolver', hint: 'LMB fire rubber ducks (harmless) · Backspace drop' },
 };
-const VIS_CODES = ['', 'knife', 'revolver', 'flashlight', 'magnifier', 'medkit', 'remote', 'vial', 'goggles'];
+const VIS_CODES = ['', 'knife', 'revolver', 'flashlight', 'magnifier', 'medkit', 'remote', 'vial', 'goggles', 'pendulum', 'disguise'];
 const ANIM_CODES = ['idle', 'walk', 'run', 'jump', 'dead', 'wave', 'dance', 'aim', 'sit', 'cheer'];
 const LOBBY_SLOTS = ['revolver', 'knife', 'flashlight'];
 const NSLOTS = 5;   // hotbar size
@@ -499,6 +516,10 @@ const lobbySlots = () => { const s = LOBBY_SLOTS.slice(0, NSLOTS); while (s.leng
 const Roles = {
   team: r => (ROLES[r] || ROLES.bystander).team,
   isEvil: r => Roles.team(r) === 'evil',
+  /** Bot detectives call out and sus like evil (Hypnotist wins alone — treat as a threat). */
+  detectiveThreat: r => Roles.isEvil(r) || r === 'hypnotist',
+  /** Murderer's team + Hypnotist see further when the Saboteur cuts the lights. */
+  blackoutNightVision: r => Roles.isEvil(r) || r === 'hypnotist',
 
   /** Roles available for a lobby of n players given the enabled optional roles. */
   available(n, enabled) {
@@ -555,12 +576,28 @@ const Roles = {
     return { victimDies: true, shooterDies: true, jesterWin: false };
   },
 
-  /** Who may pick the dropped gun up: Bystanders only. */
+  /** Legacy: bystander-only by role id (tests / simple checks). */
   canTakeGun: role => role === 'bystander',
+  /** Who may pick up the Sheriff's dropped revolver this round. */
+  canTakeGunPlayer(P) {
+    if (!P || !P.role || !P.alive) return false;
+    if (P.role === 'bystander') return true;
+    if (P.role === 'detective' && !P.slots.includes('magnifier')) return true;
+    if (P.role === 'medic' && !P.slots.includes('medkit')) return true;
+    return false;
+  },
+  /** Everyone gets undroppable sticky notes in the first free hotbar slot. */
+  grantNotepad(slots) {
+    if (slots.includes('notepad')) return;
+    const i = slots.indexOf(null);
+    if (i >= 0) slots[i] = 'notepad';
+  },
   /** Secret evil roles: on the Murderer's team (win with it) but invisible to it, and blind to it. */
   isSecret: r => r === 'assassin',
-  /** True when a and b are evil teammates who KNOW each other (the Assassin knows nobody, nobody knows it). */
+  /** True when a and b are evil teammates who KNOW each other (Murderer ↔ helpers; Assassin is never included here). */
   allies: (a, b) => Roles.isEvil(a) && Roles.isEvil(b) && !Roles.isSecret(a) && !Roles.isSecret(b),
+  /** Team intel shown to the viewer about another player (intro card + red name tags). */
+  teamMate: (viewer, other) => (viewer === 'assassin' && other === 'murderer') || Roles.allies(viewer, other),
   /** Murderer knife ignores known evil allies — but the secret Assassin is fair game (friendly fire). */
   knifeCanHit: victimRole => !Roles.isEvil(victimRole) || Roles.isSecret(victimRole),
 
@@ -1311,6 +1348,37 @@ class Grid {
     for (let i = 0; i < N; i++) this.walk[i] = (this.cells[i] === CT.FLOOR || this.cells[i] === CT.DOOR) && this.propAt[i] < 0 ? 1 : 0;
     this.walkList = []; for (let i = 0; i < N; i++) if (this.walk[i]) this.walkList.push(i);
     this.ww = this.w * C; this.wh = this.h * C;
+    this._buildCeiling();
+  }
+
+  /** Indoor ceiling/roof mask (1=plaster, 2=wall cap, 3=glass). Used for rays + head collision. */
+  _buildCeiling() {
+    const W = this.w, H = this.h;
+    const roofed = new Uint8Array(W * H);
+    const zoneOf = i => this.zones[this.zone[i]] || this.zones[0];
+    const indoor = (x, y) => {
+      if (!this.inb(x, y)) return false;
+      const i = y * W + x, t = this.cells[i];
+      if (t === CT.WALL || t === CT.WINDOW || t === CT.VOID) return false;
+      return !zoneOf(i).outdoor;
+    };
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = y * W + x, t = this.cells[i];
+      if (indoor(x, y)) roofed[i] = zoneOf(i).glassRoof ? 3 : 1;
+      else if (t === CT.WALL || t === CT.WINDOW) {
+        for (let dy = -1; dy <= 1 && !roofed[i]; dy++) for (let dx = -1; dx <= 1; dx++) if (indoor(x + dx, y + dy)) roofed[i] = 2;
+      }
+    }
+    this.ceiling = roofed;
+  }
+  hasCeilingCell(cx, cy) {
+    if (!this.ceiling || !this.inb(cx, cy)) return false;
+    const r = this.ceiling[cy * this.w + cx];
+    return r === 1 || r === 2 || r === 3;
+  }
+  hasCeilingAt(x, z) {
+    const [cx, cy] = this.cellOf(x, z);
+    return this.hasCeilingCell(cx, cy);
   }
 
   idx(x, y) { return y * this.w + x; }
@@ -1371,7 +1439,18 @@ class Grid {
     return true;
   }
 
-  /** 3D ray vs grid + props. Returns { t, n:[x,y,z], kind:'wall'|'prop'|'floor'|'none' }. */
+  _ceilingHit(ox, oy, oz, dx, dy, dz, tEnter, tExit, maxT) {
+    if (!this.ceiling || Math.abs(dy) < 1e-9) return null;
+    const WH = CONFIG.WALL_H, C = CONFIG.CELL, tLim = Math.min(tExit, maxT);
+    const tC = (WH - oy) / dy;
+    if (tC < tEnter - 1e-5 || tC >= tLim + 1e-5 || tC < 0) return null;
+    const hx = ox + dx * tC, hz = oz + dz * tC;
+    const cx = Math.floor(hx / C), cy = Math.floor(hz / C);
+    if (!this.hasCeilingCell(cx, cy)) return null;
+    return { t: tC, n: dy > 0 ? [0, -1, 0] : [0, 1, 0], kind: 'ceiling' };
+  }
+
+  /** 3D ray vs grid + props. Returns { t, n:[x,y,z], kind:'wall'|'prop'|'floor'|'ceiling'|'none' }. */
   raycast(ox, oy, oz, dx, dy, dz, maxT, skipProps) {
     const C = CONFIG.CELL; let cx = Math.floor(ox / C), cy = Math.floor(oz / C);
     const stepX = dx > 0 ? 1 : -1, stepY = dz > 0 ? 1 : -1;
@@ -1381,6 +1460,8 @@ class Grid {
     let tEnter = 0, axis = -1;
     for (let n = 0; n < 400; n++) {
       const tExit = Math.min(tmx, tmy, maxT);
+      const chit = this._ceilingHit(ox, oy, oz, dx, dy, dz, tEnter, tExit, maxT);
+      if (chit) return chit;
       const H = CELL_H[this.type(cx, cy)];
       if (H > 0) {
         const yEnter = oy + dy * tEnter;
@@ -1526,9 +1607,14 @@ const SelfTest = {
     ok(!Roles.gunOutcome('murderer').shooterDies && !Roles.gunOutcome('assassin').shooterDies && !Roles.gunOutcome('poisoner').shooterDies, 'shooting evil is safe');
     ok(Roles.gunOutcome('jester').jesterWin && !Roles.gunOutcome('jester').shooterDies, 'jester wins when shot, shooter lives');
     ok(!Roles.canTakeGun('murderer') && Roles.canTakeGun('bystander') && !Roles.canTakeGun('detective') && !Roles.canTakeGun('jester') && !Roles.canTakeGun('assassin'), 'only bystanders can take the gun');
+    ok(!Roles.canTakeGunPlayer({ role: 'detective', alive: true, slots: ['magnifier', 'flashlight', 'notepad', null, null] }), 'detective with magnifier cannot take gun');
+    ok(Roles.canTakeGunPlayer({ role: 'detective', alive: true, slots: ['flashlight', 'notepad', null, null, null] }), 'detective after magnifier can take gun');
+    ok(!Roles.canTakeGunPlayer({ role: 'medic', alive: true, slots: ['medkit', 'flashlight', 'notepad', null, null] }), 'medic with kit cannot take gun');
+    ok(Roles.canTakeGunPlayer({ role: 'medic', alive: true, slots: ['flashlight', 'notepad', null, null, null] }), 'medic after kit can take gun');
     ok(Roles.startingSlots('murderer')[0] === 'knife' && Roles.startingSlots('sheriff')[0] === 'revolver', 'starting slots');
-    // secret Assassin: on the evil team, but no team intel either way; Murderer's knife can hit it
-    ok(Roles.isEvil('assassin') && !Roles.allies('murderer', 'assassin') && !Roles.allies('assassin', 'poisoner') && Roles.allies('murderer', 'saboteur'), 'assassin is a secret evil member');
+    // Assassin: knows Murderer only; Murderer never sees Assassin; knife still hits Assassin
+    ok(Roles.isEvil('assassin') && !Roles.allies('murderer', 'assassin') && !Roles.allies('assassin', 'poisoner') && Roles.allies('murderer', 'saboteur'), 'assassin is not in the allies graph');
+    ok(Roles.teamMate('assassin', 'murderer') && !Roles.teamMate('assassin', 'saboteur') && !Roles.teamMate('murderer', 'assassin'), 'assassin sees murderer only');
     ok(Roles.knifeCanHit('assassin') && !Roles.knifeCanHit('saboteur') && !Roles.knifeCanHit('murderer'), 'murderer knife: assassin yes, known allies no');
     // double-murder rounds
     for (const n of [8, 12, 16]) { const ids = Array.from({ length: n }, (_, i) => i + 1), { roles } = Roles.assign(ids, OPTIONAL_ROLES, rnd, { murderers: 2 }); ok(Object.values(roles).filter(r => r === 'murderer').length === 2 && Object.values(roles).includes('sheriff'), `n=${n} double round has 2 murderers + sheriff`); }
@@ -1739,9 +1825,8 @@ const Sfx = {
   stopAmbience() {
     const a = this.amb; this.amb = null; if (!a) return;
     for (const tm of a.timers) clearInterval(tm);
-    const t = this.ctx.currentTime;
-    try { a.gain.gain.cancelScheduledValues(t); a.gain.gain.setValueAtTime(0, t); a.gain.disconnect(); } catch (e) { }
-    for (const n of a.nodes) { try { n.stop(t); } catch (e) { } }
+    for (const n of a.nodes) { try { n.stop(); } catch (e) { } }
+    try { a.gain.disconnect(); } catch (e) { }
   },
   ambience(kind) {
     if (!this.ctx) return;
@@ -1754,10 +1839,13 @@ const Sfx = {
     const every = (ms, fn) => a.timers.push(setInterval(() => { if (this.amb === a && c.state === 'running') { try { fn(c.currentTime); } catch (e) { } } }, ms));
     const chord = (t, notes, dur, v, type = 'triangle') => { for (const f of notes) this._tone(g, t, dur, type, f, f, v, 0.08); };
     switch (kind) {
-      case 'rain':
-        loopNoise('bandpass', 1400, 0.4, 0.22); loopNoise('lowpass', 260, 0.5, 0.25);
-        every(9000, () => { if (Math.random() < 0.55) { this.play('thunder', null, null, 0.8); if (this.onThunder) this.onThunder(); } });
+      case 'rain': {
+        const bed = c.createGain(); bed.gain.value = 0.28; bed.connect(g);
+        const loopRain = (type, f, q, v) => { const s = c.createBufferSource(); s.buffer = this.noise; s.loop = true; const fl = c.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q; const gg = c.createGain(); gg.gain.value = v; s.connect(fl); fl.connect(gg); gg.connect(bed); s.start(); a.nodes.push(s); };
+        loopRain('bandpass', 520, 0.7, 0.12); loopRain('lowpass', 200, 0.5, 0.1);
+        every(15000, () => { if (Math.random() < 0.3) { this.play('thunder', null, null, 0.32); if (this.onThunder) this.onThunder(); } });
         break;
+      }
       case 'wind': {
         const w = loopNoise('bandpass', 500, 1.2, 0.35); const lfo = osc('sine', 0.12, 280, w.fl.frequency); void lfo;
         const w2 = loopNoise('bandpass', 1400, 3, 0.06); const l2 = osc('sine', 0.07, 600, w2.fl.frequency); void l2;
@@ -1786,8 +1874,8 @@ const Sfx = {
         break;
       }
       case 'hall':
-        loopNoise('lowpass', 420, 0.35, 0.012);
-        every(18000, t => { if (Math.random() < 0.3) this._noise(g, t, 0.22, 'bandpass', 260, 200, 1.5, 0.035, 0.06); });
+        osc('sine', 65, 0.03); loopNoise('lowpass', 200, 0.5, 0.05);
+        every(8000, t => { if (Math.random() < 0.4) this._noise(g, t, 0.6, 'bandpass', 300, 180, 8, 0.12, 0.2); });
         break;
       case 'lobby': {
         const prog = [[261.6, 329.6, 392], [220, 261.6, 329.6], [174.6, 220, 261.6], [196, 246.9, 293.7]]; let i = 0;
@@ -2126,7 +2214,7 @@ const R = {
   fogCol: [0.04, 0.05, 0.08], fogD: 0.012, amb: [0.03, 0.03, 0.045], bakeK: 1, bakeTarget: 1, flash: 0, flickerT: 0, discoT: 0,
   spot: { on: false, pos: [0, 0, 0], dir: [0, 0, 1], cos: 0.88, col: [2.2, 2.0, 1.7] },
   pls: [0, 1, 2, 3].map(() => ({ x: 0, y: -100, z: 0, r: 0.01, c: [0, 0, 0], t0: 0, dur: 1 })),
-  quality: 'high',
+  quality: 'high', rtxPipe: null, rtxOn: false,
 
   init(canvas) {
     this.canvas = canvas;
@@ -2142,10 +2230,37 @@ const R = {
     this.white = new BABYLON.RawTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, s, false);
     window.addEventListener('resize', () => this.engine.resize());
     this.setQuality(Settings.get().quality);
+    this.applyRTX(!!Settings.get().rtx);
   },
   setQuality(q) {
     this.quality = q; const dpr = window.devicePixelRatio || 1;
-    this.engine.setHardwareScalingLevel(q === 'low' ? 1.6 : q === 'medium' ? 1.0 : 1 / Math.min(dpr, 1.75));
+    const base = q === 'low' ? 1.6 : q === 'medium' ? 1.0 : 1 / Math.min(dpr, 1.75);
+    this.engine.setHardwareScalingLevel(this.rtxOn ? base * 0.88 : base);
+  },
+  applyRTX(on) {
+    this.rtxOn = !!on;
+    if (!this.scene || !this.camera) return;
+    if (this.rtxPipe) { this.rtxPipe.dispose(); this.rtxPipe = null; }
+    if (on) {
+      const p = this.rtxPipe = new BABYLON.DefaultRenderingPipeline('rtx', true, this.scene, [this.camera]);
+      p.imageProcessingEnabled = true;
+      p.imageProcessing.contrast = 1.1;
+      p.imageProcessing.exposure = 1.08;
+      p.imageProcessing.toneMappingEnabled = true;
+      p.bloomEnabled = true;
+      p.bloomThreshold = 0.82;
+      p.bloomWeight = 0.38;
+      p.bloomKernel = 56;
+      p.fxaaEnabled = true;
+      p.grainEnabled = true;
+      p.grain.intensity = 6;
+      p.chromaticAberrationEnabled = true;
+      p.chromaticAberration.abundance = 0.001;
+      p.sharpenEnabled = true;
+      p.sharpen.edgeAmount = 0.28;
+      p.samples = 4;
+    }
+    this.setQuality(this.quality);
   },
 
   /** Creates a shader material. opts: { world, tex, tint, alpha, rim, rimCol, doubleSided, uvOff, emis } */
@@ -2334,7 +2449,7 @@ class Geo {
  * Settings (persisted)
  * ------------------------------------------------------------------- */
 const Settings = {
-  d: { sens: 1, invertY: false, fov: 75, quality: 'high', master: 0.8, sfx: 1, music: 0.45, showFps: false, camDist: 1, firstPerson: false },
+  d: { sens: 1, invertY: false, fov: 75, quality: 'high', master: 0.8, sfx: 1, music: 0.45, showFps: false, camDist: 1, firstPerson: false, rtx: false },
   _v: null,
   get() { if (!this._v) this._v = Object.assign({}, this.d, Store.get('settings', {})); return this._v; },
   set(k, v) { this.get()[k] = v; Store.set('settings', this._v); },
@@ -2927,14 +3042,9 @@ const World = {
   /* ---------------- ceilings + roofs ---------------- */
   _roofs() {
     const G = this.grid, C = CONFIG.CELL, WH = CONFIG.WALL_H, W = G.w, H = G.h, RT = WH + 0.16;
-    const roofed = this.roofed = new Uint8Array(W * H);
+    if (!G.ceiling) G._buildCeiling();
+    const roofed = this.roofed = G.ceiling;
     const zoneOf = i => G.zones[G.zone[i]] || G.zones[0];
-    const indoor = (x, y) => { if (!G.inb(x, y)) return false; const i = y * W + x, t = G.cells[i]; if (t === CT.WALL || t === CT.WINDOW || t === CT.VOID) return false; return !zoneOf(i).outdoor; };
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const i = y * W + x, t = G.cells[i];
-      if (indoor(x, y)) roofed[i] = zoneOf(i).glassRoof ? 3 : 1;
-      else if (t === CT.WALL || t === CT.WINDOW) { for (let dy = -1; dy <= 1 && !roofed[i]; dy++) for (let dx = -1; dx <= 1; dx++) if (indoor(x + dx, y + dy)) { roofed[i] = 2; break; } }
-    }
     const moon = U.rgb(this.def.moon || '#8090c0'), snow = this.def.sky === 'snow', rk = this.def.outdoor ? 0.62 : 0.4;
     const roofGeo = this.batch('roof', () => ({ tex: Tex.misc('shingles'), tint: snow ? [1.9, 1.95, 2.05] : [1, 1, 1], flat: [moon[0] * rk, moon[1] * rk, moon[2] * rk] }));
     const trim = this.batch('roofTrim', () => ({ flat: [moon[0] * rk * 0.8, moon[1] * rk * 0.8, moon[2] * rk * 0.8] }));
@@ -2961,8 +3071,11 @@ const World = {
   },
   /** True when the point is under a solid roof (camera uses this to stay below the ceiling). */
   roofAt(x, z) {
-    const G = this.grid; if (!G || !this.roofed) return false; const C = CONFIG.CELL, cx = Math.floor(x / C), cy = Math.floor(z / C);
-    return G.inb(cx, cy) && (this.roofed[cy * G.w + cx] === 1 || this.roofed[cy * G.w + cx] === 2);
+    const G = this.grid; if (!G) return false;
+    const [cx, cy] = G.cellOf(x, z);
+    if (!G.inb(cx, cy) || !G.ceiling) return false;
+    const r = G.ceiling[cy * G.w + cx];
+    return r === 1 || r === 2;
   },
 
   /* ---------------- sky + weather ---------------- */
@@ -3108,6 +3221,7 @@ const World = {
  * ===================================================================== */
 
 const CH = { HIP_Y: 0.92, THIGH: 0.45, SHIN: 0.42, SPINE: 0.47, SH_X: 0.235, SH_Y: 0.43, UARM: 0.29, FARM: 0.27, HEAD_R: 0.165, NECK: 0.1 };
+const ASTAB_SPD = 2.5 / (1.5 * 1.5);
 
 /** Cylinder between two points (radius r0 at a, r1 at b). */
 function tube(geo, a, b, r0, r1, seg, color, glow = 0) {
@@ -3187,6 +3301,16 @@ const Items3D = {
   goggles(geo) {
     geo.torus(0.06, 0.008, 18, 6, { p: [0, 0.0, 0.07], r: [0, 0, 0] }, '#222');
     for (const x of [-0.04, 0.04]) { geo.cyl(0.03, 0.03, 0.03, 14, { p: [x, 0.02, 0.1], r: [Math.PI / 2, 0, 0] }, '#2a2d34'); geo.cyl(0.026, 0.026, 0.004, 14, { p: [x, 0.02, 0.117], r: [Math.PI / 2, 0, 0] }, '#5ef0ff', { glow: 2 }); }
+  },
+  pendulum(geo) {
+    geo.box(0.012, 0.08, 0.012, { p: [0, 0.06, 0.08], r: [0.15, 0, 0] }, '#555');
+    geo.sphere(0.028, 10, 8, { p: [0, -0.02, 0.1] }, '#b794f6', { glow: 1.8 });
+    geo.sphere(0.014, 8, 6, { p: [0, -0.02, 0.1] }, '#e9d5ff', { glow: 2.2 });
+  },
+  disguise(geo) {
+    geo.box(0.09, 0.06, 0.04, { p: [0, 0.02, 0.07] }, '#3a3d44');
+    geo.sphere(0.035, 10, 8, { p: [0, 0.04, 0.1] }, '#f6ad55');
+    geo.box(0.05, 0.008, 0.002, { p: [0, 0.055, 0.125] }, '#222');
   },
 };
 
@@ -3431,10 +3555,19 @@ class Character {
   handPos() { this.handR.computeWorldMatrix(true); return this.handR.getAbsolutePosition().clone(); }
   flashTip() { const it = this.items.flashlight; if (!it) return null; it.tip.computeWorldMatrix(true); const p = it.tip.getAbsolutePosition().clone(); const m = it.tip.getWorldMatrix(); const d = BABYLON.Vector3.TransformNormal(new BABYLON.Vector3(0, 0, 1), m).normalize(); return { p, d }; }
 
-  /** One-shot gesture: 'stab' | 'swing' | 'throw' | 'fire' | 'use'. */
+  /** One-shot gesture: 'stab' | 'swing' | 'astab' | 'throw' | 'fire' | 'use'. */
   act(kind) {
     if (kind === 'fire') { this.recoil = 1; const it = this.items.revolver; if (it) { it.spin = (it.spin || 0) + TAU / 6; it.hamT = 0; } return; }
     this.actK = kind; this.actT = 0;
+  }
+  _astabKnifeOn() {
+    if (this._astabKnife) {
+      if (this._astabKnife.parent === this.item) return;
+      this._astabKnife.dispose(); this._astabKnife = null;
+    }
+    const g = new Geo(); Items3D.knife(g, this.look.knife || 0);
+    const node = tn('astabKn', this.item); g.toMesh('astabKnm', this.mat, node);
+    this._astabKnife = node; node.setEnabled(false);
   }
   hitFlash(col = [1, 0.2, 0.2]) { this.flashT = 0.35; this.flashCol = col; }
 
@@ -3530,7 +3663,7 @@ class Character {
         break;
       case 'flashlight': T.aRx = -1.25 - p * 0.9; T.aRz = 0.05; T.aRy = -0.12; T.eR = -0.15; break;
       case 'magnifier': T.aRx = -1.25 - p * 0.5; T.aRy = -0.35; T.eR = -1.15; break;
-      case 'medkit': case 'remote': case 'vial': case 'goggles': T.aRx = -0.85 - p * 0.3; T.aRy = -0.2; T.eR = -0.9; break;
+      case 'medkit': case 'remote': case 'vial': case 'goggles': case 'pendulum': case 'disguise': T.aRx = -0.85 - p * 0.3; T.aRy = -0.2; T.eR = -0.9; break;
     }
     // one-shot gestures
     if (this.actK) {
@@ -3539,6 +3672,20 @@ class Character {
         const D = 0.42; if (t > D) this.actK = null;
         else if (t < 0.12) { const q = t / 0.12; T.aRx = U.lerp(-0.45, 0.35, q); T.eR = U.lerp(-1.05, -1.9, q); T.spY = -0.25 * q; }
         else { const q = U.clamp((t - 0.12) / 0.12, 0, 1); T.aRx = U.lerp(0.35, -1.55, q); T.eR = U.lerp(-1.9, -0.05, q); T.spY = U.lerp(-0.25, 0.35, q); T.lean += 0.15 * q; }
+      } else if (this.actK === 'astab') {
+        const ts = t * ASTAB_SPD, D = 0.58, baseLean = T.lean; if (ts > D) this.actK = null;
+        else if (ts < 0.06) {
+          const q = ts / 0.06; T.aRx = U.lerp(-0.12, -0.45, q); T.aRz = U.lerp(0.04, 0.24, q); T.eR = U.lerp(-0.15, -1.05, q); T.aRy = U.lerp(0, -0.15, q);
+        } else if (ts < 0.48) {
+          const u = ts - 0.06;
+          if (u < 0.12) {
+            const q = u / 0.12; T.aRx = U.lerp(-0.45, 0.35, q); T.eR = U.lerp(-1.05, -1.9, q); T.spY = -0.25 * q; T.aRz = U.lerp(0.24, 0.12, q); T.aRy = -0.15;
+          } else {
+            const q = U.clamp((u - 0.12) / 0.12, 0, 1); T.aRx = U.lerp(0.35, -1.55, q); T.eR = U.lerp(-1.9, -0.05, q); T.spY = U.lerp(-0.25, 0.35, q); T.lean = baseLean + 0.15 * q; T.aRz = 0.12; T.aRy = -0.15;
+          }
+        } else {
+          const q = U.clamp((ts - 0.48) / 0.10, 0, 1); T.aRx = U.lerp(-1.55, -0.12, q); T.eR = U.lerp(-0.05, -0.15, q); T.aRz = U.lerp(0.12, 0.04, q); T.spY = U.lerp(0.35, 0, q); T.lean = baseLean + 0.15 * (1 - q);
+        }
       } else if (this.actK === 'throw') {
         const D = 0.55; if (t > D) this.actK = null;
         else if (t < 0.22) { const q = t / 0.22; T.aRx = U.lerp(-0.45, -2.9, q); T.eR = U.lerp(-1.0, -1.6, q); T.spY = -0.35 * q; T.lean -= 0.1 * q; }
@@ -3559,15 +3706,24 @@ class Character {
     const fi = this.items.flashlight; if (fi) { const on = !!(this.flags & 1); fi.beam.setEnabled(on && !this.local); fi.lens.setEnabled(true); fi.lens.material = this.mat; }
     if (this.phones) this.phones.setEnabled(!!(this.flags & 16) && !this.dead);
 
-    // damp + apply
-    const kk = this.actK || this.recoil > 0 ? 40 : 14;
-    for (const key in T) c[key] = c[key] === undefined ? T[key] : U.damp(c[key], T[key], kk, dt);
+    // damp + apply (astab: snap upper body so fast timeline reads)
+    const astab = this.actK === 'astab';
+    const kk = this.recoil > 0 ? 40 : astab ? 95 : this.actK ? 40 : 14;
+    const astabSnap = astab ? new Set(['aRx', 'aRy', 'aRz', 'eR', 'spY', 'lean']) : null;
+    for (const key in T) c[key] = astabSnap && astabSnap.has(key) ? T[key] : c[key] === undefined ? T[key] : U.damp(c[key], T[key], kk, dt);
     this.legL.rotation.x = c.tL; this.legR.rotation.x = c.tR; this.kneeL.rotation.x = c.kL; this.kneeR.rotation.x = c.kR;
     this.legL.rotation.z = -0.03; this.legR.rotation.z = 0.03;
     this.body.position.y = c.bob; this.hips.rotation.z = c.hipsZ;
     this.spine.rotation.set(c.lean + c.spX, c.spY, c.spZ);
     this.armL.rotation.set(c.aLx, c.aLy, c.aLz); this.elbowL.rotation.x = c.eL;
     this.armR.rotation.set(c.aRx, c.aRy, c.aRz); this.elbowR.rotation.x = c.eR;
+    if (this.actK === 'astab') {
+      this._astabKnifeOn();
+      const ht = this.actT * ASTAB_SPD, sheath = ht > 0.48 ? U.clamp((ht - 0.48) / 0.10, 0, 1) : 0;
+      this._astabKnife.setEnabled(ht > 0.03 && sheath < 0.85);
+      const km = this._astabKnife.getChildren()[0]; if (km) { km.visibility = 1 - sheath * 0.95; if (sheath <= 0) km.scaling.set(1, 1, 1); }
+    }
+    else if (this._astabKnife) this._astabKnife.setEnabled(false);
     this.head.rotation.x = U.clamp(c.hd - c.lean * 0.6, -0.7, 0.6);
     // blink
     this.blinkT -= dt; if (this.eyes) { if (this.blinkT < 0) { this.blinkT = 2.5 + Math.random() * 3.5; } this.eyes.scaling.y = this.blinkT < 0.11 ? 0.15 : 1; }
@@ -3678,6 +3834,8 @@ const FX = {
   sparkle(p) { this._burst('spark', p, 12, new BABYLON.Vector3(0, 2, 0), 1.2); },
 
   /* ---------------- thrown knives ---------------- */
+  /** Blade tip distance from fly node along local +Z (mesh z=-0.25, scale 1.5, model tip ~z=0.26). */
+  KNIFE_TIP: 0.14,
   knifeFly(k, o, d, skin) {
     this.knifeEnd(k, null);
     const node = new BABYLON.TransformNode('kf' + k, R.scene); const g = new Geo(); Items3D.knife(g, skin || 0);
@@ -3689,8 +3847,14 @@ const FX = {
   knifeEnd(k, p, n, stuck) {
     const K = this.knives.get(k); if (!K) return;
     if (!p || !stuck) { K.node.dispose(); this.knives.delete(k); if (p) this._burst('spark', new BABYLON.Vector3(p[0], p[1], p[2]), 8, new BABYLON.Vector3(0, 1, 0), 0.8); return; }
-    K.stuck = true; K.life = 4; K.node.position.set(p[0] - K.d.x * 0.05, p[1], p[2] - K.d.z * 0.05);
-    this._burst('dust', new BABYLON.Vector3(p[0], p[1], p[2]), 4, new BABYLON.Vector3(n[0], n[1], n[2]), 0.3);
+    K.stuck = true; K.life = 4;
+    const tip = this.KNIFE_TIP, embed = 0.015;
+    const hasN = n && (n[0] || n[1] || n[2]);
+    const into = hasN ? new BABYLON.Vector3(n[0], n[1], n[2]).normalize().scale(-1) : K.d.clone().normalize();
+    const nodePos = new BABYLON.Vector3(p[0], p[1], p[2]).add(into.scale(embed - tip));
+    K.node.position.copyFrom(nodePos);
+    K.node.lookAt(nodePos.add(into));
+    this._burst('dust', new BABYLON.Vector3(p[0], p[1], p[2]), 4, hasN ? new BABYLON.Vector3(n[0], n[1], n[2]) : into.scale(-1), 0.3);
   },
 
   /* ---------------- coins ---------------- */
@@ -3787,7 +3951,7 @@ const FX = {
     }
     for (const [k, K] of this.knives) {
       if (K.stuck) { K.life -= dt; if (K.life <= 0) { K.node.dispose(); this.knives.delete(k); } continue; }
-      K.t += dt; K.node.position.addInPlace(K.d.scale(CONFIG.THROW_SPEED * dt)); K.node.getChildMeshes()[0].rotation.z += dt * 18;
+      K.t += dt; K.d.y -= dt * 0.25; K.node.position.addInPlace(K.d.scale(CONFIG.THROW_SPEED * dt)); K.node.lookAt(K.node.position.add(K.d)); K.node.getChildMeshes()[0].rotation.z += dt * 18;
       if (K.t > 3) { K.node.dispose(); this.knives.delete(k); }
     }
     for (const [, c] of this.coins) { c.rotation.y += dt * 2.6; c.position.y = 0.55 + Math.sin(this.t * 2.5 + c.metadata.ph) * 0.08; }
@@ -3827,7 +3991,7 @@ const San = {
   v3(v, lim = 5000) { return Array.isArray(v) && v.length === 3 ? v.map(x => San.num(x, lim)) : null; },
   idStr(v) { return typeof v === 'string' && /^[A-Za-z0-9_\-]{1,40}$/.test(v) ? v : null; },
 };
-const ACT_KINDS = ['stab', 'swing', 'throw', 'shoot', 'use', 'toggle', 'duck'];
+const ACT_KINDS = ['stab', 'swing', 'throw', 'shoot', 'use', 'toggle', 'duck', 'copy'];
 const ADMIN_TARGETS = ['me', 'all', 'others', 'bots', 'humans'];
 
 const C2H = {
@@ -3837,7 +4001,7 @@ const C2H = {
   chat: m => { const text = San.str(m.text, 140).trim(); return text ? { t: 'chat', text } : null; },
   vote: m => { const map = San.idStr(m.map); return map ? { t: 'vote', map } : null; },
   ready: m => ({ t: 'ready', v: !!m.v }),
-  cfg: m => ({ t: 'cfg', bots: San.int(m.bots, 0, 15), time: San.int(m.time, 60, 420), roles: Array.isArray(m.roles) ? m.roles.slice(0, 12).filter(r => OPTIONAL_ROLES.includes(r)) : OPTIONAL_ROLES.slice(), map: San.idStr(m.map) || 'vote', auto: !!m.auto }),
+  cfg: m => ({ t: 'cfg', bots: San.int(m.bots, 0, 15), time: San.int(m.time, 60, 420), roles: Array.isArray(m.roles) ? m.roles.slice(0, 14).filter(r => OPTIONAL_ROLES.includes(r)) : OPTIONAL_ROLES.slice(), map: San.idStr(m.map) || 'vote', auto: !!m.auto }),
   start: () => ({ t: 'start' }),
   act: m => { if (!ACT_KINDS.includes(m.k)) return null; return { t: 'act', k: m.k, o: San.v3(m.o), d: San.v3(m.d, 2), tg: m.tg == null ? null : San.int(m.tg, 0, 1e6), item: San.idStr(m.item) }; },
   emote: m => ({ t: 'emote', e: San.int(m.e, 0, ANIM_CODES.length - 1) }),
@@ -3851,7 +4015,7 @@ const C2H = {
   drop: m => ({ t: 'drop', i: San.int(m.i, 0, NSLOTS - 1) }),
 };
 const H2C_TYPES = new Set(['welcome', 'reject', 'roster', 'cfg', 'votes', 'phase', 'you', 'inv', 'st', 'died', 'shot', 'kfly', 'kend', 'act', 'gun', 'coins', 'coin', 'coin-',
-  'reveal', 'fx', 'blackout', 'xray', 'target', 'sick', 'end', 'chat', 'toast', 'feed', 'emote', 'clockSync', 'hostLeft', 'look', 'note', 'ndrop', 'nclear', 'info', 'kcoin', 'adm', 'flicker', 'disco', 'tp', 'mod', 'gift', 'banner', 'revive', 'duck', 'duckrain', 'fling', 'fitem', 'fitem-', 'fclear']);
+  'reveal', 'fx', 'blackout', 'xray', 'target', 'sick', 'hypno', 'copycat', 'end', 'chat', 'toast', 'feed', 'emote', 'clockSync', 'hostLeft', 'look', 'note', 'ndrop', 'nclear', 'info', 'kcoin', 'adm', 'flicker', 'disco', 'tp', 'mod', 'gift', 'banner', 'revive', 'duck', 'duckrain', 'fling', 'fitem', 'fitem-', 'fclear']);
 
 const Net = {
   peer: null, isHost: false, offline: false, myId: 0, hostId: 1, code: '', connected: false,
@@ -4132,6 +4296,7 @@ const Admin = {
     const R0 = Host.round, G = Host.grid, s = U.pick(G.spawns(6)) || { x: T.x, z: T.z, yaw: 0 };
     if (!T.role) T.role = 'bystander';
     let slots = Roles.startingSlots(T.role); if (R0 && R0.gun) slots = slots.map(i => i === 'revolver' ? null : i);
+    Roles.grantNotepad(slots);
     Object.assign(T, { alive: true, ghost: false, lobbyAt: 0, body: null, x: s.x, z: s.z, y: 0, yaw: s.yaw, tp: U.now(), sel: -1, slots, free: new Set(), uses: Roles.startingUses(T.role), poisonT: 0, sick: false, cd: {} });
     Net.broadcast({ t: 'revive', id: T.id, x: s.x, z: s.z, yaw: s.yaw });
     Host._sendYou(T); if (T.bot) { const B = Bots.brains.get(T.id); if (B) Object.assign(B, Bots._fresh(T)); }
@@ -4207,13 +4372,19 @@ const Admin = {
       let n = 0;
       for (const Q of T) {
         if (!Q.alive || !Q.role) continue; n++;
-        Object.assign(Q, { role, slots: Roles.startingSlots(role), free: new Set(), uses: Roles.startingUses(role), sel: -1, armor: role === 'bodyguard' });
+        const slots = Roles.startingSlots(role); Roles.grantNotepad(slots);
+        Object.assign(Q, { role, slots, free: new Set(), uses: Roles.startingUses(role), sel: -1, armor: role === 'bodyguard' });
         if (role === 'assassin' && !R0.target) { const roles = {}; for (const q of Host.players.values()) if (q.role) roles[q.id] = q.role; R0.target = Roles.pickTarget(roles, [...Host.players.values()].filter(q => q.alive).map(q => q.id)); }
         const B = Bots.brains.get(Q.id); if (B) B.abilityAt = U.now() + 4;
       }
       for (const Q of Host.players.values()) if (Q.role) Host._sendYou(Q);
       this.say(P, `🎭 ${n} player${n === 1 ? ' is' : 's are'} now ${ROLES[role].icon} ${ROLES[role].name}.`); Host.needEval = true; } },
     reveal: { cat: 'roles', icon: '🔍', label: 'Reveal', d: 'Privately see the target\'s role', tgt: 1, fn(P, T) { this.say(P, '🔍 ' + T.slice(0, 8).map(q => `${q.name}: ${q.role ? ROLES[q.role].icon + ' ' + ROLES[q.role].name : 'no role'}${q.alive ? '' : ' †'}`).join(' · ')); } },
+    whorole: { cat: 'roles', icon: '🎯', label: 'Who has role', d: 'Which player(s) have the selected role this round', arg: { type: 'role', def: 'murderer' }, fn(P, T, role) {
+      if (!Host.round) { this.say(P, 'No round running.'); return; }
+      const R = ROLES[role], list = [...Host.players.values()].filter(q => q.role === role);
+      if (!list.length) { this.say(P, `${R.icon} Nobody is the ${R.name}.`); return; }
+      this.say(P, `${R.icon} ${R.name}: ${list.map(q => `${q.name}${q.alive ? '' : ' †'}`).join(', ')}`); } },
     roles: { cat: 'roles', icon: '📜', label: 'Everyone\'s role', d: 'Privately list every role', fn(P) { if (!Host.round) { this.say(P, 'No round running.'); return; } this.say(P, '🔍 ' + [...Host.players.values()].filter(q => q.role).map(q => `${q.name}: ${ROLES[q.role].icon}${q.alive ? '' : '†'}`).join(' · ')); } },
 
     /* ----- round ----- */
@@ -4413,7 +4584,7 @@ const Host = {
   },
   _clearNotes() { if (this.notes && this.notes.size) { this.notes.clear(); Net.broadcast({ t: 'nclear' }); } },
   roster() {
-    const list = [...this.players.values()].map(p => ({ id: p.id, name: p.name, look: p.look, bot: p.bot, ready: p.ready, host: p.id === Net.myId, alive: p.alive, adm: p.admin || null, size: p.size || 1 }));
+    const list = [...this.players.values()].map(p => ({ id: p.id, name: p.name, look: p.look, bot: p.bot, ready: p.ready, host: p.id === Net.myId, alive: p.alive, adm: p.admin || null, size: p.size || 1, copycat: !!p.copycat }));
     Net.broadcast({ t: 'roster', list, cfg: this.cfg });
   },
   sys(text, opts) { Net.broadcast({ t: 'chat', from: 0, name: '', text, sys: true }, opts); },
@@ -4422,10 +4593,16 @@ const Host = {
   _sendYou(P) {
     if (P.bot) return;
     const mates = [], R0 = this.round;
-    if (R0) for (const Q of this.players.values()) if (Q !== P && Roles.allies(P.role, Q.role)) mates.push({ id: Q.id, role: Q.role });
-    Net.sendTo(P.id, { t: 'you', role: P.role, slots: P.slots, uses: P.uses, mates, target: P.role === 'assassin' && R0 ? R0.target : null, armor: P.armor });
+    if (R0) for (const Q of this.players.values()) if (Q !== P && Roles.teamMate(P.role, Q.role)) mates.push({ id: Q.id, role: Q.role });
+    Net.sendTo(P.id, { t: 'you', role: P.role, slots: P.slots, uses: P.uses, mates, target: P.role === 'assassin' && R0 ? R0.target : null, armor: P.armor, copyBy: P.copyBy || 0 });
   },
   _inv(P) { if (!P.bot) Net.sendTo(P.id, { t: 'inv', slots: P.slots, uses: P.uses }); },
+  /** One-time role kit consumed — remove from hotbar (Detective/Medic can then take the gun). */
+  _stripRoleItem(P, item) {
+    const i = P.slots.indexOf(item);
+    if (i >= 0) { P.slots[i] = null; if (P.free) P.free.delete(i); if (P.sel === i) P.sel = -1; }
+    this._inv(P);
+  },
 
   /* ---------------- round flow ---------------- */
   pickMap() {
@@ -4446,11 +4623,12 @@ const Host = {
     const sp = G.spawns(list.length), spawns = {};
     list.forEach((P, i) => {
       const s = sp[i % sp.length]; P.x = s.x; P.z = s.z; P.y = 0; P.yaw = s.yaw; P.tp = now; P.stT = now;
-      P.role = roles[P.id]; P.alive = true; P.body = null; P.free = new Set(); P.slots = Roles.startingSlots(P.role); P.uses = Roles.startingUses(P.role); P.sel = -1;
-      P.shield = false; P.armor = P.role === 'bodyguard'; P.poisonT = 0; P.sick = false; P.coins = 0; P.kcoins = 0; P.kills = 0; P.ghost = false; P.cd = {}; P.ready = P.bot;
+      P.role = roles[P.id]; P.alive = true; P.body = null; P.free = new Set(); P.slots = Roles.startingSlots(P.role); Roles.grantNotepad(P.slots); P.uses = Roles.startingUses(P.role); P.sel = -1;
+      P.shield = false; P.armor = P.role === 'bodyguard'; P.poisonT = 0; P.sick = false; P.hypno = false; P.copyBy = 0; P.copycat = false; P.coins = 0; P.kcoins = 0; P.kills = 0; P.ghost = false; P.cd = {}; P.ready = P.bot;
       spawns[P.id] = [Math.round(s.x * 100) / 100, Math.round(s.z * 100) / 100, Math.round(s.yaw * 100) / 100];
     });
-    this.round = { target, coins: new Map(), coinSeq: 1, coinT: now + 6, knives: [], gun: null, jesters: [], jesterWin: 0, gone: {}, blackoutEnd: 0, start: now, deaths: [], firstBlood: null };
+    const hypnotistId = list.find(p => roles[p.id] === 'hypnotist')?.id || 0;
+    this.round = { target, coins: new Map(), coinSeq: 1, coinT: now + 6, knives: [], gun: null, jesters: [], jesterWin: 0, hypnotistId, hypnotistElimWin: false, gone: {}, blackoutEnd: 0, start: now, deaths: [], firstBlood: null };
     this.votes.clear(); this.countdown = 0; this._clearNotes(); this._clearFloor();
     this.phase = 'intro'; this.phaseEnd = now + CONFIG.INTRO_TIME;
     const inPlay = [...new Set(Object.values(roles))];
@@ -4463,13 +4641,13 @@ const Host = {
   endRound(winner, reason) {
     if (this.phase !== 'play' && this.phase !== 'intro') return;
     const R0 = this.round, list = [...this.players.values()].filter(p => p.role);
-    const winners = winner === 'jester' ? [R0.jesterWin] : Roles.winners(list, winner);
-    const roles = {}, alive = {}, kills = {}, coins = {}, names = {};
+    const winners = winner === 'jester' ? [R0.jesterWin] : winner === 'hypnotist' ? [R0.hypnotistId] : Roles.winners(list, winner);
+    const roles = {}, alive = {}, kills = {}, coins = {}, names = {}, copycats = {};
     for (const id in R0.gone) { const g = R0.gone[id]; roles[id] = g.role; alive[id] = false; kills[id] = g.kills; coins[id] = g.coins; names[id] = g.name + ' (left)'; }
-    for (const P of list) { roles[P.id] = P.role; alive[P.id] = P.alive; kills[P.id] = P.kills; coins[P.id] = P.coins; names[P.id] = P.name; }
+    for (const P of list) { roles[P.id] = P.role; alive[P.id] = P.alive; kills[P.id] = P.kills; coins[P.id] = P.coins; names[P.id] = P.name; if (P.copycat) copycats[P.id] = true; }
     let mvp = null, best = -1; for (const P of list) { const s = P.kills * 3 + P.coins * 0.1 + (P.alive ? 2 : 0) + (winners.includes(P.id) ? 2 : 0); if (s > best) { best = s; mvp = P.id; } }
     this.phase = 'end'; this.phaseEnd = U.now();
-    Net.broadcast({ t: 'end', winner, reason, roles, alive, kills, coins, names, winners, jesters: [], mvp, map: this.map, end: this.phaseEnd, time: Math.round(U.now() - R0.start) });
+    Net.broadcast({ t: 'end', winner, reason, roles, alive, kills, coins, names, copycats, winners, jesters: [], mvp, map: this.map, end: this.phaseEnd, time: Math.round(U.now() - R0.start) });
     for (const k of R0.knives) Net.broadcast({ t: 'kend', k: k.k });
     if (Bots.onEnd) Bots.onEnd(winners);
     this.toLobby(true);      // everyone is teleported straight back to the lobby; results stay on screen there
@@ -4517,7 +4695,11 @@ const Host = {
     this.kill(T, by, cause); return true;
   },
   kill(T, by, cause) {
-    if (!T.alive || (T.god && cause !== 'admin' && cause !== 'left')) return; T.alive = false; T.sel = -1;
+    if (!T.alive || (T.god && cause !== 'admin' && cause !== 'left')) return;
+    const R0 = this.round;
+    const awake = [...this.players.values()].filter(p => p.alive && p.role && !p.hypno && p.role !== 'hypnotist');
+    const hypElim = R0 && R0.hypnotistId && T.role !== 'hypnotist' && !T.hypno && awake.length === 1 && awake[0].id === T.id;
+    T.alive = false; T.sel = -1;
     T.body = { x: Math.round(T.x * 100) / 100, z: Math.round(T.z * 100) / 100, yaw: T.yaw };   // the body stays where it fell
     if (T.bot) T.lobbyAt = U.now() + 3;   // dead bots head back to the lobby
     const scored = by && by !== T && ((Roles.isEvil(by.role) && cause !== 'gun') || (cause === 'gun' && Roles.isEvil(T.role)));
@@ -4534,7 +4716,49 @@ const Host = {
       this.round.jesterWin = T.id; this.round.jesterBy = by ? by.name : null;
       this.toastAll(`🃏 ${T.name} was the JESTER — and that's exactly what they wanted!`, 'jester');
     }
+    if (hypElim) R0.hypnotistElimWin = true;
+    if (this._checkHypnotistWin()) return;
     this.needEval = true; this.roster();
+  },
+  _checkHypnotistWin() {
+    const R0 = this.round;
+    if (!R0 || !R0.hypnotistId || (this.phase !== 'play' && this.phase !== 'intro')) return false;
+    const H = this.players.get(R0.hypnotistId), name = H ? H.name : 'The Hypnotist';
+    const alive = [...this.players.values()].filter(p => p.alive && p.role);
+    const victims = alive.filter(p => p.role !== 'hypnotist');
+    if (victims.length && victims.every(p => p.hypno)) {
+      this.endRound('hypnotist', `${name} put everyone under their spell!`);
+      return true;
+    }
+    if (R0.hypnotistElimWin) {
+      this.endRound('hypnotist', `${name} wins — the last person still awake is gone.`);
+      return true;
+    }
+    return false;
+  },
+  _applyCopycat(P, T) {
+    const nr = T.role;
+    P.role = nr; P.copyBy = 0; P.copycat = true; P.slots = Roles.startingSlots(nr); Roles.grantNotepad(P.slots); P.uses = Roles.startingUses(nr); P.sel = -1;
+    P.shield = false; P.armor = nr === 'bodyguard'; P.poisonT = 0; P.sick = false; P.hypno = false;
+    const R0 = this.round;
+    if (nr === 'assassin' && R0) {
+      const roles = {}; for (const q of this.players.values()) if (q.role) roles[q.id] = q.role;
+      R0.target = Roles.pickTarget(roles, [...this.players.values()].filter(q => q.alive).map(q => q.id));
+    }
+    if (!P.bot) {
+      this._sendYou(P);
+      Net.sendTo(P.id, { t: 'copycat', done: true });
+      this.toast(P.id, `🎭 You copied the ${ROLES[nr].name}!`, 'good');
+    }
+    if (!T.bot) {
+      const vid = T.id;
+      setTimeout(() => {
+        const V = this.players.get(vid);
+        if (!this.round || !V || !V.alive) return;
+        this.toast(vid, 'The copycat has copied your role!', 'warn');
+      }, CONFIG.COPYCAT_ALERT_DELAY * 1000);
+    }
+    this._inv(P); this.roster();
   },
   _dropGunFrom(P) {
     const i = P.slots.indexOf('revolver'); if (i < 0 || !this.round) return;
@@ -4542,14 +4766,13 @@ const Host = {
     const C = this.grid.nearestWalk(...this.grid.cellOf(P.x, P.z)), c = this.grid.walkableAt(P.x, P.z) ? { x: P.x, z: P.z } : this.grid.center(C);
     this.round.gun = { x: c.x, z: c.z, t: U.now() + 1.2, skin: P.look.gun };
     Net.broadcast({ t: 'gun', x: c.x, z: c.z, skin: P.look.gun });
-    this.toastAll('🔫 The Sheriff\'s gun has dropped! Only Bystanders can pick it up.', 'warn');
   },
   _newTarget(done) {
     const R0 = this.round; if (!R0) return; const alive = [...this.players.values()].filter(p => p.alive);
     const roles = {}; for (const p of this.players.values()) if (p.role) roles[p.id] = p.role;
     const assassin = alive.find(p => p.role === 'assassin');
     // contract fulfilled (or blade spent) -> no more targets; otherwise re-assign so the unused blade has a purpose
-    R0.target = assassin && !done && assassin.uses.blade > 0 ? Roles.pickTarget(roles, alive.map(p => p.id)) : null;
+    R0.target = assassin && !done && assassin.uses.hknife > 0 ? Roles.pickTarget(roles, alive.map(p => p.id)) : null;
     if (assassin && !assassin.bot) Net.sendTo(assassin.id, { t: 'target', id: R0.target, quiet: !!done });
   },
 
@@ -4559,15 +4782,15 @@ const Host = {
     if (!P.alive && !lobby) return;
     const item = this._item(P), anim = k => Net.broadcast({ t: 'act', id: P.id, k, lw }, { except: P.bot ? undefined : P.id });
     switch (m.k) {
-      case 'swing': if (item === 'knife' || item === 'propknife' || item === 'blade') { if (this._cd(P, 'swing', 0.35)) anim('swing'); } break;
+      case 'swing': if (item === 'knife' || item === 'propknife' || item === 'hknife') { if (this._cd(P, 'swing', 0.35)) anim(item === 'hknife' ? 'astab' : 'swing'); } break;
       case 'stab': {
-        if (item !== 'knife' && item !== 'blade') return;
-        if (!this._cd(P, 'stab', CONFIG.KNIFE_CD)) return; anim(item === 'blade' ? 'swing' : 'stab');
+        if (item !== 'knife' && item !== 'hknife') return;
+        if (!this._cd(P, 'stab', CONFIG.KNIFE_CD)) return; anim(item === 'hknife' ? 'astab' : 'stab');
         if (!live) return;
         const T = this.players.get(m.tg); if (!T || !T.alive || T === P) return;
         if (U.dist(P.x, P.z, T.x, T.z) > CONFIG.KNIFE_RANGE + 0.8 || !this._losP(P, T)) return;
         if (item === 'knife') { if (P.role !== 'murderer' || !Roles.knifeCanHit(T.role)) return; this.damage(T, P, 'knife'); }
-        else { const tgt = this.round && T.id === this.round.target; if (!this.round || (!tgt && T.role !== 'jester') || !(P.uses.blade > 0)) return; P.uses.blade--; this._inv(P); if (this.damage(T, P, 'blade') && tgt) { this.toast(P.id, '🗡️ Contract complete. Now survive — the Murderer doesn\'t know you\'re on their side.', 'good'); } }
+        else { if (P.role !== 'assassin') return; const tgt = this.round && T.id === this.round.target; if (!this.round || !tgt || !(P.uses.hknife > 0)) return; P.uses.hknife--; this._inv(P); if (this.damage(T, P, 'blade')) { this.toast(P.id, '🗡️ Contract complete. Now survive — the Murderer doesn\'t know you\'re on their side.', 'good'); } }
         break;
       }
       case 'throw': {
@@ -4603,19 +4826,22 @@ const Host = {
       }
       case 'use': {
         if (!item || item !== m.item || !live) return;
-        if (!(P.uses[item] > 0)) return;
+        const useLimit = ITEMS[item] && ITEMS[item].uses;
+        if (useLimit && !(P.uses[item] > 0)) return;
         if (!this._cd(P, 'use', 0.6)) return;
         const T = m.tg != null ? this.players.get(m.tg) : null;
         const inRange = (r) => T && T.alive && T !== P && U.dist(P.x, P.z, T.x, T.z) <= r + 0.6 && this._losP(P, T);
         if (item === 'magnifier') {
           if (!inRange(CONFIG.INVESTIGATE_RANGE)) return;
-          P.uses[item]--; this._inv(P); anim('use');
+          P.uses[item]--; this._stripRoleItem(P, item); anim('use');
           Net.sendTo(P.id, { t: 'reveal', id: T.id, role: T.role }); if (P.bot) Bots.onReveal(P, T);
+          if (!P.bot) this.toast(P.id, '🔍 Kit used — you can pick up the Sheriff\'s gun now, like a Bystander.', 'info');
         } else if (item === 'medkit') {
           const tgt = T ? (inRange(CONFIG.SHIELD_RANGE) ? T : null) : P; if (!tgt) return;
-          P.uses[item]--; this._inv(P); anim('use'); tgt.shield = true; const cured = tgt.poisonT > 0; tgt.poisonT = 0; tgt.sick = false;
+          P.uses[item]--; this._stripRoleItem(P, item); anim('use'); tgt.shield = true; const cured = tgt.poisonT > 0; tgt.poisonT = 0; tgt.sick = false;
           this.toast(P.id, tgt === P ? '🩹 You shielded yourself.' : `🩹 You shielded ${tgt.name}.`, 'good');
           if (tgt !== P) this.toast(tgt.id, cured ? '🩹 A Medic cured your poison and shielded you!' : '🩹 A Medic has shielded you from one attack.', 'good');
+          if (!P.bot) this.toast(P.id, '🩹 Kit used — you can pick up the Sheriff\'s gun now, like a Bystander.', 'info');
           Net.broadcast({ t: 'fx', k: 'shield', id: tgt.id, x: tgt.x, z: tgt.z });
         } else if (item === 'fuse') {
           P.uses[item]--; this._inv(P); anim('use'); this.round.blackoutEnd = now + CONFIG.BLACKOUT_TIME;
@@ -4626,7 +4852,25 @@ const Host = {
           this.toast(P.id, `🧪 ${T.name} is poisoned. ${CONFIG.POISON_DELAY}s until they drop.`, 'good');
         } else if (item === 'goggles') {
           P.uses[item]--; this._inv(P); anim('use'); Net.sendTo(P.id, { t: 'xray', dur: CONFIG.XRAY_TIME }); if (P.bot) Bots.onXray(P);
+        } else if (item === 'pendulum') {
+          if (P.role !== 'hypnotist' || !inRange(CONFIG.INVESTIGATE_RANGE)) return;
+          if (!this._cd(P, 'hypno', CONFIG.HYPNOSIS_CD)) { if (!P.bot) this.toast(P.id, '🌀 Pendulum recharging…', 'warn'); return; }
+          if (T.hypno) return;
+          anim('use'); T.hypno = true;
+          if (!P.bot) {
+            this.toast(P.id, `🌀 ${T.name} is under your spell.`, 'good');
+            Net.sendTo(P.id, { t: 'hypno', id: T.id });
+          }
+          if (this._checkHypnotistWin()) return;
         }
+        break;
+      }
+      case 'copy': {
+        if (!live || P.role !== 'copycat' || !P.copyBy || now >= P.copyBy) return;
+        const T = this.players.get(m.tg);
+        if (!T || !T.alive || T === P || T.role === 'sheriff' || T.role === 'copycat') return;
+        if (U.dist(P.x, P.z, T.x, T.z) > CONFIG.TOUCH_RANGE + 0.6 || !this._losP(P, T)) return;
+        anim('use'); this._applyCopycat(P, T);
         break;
       }
     }
@@ -4643,7 +4887,13 @@ const Host = {
     const now = U.now(), R0 = this.round;
     Bots.update(dt);
     // phase timers
-    if (this.phase === 'intro' && now >= this.phaseEnd) { this.phase = 'play'; this.phaseEnd = now + this.cfg.time; Net.broadcast({ t: 'phase', ph: 'play', map: this.map, end: this.phaseEnd }); }
+    if (this.phase === 'intro' && now >= this.phaseEnd) {
+      this.phase = 'play'; this.phaseEnd = now + this.cfg.time;
+      for (const P of this.players.values()) {
+        if (P.role === 'copycat') { P.copyBy = now + CONFIG.COPYCAT_TIME; if (!P.bot) Net.sendTo(P.id, { t: 'copycat', end: P.copyBy }); }
+      }
+      Net.broadcast({ t: 'phase', ph: 'play', map: this.map, end: this.phaseEnd });
+    }
     else if (this.phase === 'play' && now >= this.phaseEnd) this._evaluate(true);
     else if (this.phase === 'end' && now >= this.phaseEnd) this.toLobby();
     else if (this.phase === 'lobby') this._lobbyTick(now);
@@ -4687,16 +4937,20 @@ const Host = {
     for (const P of this.players.values()) {
       if (!P.alive) { if (P.bot && !P.ghost && P.lobbyAt && now >= P.lobbyAt) this._botToLobby(P); continue; }
       if (play && P.coins - (P.kcoins || 0) < CONFIG.COIN_BAG) for (const [id, c] of R0.coins) if (U.dist2(P.x, P.z, c.x, c.z) < 1.1) { R0.coins.delete(id); P.coins++; Net.broadcast({ t: 'coin-', id, by: P.id }); break; }
-      if (R0.gun && now > R0.gun.t && Roles.canTakeGun(P.role) && !P.slots.includes('revolver') && U.dist2(P.x, P.z, R0.gun.x, R0.gun.z) < 1.6) {
+      if (R0.gun && now > R0.gun.t && Roles.canTakeGunPlayer(P) && !P.slots.includes('revolver') && U.dist2(P.x, P.z, R0.gun.x, R0.gun.z) < 1.6) {
         const i = P.slots.indexOf(null); if (i >= 0) {
           P.slots[i] = 'revolver'; (P.free = P.free || new Set()).add(i); P.cd.gun = now + 0.8; R0.gun = null; this._inv(P);
-          Net.broadcast({ t: 'gun', taken: P.id }); this.toastAll('🔫 Someone picked up the gun!', 'warn');
-          this.toast(P.id, `🔫 You picked up the revolver! Press ${i + 1} to draw it.`, 'good'); Bots.onGunTaken(P);
+          Net.broadcast({ t: 'gun', taken: P.id }); Bots.onGunTaken(P);
         }
       }
       if (P.poisonT) {
         if (!P.sick && now > P.poisonT - 7) { P.sick = true; Net.sendTo(P.id, { t: 'sick' }); }
         if (now >= P.poisonT) { P.poisonT = 0; this.damage(P, this.players.get(P.poisonBy) || null, 'poison'); }
+      }
+      if (play && P.role === 'copycat' && P.copyBy && now >= P.copyBy) {
+        P.copyBy = 0; if (!P.bot) Net.sendTo(P.id, { t: 'copycat', done: true });
+        this.toast(P.id, '🎭 You failed to copy someone in time!', 'bad');
+        this.kill(P, null, 'copycat');
       }
     }
   },
@@ -4713,6 +4967,7 @@ const Host = {
   onDrop(m, from) {
     const P = this.players.get(from); if (!P || P.bot) return;
     const i = m.i, it = P.slots[i]; if (!it) return;
+    if (it === 'notepad') { this.toast(from, '⛔ Sticky Notes stay with you.', 'warn'); return; }
     if (!P.free || !P.free.has(i)) { this.toast(from, '⛔ You can\'t drop that — role items and lobby gear stay with you.', 'warn'); return; }
     const wait = !!P.ghost, mid = this._midRound();
     if (mid && !P.alive && !wait) return;
@@ -4724,7 +4979,7 @@ const Host = {
       P.slots[i] = null; P.free.delete(i); if (P.sel === i) P.sel = -1; this._inv(P);
       this.round.gun = { x: r2(c.x), z: r2(c.z), t: U.now() + 1.2, skin: P.look.gun };
       Net.broadcast({ t: 'gun', x: this.round.gun.x, z: this.round.gun.z, skin: P.look.gun });
-      this.toast(from, '🔫 You dropped the gun. Only Bystanders can pick it up.', 'info'); return;
+      return;
     }
     P.slots[i] = null; P.free.delete(i); if (P.sel === i) P.sel = -1; this._inv(P);
     const F = { id: this.floorSeq++, item: it, x: r2(c.x), z: r2(c.z), lw: wait ? 1 : 0, t: U.now() + 1.2, skin: P.look.gun || 0 };
@@ -4791,6 +5046,7 @@ const Host = {
       const J = this.players.get(R0.jesterWin), name = J ? J.name : 'The Jester';
       this.endRound('jester', R0.jesterBy ? `${name} tricked ${R0.jesterBy} into eliminating them!` : `${name} got themselves eliminated — exactly as planned!`); return;
     }
+    if (R0 && this._checkHypnotistWin()) return;
     const list = [...this.players.values()].filter(p => p.role);
     const res = Roles.evaluate(list, timeUp);
     if (res) this.endRound(res.winner, res.reason);
@@ -4854,7 +5110,7 @@ const Bots = {
   onReveal(P, T) {
     const B = this.brains.get(P.id); if (!B) return; B.revealed.add(T.id);
     setTimeout(() => {
-      if (Roles.isEvil(T.role)) { this.say(P, `🔍 I investigated ${T.name} — they're the ${ROLES[T.role].name.toUpperCase()}! Get them!`); this.global.set(T.id, 12); }
+      if (Roles.detectiveThreat(T.role)) { this.say(P, `🔍 I investigated ${T.name} — they're the ${ROLES[T.role].name.toUpperCase()}! Get them!`); this.global.set(T.id, 12); }
       else if (T.role === 'jester') this.say(P, `🔍 ${T.name} is the Jester. DON'T shoot them!`), this.global.set(T.id, -20);
       else this.say(P, `🔍 ${T.name} is innocent (${ROLES[T.role].name}). ✅`), this.global.set(T.id, -6);
     }, 900 + Math.random() * 1500);
@@ -4946,12 +5202,24 @@ const Bots = {
     const dark = Host.round && Host.round.blackoutEnd > now;
     switch (P.role) {
       case 'murderer': return this.murderer(B, others, now);
-      case 'assassin': if (P.uses.blade > 0 && now > B.abilityAt) return this.assassin(B, others, now); break;
+      case 'assassin': if (P.uses.hknife > 0 && now > B.abilityAt) return this.assassin(B, others, now); break;
       case 'poisoner': if (P.uses.vial > 0 && now > B.abilityAt) return this.poisoner(B, others, now); break;
       case 'saboteur': if (P.uses.fuse > 0 && now > B.abilityAt) { this.equip(B, 'fuse'); if (!B.useT) B.useT = now + 0.7; else if (now > B.useT) { Host.act(P, { k: 'use', item: 'fuse' }); B.useT = 0; this.equip(B, null); } return; } break;
       case 'detective': if (P.uses.magnifier > 0 && now > B.abilityAt && this.detective(B, others, now)) return; break;
       case 'medic': if (P.uses.medkit > 0 && now > B.abilityAt && this.medic(B, others, now)) return; break;
       case 'lookout': if (P.uses.goggles > 0 && now > B.abilityAt) { this.equip(B, 'goggles'); Host.act(P, { k: 'use', item: 'goggles' }); this.equip(B, null); return; } break;
+      case 'hypnotist': if (now > B.abilityAt && (P.cd.hypno || 0) < now) {
+        let best = null, bd = CONFIG.INVESTIGATE_RANGE;
+        for (const Q of others) if (!Q.hypno && this.visible(B, Q, bd)) { const d = U.dist(P.x, P.z, Q.x, Q.z); if (d < bd) { bd = d; best = Q; } }
+        if (best) { this.equip(B, 'pendulum'); B.aimAt = best; if (U.dist(P.x, P.z, best.x, best.z) > CONFIG.INVESTIGATE_RANGE - 2) this.goTo(B, best.x, best.z, false); else { this.stop(B); Host.act(P, { k: 'use', item: 'pendulum', tg: best.id }); B.abilityAt = now + CONFIG.HYPNOSIS_CD; } this.equip(B, null); return; }
+        break;
+      }
+      case 'copycat': if (P.copyBy && now < P.copyBy) {
+        let best = null, bd = CONFIG.TOUCH_RANGE;
+        for (const Q of others) if (Q.role !== 'sheriff' && Q.role !== 'copycat' && this.visible(B, Q, 14)) { const d = U.dist(P.x, P.z, Q.x, Q.z); if (d < bd) { bd = d; best = Q; } }
+        if (best) { this.equip(B, 'disguise'); if (bd > CONFIG.TOUCH_RANGE - 0.5) this.goTo(B, best.x, best.z, true); else { this.stop(B); Host.act(P, { k: 'copy', tg: best.id }); } return; }
+        break;
+      }
     }
     if (Roles.isEvil(P.role)) return this.blend(B, others, now);
     this.innocent(B, others, now, dark);
@@ -4989,7 +5257,7 @@ const Bots = {
       B.aimAt = null;
     }
     // dropped gun
-    if (R0 && R0.gun && Roles.canTakeGun(P.role) && !hasGun && U.dist(P.x, P.z, R0.gun.x, R0.gun.z) < 30) { this.goTo(B, R0.gun.x, R0.gun.z, true); return; }
+    if (R0 && R0.gun && Roles.canTakeGunPlayer(P) && !hasGun && U.dist(P.x, P.z, R0.gun.x, R0.gun.z) < 30) { this.goTo(B, R0.gun.x, R0.gun.z, true); return; }
     // dark: flashlight
     if (dark && P.sel < 0) { this.equip(B, 'flashlight'); P.fl |= 1; } else if (!dark && P.slots[P.sel] === 'flashlight') { P.fl &= ~1; this.equip(B, null); }
     // coins
@@ -5049,7 +5317,7 @@ const Bots = {
   assassin(B, others, now) {
     const P = B.P, T = Host.players.get(Host.round && Host.round.target); if (!T || !T.alive) return this.blend(B, others, now);
     const d = U.dist(P.x, P.z, T.x, T.z), los = Host.grid.los(P.x, P.z, T.x, T.z);
-    this.equip(B, 'blade');
+    this.equip(B, 'hknife');
     if (d <= 2.0 && los) { this.stop(B); B.aimAt = T; Host.act(P, { k: 'stab', tg: T.id }); B.aimAt = null; this.equip(B, null); B.abilityAt = now + 5; return; }
     this.goTo(B, T.x, T.z, d < 10); if (now - B.goalT > 1.2) B.goal = null;
   },
@@ -5123,7 +5391,7 @@ const Game = {
   me: null, local: null, cam: { yaw: 0, pitch: -0.1, dist: 3.4, fovK: 1, punch: 0 }, keys: {}, mouse: { l: false, r: false }, locked: false,
   stT: 0, spec: { idx: 0, id: null }, gunDrop: null, wallet: 0, range: { score: 0, shots: 0 }, endData: null, dark: 0, xrayT: 0, sickT: 0, stepT: 0, menuT: 0, preview: null,
 
-  newMe() { return { id: 0, name: Store.get('name', ''), look: Look.validate(Store.get('look', null)), role: null, slots: lobbySlots(), uses: {}, sel: -1, mates: new Map(), target: null, revealed: new Map(), alive: true, armor: false, spectate: false, flash: false, cd: { gun: 0, throw: 0, stab: 0 }, coinsRound: 0, kills: 0 }; },
+  newMe() { return { id: 0, name: Store.get('name', ''), look: Look.validate(Store.get('look', null)), role: null, slots: lobbySlots(), uses: {}, sel: -1, mates: new Map(), target: null, revealed: new Map(), alive: true, armor: false, spectate: false, flash: false, copyBy: 0, hypnoIds: new Set(), cd: { gun: 0, throw: 0, stab: 0, hypno: 0 }, coinsRound: 0, kills: 0 }; },
   newLocal() { return { x: 0, y: 0, z: 0, vx: 0, vz: 0, vy: 0, yaw: 0, ground: true, stam: CONFIG.STAMINA, sprint: false, emote: 0, emoteT: 0, moving: false, aim: false, lastStep: 0 }; },
 
   init() {
@@ -5137,6 +5405,8 @@ const Game = {
     N('kcoin', m => { const n = U.clamp(m.n | 0, 0, 50); if (!n) return; this.me.coinsRound += n; this.addCoins(n); Sfx.play('coin'); UI.toast(`🪙 +${n} coins for the kill`, 'good'); }); N('coins', m => { if (!this.ghost) FX.setCoins(m.list); }); N('coin', m => { if (!this.ghost) FX.addCoin(m.id, m.x, m.z); }); N('coin-', this.onCoinTaken);
     N('reveal', this.onReveal); N('fx', this.onFx); N('blackout', this.onBlackout); N('xray', this.onXray);
     N('target', m => { this.me.target = m.id; UI.hotbar(); this.refreshTags(); if (m.quiet) return; const r = this.roster.get(m.id); UI.toast(r ? `🎯 New contract: ${r.name}` : '🎯 No targets remain.', 'evil'); Sfx.play('target'); });
+    N('copycat', m => { if (m.end) this.me.copyBy = m.end; if (m.done) { this.me.copyBy = 0; if (this.dark > 0) this._applyBlackoutVision(); } UI.hotbar(); });
+    N('hypno', m => { if (this.me.role === 'hypnotist' && m.id != null) { this.me.hypnoIds.add(+m.id); this.refreshTags(); } });
     N('sick', () => { this.sickT = 7; UI.toast('🤢 You feel very sick... find a Medic!', 'bad'); Sfx.play('poison'); });
     N('end', this.onEnd); N('chat', m => { UI.chatLine(m); if (!m.sys) Sfx.play('chat'); const c = this.chars.get(m.from); if (c && !m.dead) c.bubble = { text: m.text, t: 4 }; });
     N('toast', m => { UI.toast(m.text, m.kind); }); N('feed', () => { });   // killfeed removed
@@ -5267,19 +5537,23 @@ const Game = {
       else { this.me.alive = false; this.me.spectate = true; }
       for (const id in m.spawns) { const c = this.chars.get(+id), p = m.spawns[id]; if (c) { c.ch.setState(p[0], 0, p[1], p[2], 0, 'idle', '', 0); c.ch.lx = null; } }
       FX.clear(); this.clearFloor(); R.bakeTarget = 1; R.darkFogTarget = 0; this.dark = 0; this.xrayT = 0; this.sickT = 0; this.gunDrop = null;
-      this.me.revealed.clear(); this.me.mates.clear(); this.me.target = null; this.me.sel = -1; this.me.flash = false; this.me.coinsRound = 0;
+      this.me.revealed.clear(); this.me.mates.clear(); this.me.target = null; this.me.sel = -1; this.me.flash = false; this.me.copyBy = 0; this.me.hypnoIds = new Set(); this.me.coinsRound = 0;
     }
     if (m.ph === 'intro' && this.phones) { this.setPhones(false, true); UI.toast('🎧 Headphones off - the round is starting.', 'info'); }
     if (m.ph === 'intro') { this.inPlay = m.inPlay || []; this.double = !!m.double; this.endData = null; UI.hideEnd(); Sfx.play('start'); if (this.double) UI.banner('🔪🔪 DOUBLE MURDER ROUND — two Murderers!', '#ff3b4e'); }
-    if (m.ph === 'play' && prev === 'intro') { UI.banner(this.me.role === 'murderer' ? 'Hunt them down.' : this.double ? 'BOTH Murderers are now armed.' : 'The Murderer is now armed.', '#ff4d5e'); Sfx.play('reveal'); }
+    if (m.ph === 'play' && prev === 'intro') {
+      UI.banner(this.me.role === 'murderer' ? 'Hunt them down.' : this.double ? 'BOTH Murderers are now armed.' : 'The Murderer is now armed.', '#ff4d5e'); Sfx.play('reveal');
+      if (this.me.alive && !this.me.spectate && !this.ghost) UI.prompt('📝 Sticky Notes are in your hotbar — click a player (or N) to pass a message. 30% can slip to the floor!', 6);
+    }
     if (m.ph === 'lobby' && m.spawns) { if (!m.results) { this.endData = null; UI.hideEnd(); } this.me.role = null; this.range.score = 0; this.me.slots = lobbySlots(); UI.death(null); }
     UI.phase(this.phase); UI.lobbyRefresh(); this.refreshTags(); UI.ghostBar();
   },
   onYou(m) {
-    const me = this.me; me.role = m.role; me.slots = m.slots; me.uses = m.uses || {}; me.sel = -1; me.target = m.target || null; me.armor = !!m.armor;
+    const me = this.me; me.role = m.role; me.slots = m.slots; me.uses = m.uses || {}; me.sel = -1; me.target = m.target || null; me.armor = !!m.armor; if (m.copyBy != null) me.copyBy = m.copyBy;
     me.mates = new Map((m.mates || []).map(x => [x.id, x.role]));
     if (m.spectate) { me.alive = false; me.spectate = true; UI.ghostBar(); }
     if (m.role && this.phase === 'intro') UI.roleCard(m.role, { mates: [...me.mates].map(([id, r]) => ({ name: (this.roster.get(id) || {}).name || '?', role: r })), target: me.target ? (this.roster.get(me.target) || {}).name : null, inPlay: this.inPlay, double: this.double });
+    if (this.dark > 0) this._applyBlackoutVision();
     UI.hotbar(); this.refreshTags();
   },
   onInv(m) { const me = this.me; me.slots = m.slots; me.uses = m.uses || {}; if (me.sel >= 0 && !me.slots[me.sel]) me.sel = -1; UI.hotbar(); },
@@ -5369,7 +5643,7 @@ const Game = {
     if (m.p) { if (m.hit) { Sfx.play('stab', m.p[0], m.p[2], 1); const c = this.chars.get(m.hit); if (c) c.ch.hitFlash(); } else Sfx.play('thunk', m.p[0], m.p[2], 0.8); }
     if (m.tgt && m.p) { let best = null, bd = 1.5; for (const t of World.targets) { const d = U.dist(t.node.position.x, t.node.position.z, m.p[0], m.p[2]); if (d < bd) { bd = d; best = t; } } if (best) best.down = 2.6; if (m.by === this.me.id) this._rangeScore(m.tgt, m.p); }
   },
-  onAct(m) { if (!!this.ghost !== !!m.lw) return; const c = this.chars.get(m.id), ch = c && (m.lw ? c.gch : c.ch); if (!ch) return; ch.act(m.k === 'stab' ? 'stab' : m.k); if (m.k === 'stab' || m.k === 'swing') Sfx.play('swish', ch.x, ch.z, 0.7); if (m.k === 'use') Sfx.play('equip', ch.x, ch.z, 0.5); },
+  onAct(m) { if (!!this.ghost !== !!m.lw) return; const c = this.chars.get(m.id), ch = c && (m.lw ? c.gch : c.ch); if (!ch) return; ch.act(m.k); if (m.k === 'stab' || m.k === 'swing' || m.k === 'astab') Sfx.play('swish', ch.x, ch.z, 0.7); if (m.k === 'use') Sfx.play('equip', ch.x, ch.z, 0.5); },
   onGun(m) {
     if (this.ghost) return;
     if (m.taken) { FX.clearGun(); this.gunDrop = null; Sfx.play('pickup'); return; }
@@ -5386,10 +5660,14 @@ const Game = {
   },
   onBlackout(m) {
     if (this.ghost) return;
-    const nv = this.me.alive && !this.me.spectate && (this.me.role === 'murderer' || this.me.role === 'saboteur');   // evil night vision
-    this.dark = m.dur; R.darkFogMul = nv ? CONFIG.BLACKOUT_NV : 1; R.bakeTarget = nv ? 0.2 : 0.05; R.darkFogTarget = 1; Sfx.play('blackout');
-    if (nv) UI.toast('🌙 Night vision - you can see further in the dark than everyone else.', 'good');
+    this.dark = m.dur; this._applyBlackoutVision(); R.darkFogTarget = 1; Sfx.play('blackout');
+    if (Roles.blackoutNightVision(this.me.role) && this.me.alive && !this.me.spectate) UI.toast('🌙 Night vision — you can see further in the dark than everyone else.', 'good');
     UI.banner('⚡ The lights went out!', '#ff8a3d'); },
+  _applyBlackoutVision() {
+    if (this.dark <= 0) return;
+    const nv = this.me.alive && !this.me.spectate && Roles.blackoutNightVision(this.me.role);
+    R.darkFogMul = nv ? CONFIG.BLACKOUT_NV : 1; R.bakeTarget = nv ? 0.26 : 0.05;
+  },
   onXray(m) { this.xrayT = m.dur; Sfx.play('xray'); UI.toast('🥽 X-Ray active — you can see everyone through walls.', 'good'); },
 
   /* ---------------- notes ---------------- */
@@ -5427,13 +5705,14 @@ const Game = {
     }
     return out.sort((a, b) => a.d - b.d);
   },
-  openNote() {
-    if (!this.me.alive || this.me.spectate) return;
+  openNote(preferId) {
+    if (!this.me.alive || this.me.spectate || this.phase !== 'play') return;
     const list = this.noteTargets();
     if (!list.length) { UI.toast(`📝 Get within ${CONFIG.NOTE_RANGE}m of someone to pass them a note.`, 'warn'); Sfx.play('error'); return; }
-    const aimed = this.aimedPlayer(CONFIG.NOTE_RANGE);
+    const aimed = preferId != null && list.some(p => p.id === preferId) ? preferId : this.aimedPlayer(CONFIG.NOTE_RANGE);
     this.unlock(); UI.noteOpen(list, aimed);
   },
+  canTakeGun() { return Roles.canTakeGunPlayer({ role: this.me.role, alive: this.me.alive, slots: this.me.slots }); },
   sendNote(to, text, anon) {
     text = String(text || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, CONFIG.NOTE_MAX);
     if (!text) { UI.toast('📝 Write something first.', 'warn'); return false; }
@@ -5453,10 +5732,12 @@ const Game = {
       const r = this.roster.get(id); if (!r || c.ch.dead || id === me.id) { if (id === me.id || c.ch.dead) c.ch.setTag(null); continue; }
       let sub = null, subC = '#fff', col = '#ffffff';
       const role = end ? end.roles[id] : me.revealed.get(id) || me.mates.get(id);
-      if (role) { sub = `${ROLES[role].icon} ${ROLES[role].name.toUpperCase()}`; subC = ROLES[role].color; }
+      if (me.role === 'hypnotist' && me.hypnoIds.has(id)) { sub = '🌀 HYPNOTIZED'; subC = ROLES.hypnotist.color; col = '#c4b5fd'; }
+      else if (role) { sub = `${ROLES[role].icon} ${ROLES[role].name.toUpperCase()}`; subC = ROLES[role].color; }
       if (id === me.target) { sub = '🎯 TARGET'; subC = '#ff4d8a'; }
       if (me.mates.has(id)) col = '#ff8a8a';
-      const d = U.dist(this.local.x, this.local.z, c.ch.x, c.ch.z), range = this.phase === 'lobby' ? 40 : this.dark > 0 ? 5 : 22;
+      const nv = this.dark > 0 && Roles.blackoutNightVision(me.role);
+      const d = U.dist(this.local.x, this.local.z, c.ch.x, c.ch.z), range = this.phase === 'lobby' ? 40 : this.dark > 0 ? (nv ? 11 : 5) : 22;
       const vis = d < range && (this.phase === 'lobby' || this.xrayT > 0 || !G || G.los(this.local.x, this.local.z, c.ch.x, c.ch.z));
       c.ch.setTag(vis ? r.name : null, col, sub, subC);
     }
@@ -5497,7 +5778,7 @@ const Game = {
       if (/^Digit[1-5]$/.test(k)) this.selectSlot(+k.slice(5) - 1);
       if (k === 'KeyQ') this.selectSlot(-1);
       if (k === 'Backspace') { e.preventDefault(); if (!e.repeat) this.dropItem(); }
-      if (k === 'KeyE') { const n = this.nearNote(); if (n) { UI.noteRead(n.text, n.from, true); Sfx.play('equip'); } }
+      if (k === 'KeyE') { const n = this.nearNote(); if (n) { UI.noteRead(n.text, n.from); Sfx.play('equip'); } }
       if (k === 'KeyN' && !e.repeat) { e.preventDefault(); this.openNote(); }
       if (k === 'KeyZ' && !e.repeat && (this.item() === 'knife' || this.item() === 'propknife')) this.secondary();   // keyboard throw
       if (k === 'KeyH' && !e.repeat) this.setPhones();
@@ -5538,11 +5819,12 @@ const Game = {
     const me = this.me, it = this.item(), now = U.now(); if (!this.canAct() || !it || (this.phase === 'intro' && !this.ghost)) { if (me.spectate && !this.ghost) this.specCycle(1); return; }
     const ch = this.myChar(); if (!ch) return;
     switch (it) {
-      case 'knife': case 'blade': case 'propknife': {
-        if (now < me.cd.stab) return; me.cd.stab = now + CONFIG.KNIFE_CD; ch.act(it === 'knife' ? 'stab' : 'swing'); Sfx.play('swish');
+      case 'knife': case 'hknife': case 'propknife': {
+        if (now < me.cd.stab) return; me.cd.stab = now + CONFIG.KNIFE_CD;
+        ch.act(it === 'hknife' ? 'astab' : it === 'knife' ? 'stab' : 'swing'); Sfx.play('swish');
         const T = it === 'propknife' || this.ghost ? null : this.meleeTarget();
         if (T && this.phase === 'play') Net.toHost({ t: 'act', k: 'stab', tg: T }); else Net.toHost({ t: 'act', k: 'swing' });
-        if (it === 'blade' && T && T !== me.target) UI.toast('🗡️ Your hidden blade only works on your target.', 'warn');
+        if (it === 'hknife' && T && T !== me.target) UI.toast('🔪 Your hidden knife only works on your contract target.', 'warn');
         break;
       }
       case 'revolver': this.fire(); break;
@@ -5560,11 +5842,33 @@ const Game = {
         if (this.phase !== 'play') { UI.toast('Abilities work once the round has started.', 'warn'); return; }
         if (!(me.uses[it] > 0)) { UI.toast('Already used this round.', 'warn'); Sfx.play('error'); return; }
         ch.act('use'); Net.toHost({ t: 'act', k: 'use', item: it }); break;
+      case 'notepad': {
+        if (this.phase !== 'play') { UI.toast('Sticky Notes work during a live round.', 'warn'); return; }
+        const T = this.aimedPlayer(CONFIG.NOTE_RANGE);
+        if (!T) { UI.toast(`📝 Aim at a player within ${CONFIG.NOTE_RANGE}m (or press N).`, 'warn'); Sfx.play('error'); return; }
+        this.openNote(T); break;
+      }
+      case 'pendulum': {
+        if (this.phase !== 'play') { UI.toast('Abilities work once the round has started.', 'warn'); return; }
+        if (now < (me.cd.hypno || 0)) { UI.toast('🌀 Pendulum recharging…', 'warn'); Sfx.play('error'); return; }
+        const T = this.aimedPlayer(CONFIG.INVESTIGATE_RANGE);
+        if (!T) { UI.toast('🌀 Aim at a player in sight to hypnotize.', 'warn'); Sfx.play('error'); return; }
+        me.cd.hypno = now + CONFIG.HYPNOSIS_CD; me.cd.hypnoDur = CONFIG.HYPNOSIS_CD;
+        ch.act('use'); Net.toHost({ t: 'act', k: 'use', item: 'pendulum', tg: T }); break;
+      }
+      case 'disguise': {
+        if (this.phase !== 'play') { UI.toast('Abilities work once the round has started.', 'warn'); return; }
+        if (!me.copyBy || now >= me.copyBy) { UI.toast('🎭 Too late — you needed to copy someone already.', 'warn'); Sfx.play('error'); return; }
+        const T = this.aimedPlayer(CONFIG.TOUCH_RANGE);
+        if (!T) { UI.toast('🎭 Get closer and aim at a player to copy their role (not the Sheriff).', 'warn'); Sfx.play('error'); return; }
+        ch.act('use'); Net.toHost({ t: 'act', k: 'copy', tg: T }); break;
+      }
     }
   },
   secondary() {
     const me = this.me, it = this.item(), now = U.now(); if (!this.canAct()) { if (me.spectate && !this.ghost) this.specCycle(-1); return; }
     const lob = this.phase !== 'play' || !!this.ghost;
+    if (it === 'hknife') return;
     if (it === 'knife') {
       if (this.phase === 'intro' && !this.ghost) return;
       if (lob && World.grid.id === 'lobby' && !World.grid.inRange(this.local.x, this.local.z, 'k')) {
@@ -5699,7 +6003,7 @@ const Game = {
     const playing = me.alive && !me.spectate;
     if (playing || this.ghost) this.movePlayer(dt);
     // timers
-    if (this.dark > 0) { this.dark -= dt; if (this.dark <= 0) { R.bakeTarget = 1; R.darkFogTarget = 0; UI.toast('💡 The lights are back on.', 'info'); } }
+    if (this.dark > 0) { this.dark -= dt; this._applyBlackoutVision(); if (this.dark <= 0) { R.bakeTarget = 1; R.darkFogTarget = 0; R.darkFogMul = 1; UI.toast('💡 The lights are back on.', 'info'); } }
     if (this.xrayT > 0) { this.xrayT -= dt; }
     if (this.sickT > 0) this.sickT -= dt;
     if (me.cd.gun && !me.cd.cocked && U.now() > me.cd.gun - 0.1 && this.item() === 'revolver') { me.cd.cocked = true; Sfx.play('cock'); }
@@ -5773,6 +6077,10 @@ const Game = {
     const acc = L.ground ? 14 : 3; L.vx = U.damp(L.vx, mx * spd, acc, dt); L.vz = U.damp(L.vz, mz * spd, acc, dt);
     if (L.ground && !typing && k.Space && (!this.mod || this.mod.j > 0)) { L.vy = CONFIG.JUMP_V * (this.mod ? Math.sqrt(this.mod.j) : 1); L.ground = false; Sfx.play('jump', null, null, 0.4); }
     L.vy -= CONFIG.GRAVITY * dt; L.y += L.vy * dt; if (L.y <= 0) { if (!L.ground && L.vy < -3) Sfx.play('land', null, null, 0.5); L.y = 0; L.vy = 0; L.ground = true; }
+    if (G.hasCeilingAt(L.x, L.z)) {
+      const maxY = CONFIG.WALL_H - CONFIG.PLAYER_H - 0.04;
+      if (L.y > maxY) { L.y = maxY; if (L.vy > 0) L.vy = 0; }
+    }
     const c = G.collide(L.x + L.vx * dt, L.z + L.vz * dt, CONFIG.PLAYER_R); L.x = c.x; L.z = c.z;
     L.moving = ml > 0 && Math.hypot(L.vx, L.vz) > 0.5;
     if (Settings.get().firstPerson) L.yaw = cy;
@@ -5781,7 +6089,10 @@ const Game = {
     // footsteps
     if (L.moving && L.ground) { L.lastStep -= dt * (L.sprint ? 1.45 : 1); if (L.lastStep <= 0) { L.lastStep = 0.4; Sfx.play('step', null, null, L.sprint ? 0.45 : 0.3); } }
     // prompts
-    if (this.gunDrop && U.dist(L.x, L.z, this.gunDrop.x, this.gunDrop.z) < 2.5) UI.prompt(!Roles.canTakeGun(me.role) ? '⛔ Only Bystanders can pick up the gun.' : me.slots.includes('revolver') ? 'You already have a gun.' : 'Walk over the gun to pick it up.', 0.3);
+    if (this.gunDrop && U.dist(L.x, L.z, this.gunDrop.x, this.gunDrop.z) < 2.5) {
+      const why = !this.canTakeGun() ? (me.role === 'detective' || me.role === 'medic') ? '⛔ Use your one-time kit first — then you can take the gun.' : '⛔ You cannot pick up the gun.' : me.slots.includes('revolver') ? 'You already have a gun.' : 'Walk over the gun to pick it up.';
+      UI.prompt(why, 0.3);
+    } else if (this.phase === 'play' && this.item() === 'notepad' && this.aimedPlayer(CONFIG.NOTE_RANGE)) UI.prompt('📝 LMB — pass a sticky note (30% may drop on the floor!)', 0.25);
     else if (this.floor.size && this._nearFloor()) { const F = this._nearFloor(), I = ITEMS[F.item]; UI.prompt(me.slots.includes(F.item) ? `You already have a ${I.name}.` : !me.slots.includes(null) ? 'Your hotbar is full — Backspace drops an item.' : `${I.icon} Walk over the ${I.name} to pick it up`, 0.3); }
     else if (this.notes.size && this.nearNote()) UI.prompt('📝 E — read the note on the floor', 0.3);
   },
@@ -5800,6 +6111,7 @@ const Game = {
     if (s.firstPerson && ((me.alive && !me.spectate) || this.ghost)) {
       const f = this.camForward(), hy = py + 1.62, pos = new BABYLON.Vector3(px + Math.sin(c.yaw) * 0.14, hy, pz + Math.cos(c.yaw) * 0.14), sk = FX.shakeOffset();
       pos.x += sk[0]; pos.y += sk[1]; pos.z += sk[2];
+      if (G && G.hasCeilingAt(px, pz)) pos.y = Math.min(pos.y, CONFIG.WALL_H - 0.14);
       cam.position.copyFrom(pos); cam.setTarget(pos.add(f)); cam.fov = (s.fov * Math.PI / 180) * c.fovK * (1 + c.punch * 0.035);
       const myc = this.ghost ? this._myGhost : this.myChar(); if (myc) { myc.root.getChildMeshes().forEach(m => { m.visibility = 0; }); const it = myc.items[myc.vis]; if (it) { this._vm(it); it.node.getChildMeshes().forEach(m => { m.visibility = 1; }); } }
       this._fpOn = true; return;
@@ -6058,8 +6370,9 @@ const UI = {
     const q = document.createElement('div'); q.className = 'set'; q.innerHTML = `<span>Graphics quality</span><select><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><b></b>`;
     q.querySelector('select').value = S.quality; q.querySelector('select').onchange = e => { Settings.set('quality', e.target.value); R.setQuality(e.target.value); }; box.appendChild(q);
     tog('First-person camera (C)', 'firstPerson'); tog('Show FPS', 'showFps');
+    tog('Realistic graphics (RTX)', 'rtx');
   },
-  applySettings() { const S = Settings.get(); Sfx.setVolumes({ master: S.master, sfx: S.sfx, music: S.music }); },
+  applySettings() { const S = Settings.get(); Sfx.setVolumes({ master: S.master, sfx: S.sfx, music: S.music }); R.applyRTX(!!S.rtx); },
 
   showMenu() { $('menu').classList.remove('hidden'); $('menuMain').classList.remove('hidden'); $('coinBadge').classList.remove('hidden'); $('menuFoot').classList.remove('hidden'); $('hud').classList.add('hidden'); $('lobby').classList.add('hidden'); for (const o of ['roleCard', 'reveal', 'death', 'end', 'board', 'pause']) $(o).classList.add('hidden'); this.openScreen(null); this.coins(Game.wallet); $('chatLog').innerHTML = '';  },
   showGame() { $('menu').classList.add('hidden'); $('hud').classList.remove('hidden'); this.screen = null; this.hotbar(); this.phase(Game.phase); $('hint').classList.remove('hidden'); },
@@ -6153,6 +6466,7 @@ const UI = {
       const ex = []; if (me.target) ex.push(`🎯 Target: <b>${U.esc((Game.roster.get(me.target) || {}).name || '?')}</b>`);
       if (me.mates.size) ex.push(`Team: ${[...me.mates].map(([id, ro]) => `${ROLES[ro].icon} ${U.esc((Game.roster.get(id) || {}).name || '?')}`).join(', ')}`);
       if (me.armor) ex.push('🛡️ Armor intact');
+      if (me.role === 'copycat' && me.copyBy && Game.phase === 'play') ex.push(`⏳ Copy someone: <b id="rbCopyTimer">${Math.max(0, me.copyBy - U.now()).toFixed(1)}s</b>`);
       $('rbExtra').innerHTML = ex.join('<br>');
     }
   },
@@ -6188,7 +6502,9 @@ const UI = {
     const list = [...Game.roster.values()];
     $('board').querySelector('.inner').innerHTML = `<h3 style="margin-bottom:10px">Players (${list.length})</h3><table>${list.map(p => {
       const role = Game.endData ? Game.endData.roles[p.id] : p.id === Game.me.id ? Game.me.role : Game.me.revealed.get(p.id) || Game.me.mates.get(p.id);
-      return `<tr><td>${p.alive || Game.phase === 'lobby' || (Game.me.alive && !Game.endData) ? '🙂' : '💀'}</td><td>${U.esc(p.name)}${p.bot ? ' <span class="tag">BOT</span>' : ''}${p.host ? ' <span class="tag">HOST</span>' : ''}${p.adm === 'owner' ? ' <span class="tag">👑 OWNER</span>' : p.adm ? ' <span class="tag">⭐ ADMIN</span>' : ''}</td><td style="color:${role ? ROLES[role].color : '#777'}">${role ? ROLES[role].icon + ' ' + ROLES[role].name : '???'}</td></tr>`;
+      const cc = p.copycat ? ` <span style="font-size:11px;color:#7a8090;font-weight:400">Copycat</span>` : '';
+      const roleLbl = role ? ROLES[role].icon + ' ' + ROLES[role].name + cc : (p.copycat ? '???' + cc : '???');
+      return `<tr><td>${p.alive || Game.phase === 'lobby' || (Game.me.alive && !Game.endData) ? '🙂' : '💀'}</td><td>${U.esc(p.name)}${p.bot ? ' <span class="tag">BOT</span>' : ''}${p.host ? ' <span class="tag">HOST</span>' : ''}${p.adm === 'owner' ? ' <span class="tag">👑 OWNER</span>' : p.adm ? ' <span class="tag">⭐ ADMIN</span>' : ''}</td><td style="color:${role ? ROLES[role].color : '#777'}">${roleLbl}</td></tr>`;
     }).join('')}</table>`;
   },
 
@@ -6211,17 +6527,19 @@ const UI = {
   },
   death(cause, killer) {
     if (cause === null) { clearTimeout(this._dt); $('death').classList.add('hidden'); $('vigHurt').style.opacity = 0; return; }
-    const txt = { knife: 'You were stabbed by the Murderer.', throw: 'A thrown knife found you.', blade: 'The Assassin fulfilled their contract.', gun: killer ? `Shot by ${U.esc(killer)}.` : 'You were shot.', guilt: 'You shot an innocent — and paid for it.', poison: 'The poison finally took you.' }[cause] || 'You died.';
+    const txt = { knife: 'You were stabbed by the Murderer.', throw: 'A thrown knife found you.', blade: 'The Assassin fulfilled their contract.', gun: killer ? `Shot by ${U.esc(killer)}.` : 'You were shot.', guilt: 'You shot an innocent — and paid for it.', poison: 'The poison finally took you.', copycat: 'You ran out of time without copying a role.' }[cause] || 'You died.';
     $('deathTxt').innerHTML = txt; $('death').classList.remove('hidden'); $('vigHurt').style.opacity = 1;
     clearTimeout(this._dt); this._dt = setTimeout(() => { $('death').classList.add('hidden'); $('vigHurt').style.opacity = 0; }, 3500);
     this.hotbar();
   },
   endScreen(m, win) {
     const el = $('end'), list = Object.keys(m.roles).map(Number), names = m.names || {};
-    const T = m.winner === 'jester' ? { name: 'The Jester', color: ROLES.jester.color } : TEAMS[m.winner] || { name: '?', color: '#fff' };
-    const title = m.winner === 'jester' ? `🃏 The Jester wins!` : `${T.name} win!`;
+    const T = m.winner === 'jester' ? { name: 'The Jester', color: ROLES.jester.color }
+      : m.winner === 'hypnotist' ? { name: 'The Hypnotist', color: ROLES.hypnotist.color }
+      : TEAMS[m.winner] || { name: '?', color: '#fff' };
+    const title = m.winner === 'jester' ? `🃏 The Jester wins!` : m.winner === 'hypnotist' ? `🌀 The Hypnotist wins!` : `${T.name} win!`;
     list.sort((a, b) => (m.winners.includes(b) - m.winners.includes(a)) || ((m.kills[b] || 0) - (m.kills[a] || 0)));
-    const rows = list.map(id => { const r = ROLES[m.roles[id]], p = Game.roster.get(id), nm = p ? p.name : (names[id] ? names[id] + ' (left)' : '(left)'); return `<tr class="${m.winners.includes(id) ? 'win' : ''}"><td>${id === m.mvp ? '👑 ' : ''}${U.esc(nm)}${id === Game.me.id ? ' <span class="tag">YOU</span>' : ''}</td><td style="color:${r.color}">${r.icon} ${r.name}</td><td>${m.alive[id] ? 'Survived' : '💀'}</td><td>${m.kills[id] || 0} 🗡️</td><td>${m.coins[id] || 0} 🪙</td></tr>`; }).join('');
+    const rows = list.map(id => { const r = ROLES[m.roles[id]], p = Game.roster.get(id), nm = p ? p.name : (names[id] ? names[id] + ' (left)' : '(left)'); const cc = (m.copycats && m.copycats[id]) || (p && p.copycat) ? ` <span style="font-size:11px;color:#7a8090;font-weight:400">Copycat</span>` : ''; return `<tr class="${m.winners.includes(id) ? 'win' : ''}"><td>${id === m.mvp ? '👑 ' : ''}${U.esc(nm)}${id === Game.me.id ? ' <span class="tag">YOU</span>' : ''}</td><td style="color:${r.color}">${r.icon} ${r.name}${cc}</td><td>${m.alive[id] ? 'Survived' : '💀'}</td><td>${m.kills[id] || 0} 🗡️</td><td>${m.coins[id] || 0} 🪙</td></tr>`; }).join('');
     el.querySelector('.inner').innerHTML = `<div class="dim" style="text-align:center;letter-spacing:4px;font-size:12px">${win ? 'VICTORY' : 'DEFEAT'} · +${win ? 15 : 3} COINS</div><h1 style="color:${T.color}">${title}</h1><div style="text-align:center;font-size:17px">${U.esc(m.reason)}</div><div class="scroll" style="max-height:46vh"><table><tr class="dim"><th>Player</th><th>Role</th><th>Status</th><th>Kills</th><th>Coins</th></tr>${rows}</table></div><div class="dim" style="text-align:center;font-size:13px" id="endCount"></div><button class="gold" id="bEndClose" style="align-self:center;min-width:160px">Close</button>`;
     el.classList.remove('hidden'); $('death').classList.add('hidden'); Game.unlock();
     $('bEndClose').onclick = () => { this.hideEnd(); Sfx.play('ui'); };
@@ -6295,9 +6613,9 @@ const UI = {
     $('noteBox').classList.remove('hidden'); $('pause').classList.add('hidden'); setTimeout(() => $('noteTxt').focus(), 0);
   },
   noteClose() { const box = $('noteBox'); if (!box || box.classList.contains('hidden')) return; box.classList.add('hidden'); $('noteTxt').blur(); if (Game.mode === 'game' && Game.phase !== 'lobby') Game.lock(); },
-  /** Shows a sticky note on screen. floor=true when picked up from the ground. */
-  noteRead(text, from, floor) {
-    $('noteReadTxt').textContent = text; $('noteReadFrom').textContent = (floor ? '(found on the floor) ' : '') + (from ? `— ${from}` : '— Anonymous');
+  /** Shows a sticky note on screen. */
+  noteRead(text, from) {
+    $('noteReadTxt').textContent = text; $('noteReadFrom').textContent = from ? `— ${from}` : '— Anonymous';
     const el = $('noteRead'); el.classList.remove('hidden'); el.querySelector('.inner').style.animation = 'none'; void el.offsetWidth; el.querySelector('.inner').style.animation = '';
     clearTimeout(this._nr); this._nr = setTimeout(() => el.classList.add('hidden'), Math.min(11000, 4500 + text.length * 45));
   },
@@ -6312,18 +6630,23 @@ const UI = {
     $('timeTxt').textContent = t; $('phaseTxt').textContent = label;
     $('timeTxt').style.color = ph === 'play' && Game.phaseEnd - Net.hostNow() < 30 ? '#ff6b74' : '';
     { const e = $('endCount'); if (e && !$('end').classList.contains('hidden')) e.textContent = ph === 'lobby' ? (Game.countdown && Game.phaseEnd ? `You're back in the lobby · next round in ${Math.max(0, Math.ceil(Game.phaseEnd - Net.hostNow()))}s` : `You're back in the lobby · next round starts when everyone's ready`) : ''; }
-    // hotbar cooldowns
+    const rbCopy = $('rbCopyTimer');
+    if (rbCopy && me.role === 'copycat' && me.copyBy && ph === 'play') rbCopy.textContent = `${Math.max(0, me.copyBy - now).toFixed(1)}s`;
+    // hotbar cooldowns + copycat disguise timer (smooth drain)
     const slots = $('hotbar').children; me.slots.forEach((it, i) => {
-      const cd = slots[i] && slots[i].querySelector('.cd'); if (!cd) return; let k = 0;
-      if (it === 'revolver' && me.cd.gun > now) k = (me.cd.gun - now) / (me.cd.gunDur || CONFIG.GUN_CD);
-      if (it === 'knife' && me.cd.throw > now) k = (me.cd.throw - now) / (me.cd.throwDur || CONFIG.THROW_CD);
+      const cd = slots[i] && slots[i].querySelector('.cd'); if (!cd) return; let k = 0, copyDrain = false;
+      if (it === 'disguise' && me.role === 'copycat' && me.copyBy > now) { k = (me.copyBy - now) / CONFIG.COPYCAT_TIME; copyDrain = true; }
+      else if (it === 'revolver' && me.cd.gun > now) k = (me.cd.gun - now) / (me.cd.gunDur || CONFIG.GUN_CD);
+      else if (it === 'knife' && me.cd.throw > now) k = (me.cd.throw - now) / (me.cd.throwDur || CONFIG.THROW_CD);
+      else if (it === 'pendulum' && me.cd.hypno > now) k = (me.cd.hypno - now) / (me.cd.hypnoDur || CONFIG.HYPNOSIS_CD);
       cd.style.transform = `scaleY(${U.clamp(k, 0, 1)})`;
+      cd.style.background = copyDrain ? 'rgba(246, 173, 85, 0.52)' : '';
     });
     // stamina
     const L = Game.local; $('stam').querySelector('i').style.width = (L.stam / CONFIG.STAMINA * 100) + '%'; $('stam').style.opacity = L.stam < CONFIG.STAMINA - 0.05 && me.alive ? 1 : 0;
     // crosshair
     const it = Game.item(), cr = $('cross'); cr.className = it === 'revolver' ? 'gun' : it ? '' : 'dot';
-    if (it && Game.locked && (it === 'knife' || it === 'blade') && Game.meleeTarget() != null) cr.classList.add('red');
+    if (it && Game.locked && (it === 'knife' || it === 'hknife') && Game.meleeTarget() != null) cr.classList.add('red');
     cr.style.display = me.alive && !me.spectate ? '' : 'none';
     if (this.promptT > 0) { this.promptT -= dt; if (this.promptT <= 0) $('prompt').style.opacity = 0; }
     if (this.bannerT > 0) { this.bannerT -= dt; if (this.bannerT <= 0) $('banner').style.opacity = 0; }
@@ -6353,11 +6676,11 @@ const UI = {
       let audioOn = false;
       const wake = () => {
         Sfx.resume();
-        if (!audioOn && Sfx.ctx) {
-          audioOn = true;
-          const S2 = Settings.get(); Sfx.setVolumes({ master: S2.master, sfx: S2.sfx, music: S2.music });
-          if (World.def && (!Sfx.amb || Sfx.amb.kind !== World.def.ambience)) Sfx.ambience(World.def.ambience);
-        }
+        if (!Sfx.ctx) return;
+        const S2 = Settings.get(); Sfx.setVolumes({ master: S2.master, sfx: S2.sfx, music: S2.music });
+        if (!audioOn) audioOn = true;
+        else if (World.def && Sfx.amb && Sfx.amb.kind === World.def.ambience) return;
+        if (World.def) Sfx.ambience(World.def.ambience);
       };
       document.addEventListener('pointerdown', wake); document.addEventListener('keydown', wake);
       window.addEventListener('beforeunload', () => { try { Net.close(); } catch (e) { } });
