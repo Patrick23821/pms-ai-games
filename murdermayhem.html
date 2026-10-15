@@ -1739,8 +1739,9 @@ const Sfx = {
   stopAmbience() {
     const a = this.amb; this.amb = null; if (!a) return;
     for (const tm of a.timers) clearInterval(tm);
-    const t = this.ctx.currentTime; a.gain.gain.setTargetAtTime(0.0001, t, 0.4);
-    setTimeout(() => { for (const n of a.nodes) { try { n.stop(); } catch (e) { } } try { a.gain.disconnect(); } catch (e) { } }, 1500);
+    const t = this.ctx.currentTime;
+    try { a.gain.gain.cancelScheduledValues(t); a.gain.gain.setValueAtTime(0, t); a.gain.disconnect(); } catch (e) { }
+    for (const n of a.nodes) { try { n.stop(t); } catch (e) { } }
   },
   ambience(kind) {
     if (!this.ctx) return;
@@ -1785,8 +1786,8 @@ const Sfx = {
         break;
       }
       case 'hall':
-        osc('sine', 65, 0.03); loopNoise('lowpass', 200, 0.5, 0.05);
-        every(8000, t => { if (Math.random() < 0.4) this._noise(g, t, 0.6, 'bandpass', 300, 180, 8, 0.12, 0.2); });
+        loopNoise('lowpass', 420, 0.35, 0.012);
+        every(18000, t => { if (Math.random() < 0.3) this._noise(g, t, 0.22, 'bandpass', 260, 200, 1.5, 0.035, 0.06); });
         break;
       case 'lobby': {
         const prog = [[261.6, 329.6, 392], [220, 261.6, 329.6], [174.6, 220, 261.6], [196, 246.9, 293.7]]; let i = 0;
@@ -6350,7 +6351,14 @@ const UI = {
       Game.loadMap('lobby');
       const S = Settings.get(); R.setQuality(S.quality);
       let audioOn = false;
-      const wake = () => { Sfx.resume(); if (!audioOn && Sfx.ctx) { audioOn = true; const S2 = Settings.get(); Sfx.setVolumes({ master: S2.master, sfx: S2.sfx, music: S2.music }); if (World.def) Sfx.ambience(World.def.ambience); } };
+      const wake = () => {
+        Sfx.resume();
+        if (!audioOn && Sfx.ctx) {
+          audioOn = true;
+          const S2 = Settings.get(); Sfx.setVolumes({ master: S2.master, sfx: S2.sfx, music: S2.music });
+          if (World.def && (!Sfx.amb || Sfx.amb.kind !== World.def.ambience)) Sfx.ambience(World.def.ambience);
+        }
+      };
       document.addEventListener('pointerdown', wake); document.addEventListener('keydown', wake);
       window.addEventListener('beforeunload', () => { try { Net.close(); } catch (e) { } });
       let last = performance.now(), lastFrame = last, simT = last;
