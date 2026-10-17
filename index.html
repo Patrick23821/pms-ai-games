@@ -561,6 +561,12 @@ const CFG = {
      • missing / empty / broken link  ⇒  auto neon plate with the FIRST LETTER of the title
    ========================================================================== */
 const GAMES = [
+  {
+    file: "Prophunt.html",
+    title: "Prop Hunt",
+    tagline: "Hide as furniture. Hunt as a team — props scout with Z freecam while alive.",
+    tags: ["multiplayer", "3d", "pvp"],
+  },
   /* { file: "fishing.html", title: "…", tagline: "…", tags: ["arcade"], thumb: "data:image/…" }, */
 ];
 
@@ -1349,7 +1355,7 @@ const ARCADE = (() => {
     const plays = S.plays[key(g.file)] || 0;
     const spoiler = spoilerActive(g);
     const titleHtml = spoiler && S.hideSpoilerTitles ? esc("???") : richMeta(shelfTitle(g));
-    const tagHtml = spoiler ? "" : (g.tagline ? richMeta(g.tagline) : "");
+    const tagHtml = spoiler && S.hideSpoilerTitles ? "" : (g.tagline ? richMeta(g.tagline) : "");
     const bioHtml = spoiler ? "" : (g.bio ? richMeta(g.bio) : "");
     const ariaTitle = metaPlain(shelfTitle(g));
     return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
@@ -1379,7 +1385,7 @@ const ARCADE = (() => {
               <span class="gfile"><i class="fa-regular fa-file-code"></i> ${spoiler && S.hideSpoilerTitles ? "???" : esc(g.file)}</span>
             </div>
             <div class="gfoot">
-              <div class="gtags">${g.tags.slice(0, 3).map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}</div>
+              <div class="gtags">${spoiler && S.hideSpoilerTitles ? "" : g.tags.slice(0, 3).map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}</div>
               <div class="f-mono text-[9.5px] tracking-[.18em] shrink-0 ${plays ? "text-[var(--cyan)]" : "text-[var(--dim)]"}">
                 ${plays ? "×" + plays : (S.recent[0] === g.file ? "NEW" : "UNPLAYED")}
               </div>
