@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "hyperrooms.html",
+      "title": "HyperRooms (4D)",
+      "tagline": "4D escape room by Gemini + Grok",
+      "tags": ["multiplayer", "fun", "casual"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/hyperrooms.webp",
+      "hidden": false
+    },
+    {
       "file": "prophunt.html",
       "title": "Prop Hunt",
       "tagline": "Seek for the props or hide as a prop.",
