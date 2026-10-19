@@ -20,10 +20,10 @@
      {
       "file": "newtube.html",
       "title": "NewTube",
-      "tagline": "(PROTOTYPE) Yes more youtube.",
+      "tagline": "Youtube 2",
       "tags": ["video", "casual"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/newtube.webp",
-      "hidden": true
+      "hidden": false
     },
     {
       "file": "hyperrooms.html",
