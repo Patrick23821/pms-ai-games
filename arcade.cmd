@@ -1,1 +1,1 @@
-announcement("PROP HUNT ADMIN ABUSE?")
+Announcement("PROP HUNT ADMIN ABUSE?", "Upcoming?", "gold")
