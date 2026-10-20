@@ -1,1 +1,1 @@
-announce("PROP HUNT ADMIN ABUSE?")
+announcement("PROP HUNT ADMIN ABUSE?")
