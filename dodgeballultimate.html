@@ -10455,6 +10455,62 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       if (this.map) this.map.setCustomTexture(this.texture);
       if (this.view) this.view.setCustomTexture(this.texture);
       if (this.app.env) this.app.env.applyCustomTexture(this.texture, !!includeWorld);
+      this.setGlobalTexture(this.texture && includeWorld ? this.texture : null);
+    }
+
+    // ------------------------------------------------------------------
+    // GLOBAL texture: covers every 3D asset (map, avatars, balls, decor, water)
+    // and swaps the sky dome for a 6-sided skybox using the image on each face.
+    // HTML UI is untouched. Materials created later (new players, map rebuilds,
+    // avatar material swaps) are caught by a per-frame sweep.
+    // ------------------------------------------------------------------
+    setGlobalTexture(tex) {
+      const scene = this.app.scene; if (!scene) return;
+      const env = this.app.env;
+      const gt = this._gt || (this._gt = { tex: null, obs: null, box: null, boxMat: null, touched: new Set() });
+      // restore everything first
+      for (const m of gt.touched) {
+        const o = m._gtOrig; if (!o || m.isDisposed && m.isDisposed()) continue;
+        if (o.t && o.t === gt.tex) o.t = m._origTex || null; // map mats already held the custom tex
+        if ('albedoTexture' in m) { m.albedoTexture = o.t; m.albedoColor = o.c; }
+        else { m.diffuseTexture = o.t; m.diffuseColor = o.c; m.emissiveTexture = o.et; }
+        delete m._gtOrig;
+      }
+      gt.touched.clear();
+      if (gt.obs) { scene.onBeforeRenderObservable.remove(gt.obs); gt.obs = null; }
+      if (gt.box) { gt.box.dispose(); gt.boxMat.dispose(); gt.box = null; gt.boxMat = null; }
+      if (env) { if (env.skyMesh) env.skyMesh.setEnabled(true); if (env.cloudMesh) env.cloudMesh.setEnabled(true); }
+      gt.tex = tex;
+      if (!tex) return;
+
+      // skybox: a cube whose 6 inner faces each show the full image
+      const box = BABYLON.MeshBuilder.CreateBox('gtSkyBox', { size: 2400, sideOrientation: BABYLON.Mesh.BACKSIDE }, scene);
+      const bm = new BABYLON.StandardMaterial('gtSkyMat', scene);
+      bm.backFaceCulling = false; bm.disableLighting = true; bm.fogEnabled = false;
+      bm.diffuseColor = new BABYLON.Color3(0, 0, 0); bm.specularColor = new BABYLON.Color3(0, 0, 0);
+      bm.emissiveTexture = tex; bm._gtSkip = true;
+      box.material = bm; box.infiniteDistance = true; box.isPickable = false; box.renderingGroupId = 0;
+      gt.box = box; gt.boxMat = bm;
+      if (env) { if (env.skyMesh) env.skyMesh.setEnabled(false); if (env.cloudMesh) env.cloudMesh.setEnabled(false); }
+
+      const SKIP = /^(blobMat|traj|marker|zone|fxTrail|fxVoid|fxSpike|fxBox|fxSphere|gtSky)/;
+      const white = new BABYLON.Color3(1, 1, 1);
+      const sweep = () => {
+        for (const m of scene.materials) {
+          if (m._gtSkip || SKIP.test(m.name || '')) continue;
+          const pbr = 'albedoTexture' in m;
+          if (!pbr && !(m instanceof BABYLON.StandardMaterial)) continue; // shader mats (water handled by env)
+          if (!m._gtOrig) {
+            m._gtOrig = pbr ? { t: m.albedoTexture, c: m.albedoColor && m.albedoColor.clone() }
+                            : { t: m.diffuseTexture, c: m.diffuseColor && m.diffuseColor.clone(), et: m.emissiveTexture };
+            gt.touched.add(m);
+          }
+          if (pbr) { if (m.albedoTexture !== tex) { m.albedoTexture = tex; m.albedoColor = white.clone(); } }
+          else if (m.diffuseTexture !== tex) { m.diffuseTexture = tex; m.diffuseColor = white.clone(); if (m.emissiveTexture) m.emissiveTexture = null; }
+        }
+      };
+      sweep();
+      gt.obs = scene.onBeforeRenderObservable.add(sweep);
     }
 
     // ------------------------------------------------------------------
@@ -10673,6 +10729,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       if (this.view) this.view.dispose();
       this.clearBalls();
       if (this.map) this.map.dispose();
+      this.setGlobalTexture(null);
       if (this.texture) this.texture.dispose();
       this.players.clear();
     }
@@ -11092,8 +11149,12 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         const right = V3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
         let dist = 5.4 * s;
         pos = pivot.subtract(f.scale(dist)).add(right.scale(0.75 * s)).add(V3(0, 0.3, 0));
-        const h = g.map.heightAt(pos.x, pos.z);
-        if (pos.y < h + 0.45) pos.y = h + 0.45;
+        // keep the camera above the ground - but only consider surfaces BELOW the player's head,
+        // otherwise stacked layers (spleef) make the camera pop up onto the layer above.
+        const h = g.map.probe(pos.x, pos.z, pivot.y - (window.MAP_STEP_UP || 0.6)).h;
+        const lift = Math.max(0, h + 0.45 - pos.y);
+        this._camLift = this._camLift == null ? lift : U.damp(this._camLift, lift, lift > this._camLift ? 25 : 10, dt);
+        pos.y += this._camLift;
         if (pos.y < g.world.waterLevel + 0.4) pos.y = g.world.waterLevel + 0.4;
         target = pos.add(f.scale(10));
         if (p.charge >= 0) fov *= 1 - 0.09 * p.charge;
@@ -11486,6 +11547,26 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     }
   };
 
+  // ---- large-message chunking: WebRTC data channels (json mode) silently drop big
+  // messages (e.g. admin textures), so anything over CHUNK chars is split and reassembled.
+  const CHUNK = 12000;
+  let _ckSeq = 1;
+  function tx(conn, msg) {
+    const s = JSON.stringify(msg);
+    if (s.length <= CHUNK) { conn.send(msg); return; }
+    const id = (_ckSeq++) + '_' + Math.random().toString(36).slice(2, 7), n = Math.ceil(s.length / CHUNK);
+    for (let i = 0; i < n; i++) conn.send({ t: '_ck', id, i, n, d: s.slice(i * CHUNK, (i + 1) * CHUNK) });
+  }
+  function rx(conn, msg) {
+    if (!msg || msg.t !== '_ck') return msg;
+    const buf = conn._ckBuf || (conn._ckBuf = {});
+    const e = buf[msg.id] || (buf[msg.id] = { n: msg.n, got: 0, parts: [] });
+    if (e.parts[msg.i] == null) { e.parts[msg.i] = msg.d; e.got++; }
+    if (e.got < e.n) return null;
+    delete buf[msg.id];
+    try { return JSON.parse(e.parts.join('')); } catch (err) { return null; }
+  }
+
   class Net {
     constructor() {
       this.peer = null; this.role = null; this.code = null; this.peerKey = null;
@@ -11531,12 +11612,13 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         }
       });
       conn.on('data', (msg) => {
+        msg = rx(conn, msg);
         if (!msg || typeof msg !== 'object') return;
         if (msg.t === 'hello') {
           const res = this.handlers.join ? this.handlers.join(conn.peer, msg) : { ok: true };
           if (!res.ok) { try { conn.send({ t: 'deny', reason: res.reason }); } catch (e) { } setTimeout(() => { try { conn.close(); } catch (e) { } }, 500); return; }
           this.conns.set(conn.peer, conn);
-          try { conn.send(res.welcome); } catch (e) { }
+          try { tx(conn, res.welcome); } catch (e) { }
           if (this.handlers.joined) this.handlers.joined(conn.peer);
           return;
         }
@@ -11552,9 +11634,9 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     }
 
     broadcast(msg) {
-      for (const c of this.conns.values()) { if (c.open) { try { c.send(msg); } catch (e) { } } }
+      for (const c of this.conns.values()) { if (c.open) { try { tx(c, msg); } catch (e) { } } }
     }
-    sendTo(id, msg) { const c = this.conns.get(id); if (c && c.open) { try { c.send(msg); } catch (e) { } } }
+    sendTo(id, msg) { const c = this.conns.get(id); if (c && c.open) { try { tx(c, msg); } catch (e) { } } }
     kick(id, reason) { const c = this.conns.get(id); if (!c) return; try { c.send({ t: 'kicked', reason }); } catch (e) { } setTimeout(() => { try { c.close(); } catch (e) { } }, 300); }
 
     // ---------------------------------------------------------------
@@ -11575,6 +11657,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
           this.hostConn = conn;
           conn.on('open', () => { try { conn.send(Object.assign({ t: 'hello' }, hello)); } catch (e) { fail(e); } });
           conn.on('data', (msg) => {
+            msg = rx(conn, msg);
             if (!msg || typeof msg !== 'object') return;
             if (!settled) {
               if (msg.t === 'welcome') { settled = true; clearTimeout(to); resolve(msg); return; }
@@ -11593,7 +11676,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         });
       });
     }
-    send(msg) { const c = this.hostConn; if (c && c.open) { try { c.send(msg); } catch (e) { } } }
+    send(msg) { const c = this.hostConn; if (c && c.open) { try { tx(c, msg); } catch (e) { } } }
 
     destroy() {
       this.closed = true;
