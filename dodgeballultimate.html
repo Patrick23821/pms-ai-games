@@ -8646,14 +8646,14 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       ]
     },
     spleef: {
-      name: 'Spleef Arena', icon: '🧊', desc: 'Two stacked layers of poppable air tiles.', spleef: true,
-      size: 14, balls: 10,
-      prims: [{ type: 'tiles', shape: 'square', n: 12, size: 2.0, gap: 0.14, layers: [11, 5.5], colors: [PAL.ice, PAL.mint] }]
+      name: 'Spleef Arena', icon: '🧊', desc: 'Four stacked layers of poppable air tiles.', spleef: true,
+      size: 20, balls: 14,
+      prims: [{ type: 'tiles', shape: 'square', n: 17, size: 2.0, gap: 0.14, layers: [7.15, 14.3, 21.45, 28.6], colors: [PAL.mint, PAL.ice, PAL.ocean, PAL.candy] }]
     },
     spleef_hex: {
-      name: 'Hex-a-Pop', icon: '🔷', desc: 'Three layers of hexagon tiles over the abyss.', spleef: true,
-      size: 14, balls: 10,
-      prims: [{ type: 'tiles', shape: 'hex', rings: 6, size: 1.2, gap: 0.12, layers: [14, 9, 4], colors: [PAL.grape, PAL.candy, PAL.ocean] }]
+      name: 'Hex-a-Pop', icon: '🔷', desc: 'Four layers of hexagon tiles over the abyss.', spleef: true,
+      size: 20, balls: 14,
+      prims: [{ type: 'tiles', shape: 'hex', rings: 8, size: 1.2, gap: 0.12, layers: [5.2, 11.7, 18.2, 24.7], colors: [PAL.ocean, PAL.grape, PAL.candy, PAL.lime] }]
     }
   };
 
@@ -8809,6 +8809,63 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       for (const p of this.prims) { if (p.type !== 'tiles') h = Math.max(h, this.primHeight(p, lx, lz)); }
       if (this.tiles.length) { const t = this.tileAt(lx, lz, 0, true); if (t) h = Math.max(h, t.top); }
       return h;
+    }
+
+    // Highest surface at or below refY (stacked spleef layers — not the deck above you)
+    heightAtBelow(x, z, refY) {
+      const s = this.scale; const lx = x / s, lz = z / s;
+      let h = -Infinity;
+      for (const p of this.prims) {
+        if (p.type === 'tiles') continue;
+        const ph = this.primHeight(p, lx, lz);
+        if (ph !== -Infinity && ph <= refY + STEP_UP) h = Math.max(h, ph);
+      }
+      if (this.tiles.length) {
+        for (const t of this.tiles) {
+          if (t.state === 2) continue;
+          const dx = Math.abs(lx - t.x), dz = Math.abs(lz - t.z);
+          if (dx > t.half + 0.05 || dz > t.half + 0.05) continue;
+          if (t.shape === 'hex' && dz * 0.5 + dx * 0.866 > t.half + 0.02) continue;
+          if (t.top <= refY + STEP_UP) h = Math.max(h, t.top);
+        }
+      }
+      return h;
+    }
+
+    // All walkable surface heights at (x,z), high to low (stacked spleef decks)
+    floorCapsAt(x, z) {
+      const s = this.scale; const lx = x / s, lz = z / s;
+      const caps = [];
+      for (const p of this.prims) {
+        if (p.type === 'tiles') continue;
+        const ph = this.primHeight(p, lx, lz);
+        if (ph !== -Infinity) caps.push(ph);
+      }
+      for (const t of this.tiles) {
+        if (t.state === 2) continue;
+        const dx = Math.abs(lx - t.x), dz = Math.abs(lz - t.z);
+        if (dx > t.half + 0.05 || dz > t.half + 0.05) continue;
+        if (t.shape === 'hex' && dz * 0.5 + dx * 0.866 > t.half + 0.02) continue;
+        caps.push(t.top);
+      }
+      caps.sort((a, b) => b - a);
+      return caps;
+    }
+
+    // Ball–tile contact on stacked layers (world coords)
+    tileContactAt(x, z, ballBottom) {
+      const s = this.scale; const lx = x / s, lz = z / s;
+      let best = null;
+      for (const t of this.tiles) {
+        if (t.state === 2) continue;
+        const dx = Math.abs(lx - t.x), dz = Math.abs(lz - t.z);
+        if (dx > t.half + 0.05 || dz > t.half + 0.05) continue;
+        if (t.shape === 'hex' && dz * 0.5 + dx * 0.866 > t.half + 0.02) continue;
+        if (ballBottom <= t.top + 0.08 && ballBottom >= t.top - 0.85) {
+          if (!best || t.top > best.top) best = t;
+        }
+      }
+      return best;
     }
 
     // gradient of a specific primitive (world units)
@@ -9326,7 +9383,10 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     teamsN() {
       if (this.state.mode === 'infection') return 2;
       if (this.state.mode === 'bounty') return 0;
-      return this.settings.teams === '2' ? 2 : this.settings.teams === '4' ? 4 : 0;
+      const t = this.settings.teams;
+      if (t === '2' || t === 2) return 2;
+      if (t === '4' || t === 4) return 4;
+      return 0;
     }
     sameTeam(a, b) { if (!a || !b || a === b) return a === b; const n = this.teamsN(); return n > 0 && a.team === b.team && a.team >= 0; }
     playerColor(p) { if (this.teamsN() > 0 && p.team >= 0) return DATA.TEAMS[p.team % 4].color; return p.avatar && p.avatar.shirt || '#ffffff'; }
@@ -9422,8 +9482,9 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         if (b.state === 'live' || b.state === 'free') {
           if (!b.rocket) b.vy -= this.gravity() * dt * 0.5;
           b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
-          const h = this.map.heightAt(b.x, b.z); const r = this.ballRadius(b);
-          if (b.y - r < h && b.y - r > h - 1) { b.y = h + r; if (b.vy < 0) b.vy *= -0.4; }
+          const r = this.ballRadius(b);
+          const h = this.map.heightAtBelow(b.x, b.z, b.y - r);
+          if (h !== -Infinity && b.y - r < h && b.y - r > h - 1) { b.y = h + r; if (b.vy < 0) b.vy *= -0.4; }
         }
       }
       if (this.state.potatoFuse > 0) this.state.potatoFuse -= dt;
@@ -9578,17 +9639,25 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
           else { nx = p.x; nz = p.z; p.vx *= -0.2; p.vz *= -0.2; pr = this.map.probe(nx, nz, p.y, bodyH); }
         }
       }
-      // vertical
+      // vertical — stacked spleef decks need per-layer floor tests while falling
       let ny = p.y + p.vy * dt;
-      const pr2 = this.map.probe(nx, nz, Math.max(p.y, ny), bodyH);
-      const h = pr2.h;
+      const stepUp = window.MAP_STEP_UP || 0.6;
       const hs = Math.hypot(p.vx, p.vz);
       const wasGrounded = p.grounded;
-      if (ny <= h) {
+      let h = -Infinity;
+      if (this.map.tiles.length && !m.fly && p.vy <= 0) {
+        for (const cap of this.map.floorCapsAt(nx, nz)) {
+          if (cap > p.y + stepUp) continue;
+          if (ny <= cap + 0.06) { h = cap; break; }
+        }
+      } else {
+        h = this.map.probe(nx, nz, Math.max(p.y, ny), bodyH).h;
+      }
+      if (h > -Infinity && ny <= h + 0.02) {
         if (!wasGrounded && p.vy < -6) this.onLand(p, -p.vy);
         if (m.bouncy && p.vy < -4) { ny = h; p.vy = -p.vy * 0.85; p.grounded = false; }
         else { ny = h; p.vy = 0; p.grounded = true; }
-      } else if (wasGrounded && p.vy <= 0.01 && h > -Infinity && (p.y - h) < Math.max(0.35, hs * dt * 3 + 0.12)) {
+      } else if (h > -Infinity && wasGrounded && p.vy <= 0.01 && (p.y - h) < Math.max(0.35, hs * dt * 3 + 0.12)) {
         ny = h; p.vy = 0; p.grounded = true;
       } else p.grounded = false;
       if (m.waterwalk && ny < W.waterLevel + 0.02) { ny = W.waterLevel + 0.02; if (p.vy < 0) p.vy = 0; p.grounded = true; }
@@ -9727,8 +9796,8 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       for (let t = 0.5; t < maxT; t += 0.4) {
         const x = o.x + d.x * t, y = o.y + d.y * t, z = o.z + d.z * t;
         if (y < this.world.waterLevel) return t;
-        const h = this.map.heightAt(x, z);
-        if (y < h && y > h - 3) return t;
+        const h = this.map.heightAtBelow(x, z, y);
+        if (h !== -Infinity && y < h + 0.2 && y > h - 3) return t;
       }
       return maxT;
     }
@@ -9815,8 +9884,12 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       }
       let tileHit = null;
       if (this.map.tiles.length) {
-        const t = this.map.tileAt(nx / s, nz / s, bottom, true);
-        if (t && bottom < t.top && bottom > t.top - 0.8) { if (prevBottom >= t.top - 0.6) { if (t.top > ch) { ch = t.top; contact = null; tileHit = t; } } else wall = wall || 'tile'; }
+        const t = this.map.tileContactAt(nx, nz, bottom) || (bottom < prevBottom ? this.map.tileContactAt(nx, nz, prevBottom) : null);
+        if (t) {
+          if (prevBottom >= t.top - 0.6 || bottom <= t.top + 0.08) {
+            if (t.top > ch) { ch = t.top; contact = null; tileHit = t; }
+          } else wall = wall || 'tile';
+        }
       }
       if (wall && !contact && !tileHit) {
         const on = wall === 'tile' ? { nx: Math.sign(px - nx) || 1, nz: 0 } : this.map.outward(wall, px, pz);
@@ -10983,8 +11056,8 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       let T = null;
       for (let t = 2; t < 90; t += 0.5) {
         const x = cam.x + f.x * t, y = cam.y + f.y * t, z = cam.z + f.z * t;
-        const h = this.game.map.heightAt(x, z);
-        if (y < h || y < this.game.world.waterLevel) { T = V3(x, y, z); break; }
+        const h = this.game.map.heightAtBelow(x, z, y);
+        if (y < this.game.world.waterLevel || (h !== -Infinity && y < h + 0.15)) { T = V3(x, y, z); break; }
         let hitP = false;
         for (const o of this.game.players.values()) { if (o.id === this.game.localId || !this.game.isAlive(o)) continue; const dx = o.x - x, dz = o.z - z, dy = o.y + 1 - y; if (dx * dx + dz * dz < 0.5 && Math.abs(dy) < 1) { hitP = true; break; } }
         if (hitP) { T = V3(x, y, z); break; }
@@ -11222,12 +11295,15 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       const ox = o.x - p.x + p.rx, oy = o.y - p.y + p.ry, oz = o.z - p.z + p.rz;
       let x = ox, y = oy, z = oz, vx = dir.x * sp, vy = dir.y * sp, vz = dir.z * sp;
       const grav = g.gravity(); const step = 0.035; let ended = false, endP = null;
+      const held = p.holding != null ? g.balls.get(p.holding) : null;
+      const br = held ? g.ballRadius(held) : 0.35;
       for (let i = 0; i < this.trajPath.length; i++) {
         if (!ended) {
           this.trajPath[i].set(x, y, z);
           vy -= grav * step; x += vx * step; y += vy * step; z += vz * step;
-          const h = g.map.heightAt(x, z);
-          if (y < h || y < g.world.waterLevel) { ended = true; endP = V3(x, Math.max(h, g.world.waterLevel) + 0.05, z); }
+          const bottom = y - br;
+          const h = g.map.heightAtBelow(x, z, bottom);
+          if (bottom < h + 0.05 || bottom < g.world.waterLevel) { ended = true; endP = V3(x, Math.max(h, g.world.waterLevel) + br * 0.5, z); }
         } else { const a = this.trajPath[i - 1], b = this.trajPath[Math.max(0, i - 2)]; this.trajPath[i].set(a.x + (a.x - b.x) * 0.002 + 0.0001, a.y + (a.y - b.y) * 0.002, a.z + (a.z - b.z) * 0.002); }
       }
       BABYLON.MeshBuilder.CreateTube('traj', { path: this.trajPath, radius: 0.028, tessellation: 6, instance: this.traj });
@@ -12564,7 +12640,9 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     },
     seg(name, opts, sel) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button data-v="${v}" class="${String(v) === String(sel) ? 'on' : ''}">${l}</button>`).join('')}</div>`; },
     bindSegs(root, cfg) {
-      $$('.seg', root).forEach((s) => $$('button', s).forEach((b) => b.onclick = () => { $$('button', s).forEach((x) => x.classList.toggle('on', x === b)); cfg[s.dataset.seg] = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v; SFX.play('click'); if (root._segChange) root._segChange(s.dataset.seg); }));
+      $$('.seg', root).forEach((s) => $$('button', s).forEach((b) => b.onclick = () => { $$('button', s).forEach((x) => x.classList.toggle('on', x === b)); const raw = b.dataset.v;
+        cfg[s.dataset.seg] = s.dataset.seg === 'teams' || s.dataset.seg === 'hit' || s.dataset.seg === 'catchRule' || s.dataset.seg === 'diff' || s.dataset.seg === 'mode' ? raw : (isNaN(+raw) ? raw : +raw);
+        SFX.play('click'); if (root._segChange) root._segChange(s.dataset.seg); }));
     },
     bindModeGrid(root, cfg) {
       $$('.mode-card', root).forEach((c) => c.onclick = () => {
