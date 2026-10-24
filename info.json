@@ -112,6 +112,7 @@
       "tags": ["multiplayer"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/driftwake.webp",
       "hidden": false
+      "models": ["Claude Fable 5.1", "Cursor Composer 2.5", "Gemini 3.8 Flash", "GPT 6 Luna", "Claude Opus 5"]
     },
     {
       "file": "minesweeper_island.html",
@@ -120,6 +121,7 @@
       "tags": ["fun", "multiplayer"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/minesweeper_island.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5", "Cursor Composer 2.5"]
     },
     {
       "file": "fotec.html",
