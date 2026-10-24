@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="omega-arcade-build" content="source">
 <title>Omega Arcade</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,21 +164,34 @@ select.field{cursor:pointer}
 .gthumb-spoiler .gimg,.gthumb-spoiler .ginit{filter:blur(26px) saturate(.35) contrast(.85);transform:scale(1.12);pointer-events:none}
 .gthumb-spoiler .ginit b{opacity:0}
 .setting-row.disabled{opacity:.45;pointer-events:none}
-.gtagline{font-size:12.5px;line-height:1.45;color:#7f9fb2;margin:0;flex:1 1 auto;
-  overflow-wrap:anywhere;word-break:break-word;white-space:normal}
+.gtagline{font-size:12px;line-height:1.42;color:#7f9fb2;margin:0;flex:1 1 auto;
+  overflow-wrap:anywhere;word-break:break-word;white-space:normal;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:2.85em}
 .gtagline:empty{display:none}
+.gbio{font-size:11.5px;line-height:1.4;color:#6a8fa3;margin:0;
+  overflow-wrap:anywhere;word-break:break-word;white-space:normal;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-height:2.8em}
+.gdesc-block{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.gdesc-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.desc-more{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;line-height:1;width:20px;height:20px;
+  display:grid;place-items:center;border:1px solid rgba(124,196,255,.32);color:var(--ice);background:rgba(8,14,26,.85);
+  cursor:pointer;flex-shrink:0;transition:.16s;margin-top:1px}
+.desc-more:hover{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(47,243,208,.4)}
 .gfile{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--dim);letter-spacing:.06em;word-break:break-all}
-.gmodels{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding-top:2px}
-.gmodels-lbl{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);display:inline-flex;align-items:center;gap:4px;opacity:.85}
-.gmodels-list{display:flex;flex-wrap:wrap;gap:5px}
-.mchip{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.08em;padding:2px 7px;border:1px solid rgba(47,243,208,.38);color:var(--cyan);background:rgba(47,243,208,.08)}
+.gmodels{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;padding-top:2px;overflow:hidden}
+.gmodels-lbl{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice);display:inline-flex;align-items:center;gap:4px;opacity:.85;flex-shrink:0}
+.gmodels-list{display:flex;flex-wrap:nowrap;align-items:center;gap:5px;overflow:hidden}
+.mchip{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.08em;padding:2px 7px;border:1px solid rgba(47,243,208,.38);color:var(--cyan);background:rgba(47,243,208,.08);white-space:nowrap;max-width:175px;text-overflow:ellipsis;overflow:hidden}
 .mchip.is-unknown{border-color:rgba(124,196,255,.22);color:var(--dim);background:rgba(8,14,25,.6)}
-.model-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border:1px solid rgba(47,243,208,.16);background:rgba(47,243,208,.03);transition:.15s}
-.model-row:hover{border-color:rgba(47,243,208,.4);background:rgba(47,243,208,.06)}
-.model-row.is-focus{border-color:rgba(47,243,208,.65);background:rgba(47,243,208,.09);box-shadow:0 0 22px rgba(47,243,208,.12)}
-.gfoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;min-height:28px}
-.gtags{display:flex;flex-wrap:wrap;gap:6px;min-height:22px;flex:1;align-content:flex-start}
-.tag{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border:1px solid rgba(255,194,71,.35);color:var(--amber);background:rgba(255,194,71,.07)}
+.mchip-more{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.08em;font-weight:700;padding:2px 6px;
+  border:1px solid rgba(47,243,208,.6);color:var(--cyan);background:rgba(47,243,208,.16);cursor:pointer;transition:.16s;flex-shrink:0;white-space:nowrap}
+.mchip-more:hover{border-color:var(--cyan);background:rgba(47,243,208,.32);box-shadow:0 0 10px rgba(47,243,208,.45)}
+.gfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;min-height:28px}
+.gtags{display:flex;flex-wrap:nowrap;align-items:center;gap:6px;min-height:22px;flex:1;overflow:hidden}
+.tag-more{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;font-weight:700;padding:2px 6px;
+  border:1px solid rgba(255,194,71,.5);color:var(--amber);background:rgba(255,194,71,.16);cursor:pointer;transition:.16s;flex-shrink:0;white-space:nowrap}
+.tag-more:hover{border-color:var(--amber);background:rgba(255,194,71,.32);box-shadow:0 0 10px rgba(255,194,71,.45)}
+.tag{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border:1px solid rgba(255,194,71,.35);color:var(--amber);background:rgba(255,194,71,.07);white-space:nowrap;max-width:140px;text-overflow:ellipsis;overflow:hidden}
 .ico-btn{width:28px;height:28px;display:grid;place-items:center;border:1px solid rgba(124,196,255,.22);background:rgba(8,14,25,.7);color:var(--dim);cursor:pointer;transition:.16s;font-size:12px}
 .ico-btn:hover{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 14px rgba(47,243,208,.3)}
 .ico-btn.on{color:var(--mag);border-color:rgba(255,47,135,.6);background:rgba(255,47,135,.12);text-shadow:0 0 10px rgba(255,47,135,.7)}
@@ -251,6 +265,17 @@ select.field{cursor:pointer}
 .cab{width:min(1180px,100%);height:min(86vh,760px);display:flex;flex-direction:column;background:linear-gradient(165deg,#0a1322,#060a13)}
 .screen{position:relative;flex:1;background:#02040a;overflow:hidden}
 .screen iframe{width:100%;height:100%;border:0;display:block;background:#000}
+/* Downloaded copy: maximize fills the window but leaves the browser chrome visible */
+#shell.maximized{padding:0;background:#000;align-items:stretch}
+#shell.maximized .cab{width:100%;height:100%;max-height:none;background:#000}
+#shell.maximized .edge{padding:0;background:transparent;height:100%;display:flex;flex-direction:column}
+#shell.maximized .edge>.edge-in{height:100%;background:#000;clip-path:none}
+#shell.maximized .notch,#shell.maximized .notch-s{clip-path:none}
+#shell.maximized #m-bar{order:2;justify-content:flex-end;gap:6px;padding:4px 8px;border-bottom:0;border-top:1px solid rgba(47,243,208,.22);background:rgba(6,10,18,.94)}
+#shell.maximized #m-bar>.m-chrome{display:none!important}
+#shell.maximized #m-actions .ico-btn{width:26px;height:26px}
+#shell.maximized .screen{order:1;flex:1;min-height:0}
+#shell.ptrlock #m-bar{display:none!important}
 .loadveil{position:absolute;inset:0;display:grid;place-items:center;gap:14px;background:radial-gradient(circle at 50% 45%,rgba(47,243,208,.09),rgba(3,6,12,.96) 62%)}
 .bar{width:210px;height:5px;background:rgba(255,255,255,.09);overflow:hidden}
 .bar i{display:block;height:100%;width:38%;background:linear-gradient(90deg,var(--cyan),var(--mag));animation:load 1.05s cubic-bezier(.6,0,.4,1) infinite}
@@ -309,6 +334,7 @@ pre.code s{color:#4f7386;text-decoration:none}
       <div class="flex flex-col items-end gap-3">
         <div class="flex items-center gap-2">
           <button class="btn notch-s" id="btn-refresh"><i class="fa-solid fa-rotate"></i>Rescan repo</button>
+          <button class="btn notch-s" id="btn-download" title="Save offline copy as index.html"><i class="fa-solid fa-download"></i>Download Arcade</button>
           <button class="btn notch-s" id="btn-settings" title="Arcade settings"><i class="fa-solid fa-gear"></i>Settings</button>
           <button class="btn notch-s" id="btn-sound" aria-pressed="true" title="Toggle blips"><i class="fa-solid fa-volume-high"></i></button>
         </div>
@@ -373,14 +399,14 @@ pre.code s{color:#4f7386;text-decoration:none}
 <div class="shell" id="shell" role="dialog" aria-modal="true" aria-label="Game screen">
   <div class="cab edge notch">
     <div class="edge-in notch flex-1 flex flex-col min-h-0">
-      <div class="flex items-center gap-3 px-4 py-3 border-b border-[rgba(47,243,208,.18)] bg-[rgba(6,10,18,.7)]">
-        <div class="w-2.5 h-2.5 rounded-full bg-[var(--cyan)] shadow-[0_0_12px_var(--cyan)] animate-pulse"></div>
-        <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-[rgba(47,243,208,.18)] bg-[rgba(6,10,18,.7)]" id="m-bar">
+        <div class="m-chrome w-2.5 h-2.5 rounded-full bg-[var(--cyan)] shadow-[0_0_12px_var(--cyan)] animate-pulse shrink-0"></div>
+        <div class="m-chrome min-w-0 flex-1">
           <div class="f-disp font-bold text-[15px] text-[#eafcff] truncate" id="m-title">—</div>
           <div class="f-mono text-[10px] text-[var(--dim)] truncate" id="m-file">—</div>
         </div>
-        <div class="f-mono text-[9px] tracking-[.24em] text-[var(--dim)] hidden md:block" id="m-hint">[F] full · [R] reload · [ESC] exit</div>
-        <div class="flex items-center gap-1.5">
+        <div class="m-chrome f-mono text-[9px] tracking-[.24em] text-[var(--dim)] hidden md:block" id="m-hint">[F] full · [R] reload · [ESC] exit</div>
+        <div class="flex items-center gap-1.5" id="m-actions">
           <button class="ico-btn notch-s" id="m-reload" title="Reload (R)"><i class="fa-solid fa-rotate-right"></i></button>
           <button class="ico-btn notch-s" id="m-newtab" title="Open in new tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
           <button class="ico-btn notch-s" id="m-fs" title="Fullscreen (F)"><i class="fa-solid fa-expand"></i></button>
@@ -388,7 +414,7 @@ pre.code s{color:#4f7386;text-decoration:none}
         </div>
       </div>
       <div class="screen notch-s" id="m-screen">
-        <iframe id="m-frame" title="Game" allow="autoplay; fullscreen; gamepad; clipboard-write; xr-spatial-tracking" loading="eager"></iframe>
+        <iframe id="m-frame" title="Game" allow="autoplay; fullscreen; pointer-lock; gamepad; clipboard-write; xr-spatial-tracking" loading="eager"></iframe>
         <div class="loadveil" id="m-load">
           <div class="text-center px-6">
             <div class="f-disp text-[var(--cyan)] neon text-lg tracking-[.2em] mb-3">LOADING GAME</div>
@@ -451,6 +477,13 @@ pre.code s{color:#4f7386;text-decoration:none}
   </div>
 </div>
 
+<!-- ============================ GAME INFO MENU ============================ -->
+<div class="shell" id="gameinfoshell" role="dialog" aria-modal="true" aria-label="Cartridge info">
+  <div class="w-[min(640px,100%)] max-h-[88vh] overflow-auto edge notch">
+    <div class="edge-in notch p-6 sm:p-8" id="gameinfo-content"></div>
+  </div>
+</div>
+
 <!-- ============================ HELP PANEL ============================ -->
 <div class="shell" id="helpshell" role="dialog" aria-modal="true" aria-label="Setup guide">
   <div class="w-[min(880px,100%)] max-h-[88vh] overflow-auto edge notch">
@@ -472,7 +505,7 @@ pre.code s{color:#4f7386;text-decoration:none}
           <p class="mt-4 f-disp text-[var(--amber)] font-bold tracking-wide mb-1">2 · METADATA (<span class="f-mono">info.json</span>)</p>
           <p>Commit <span class="f-mono text-[var(--cyan)]">info.json</span> next to <span class="f-mono">arcade.html</span> with a
           <span class="f-mono">games</span> array — one object per game (<span class="f-mono">file</span>, <span class="f-mono">title</span>,
-          <span class="f-mono">tagline</span>, <span class="f-mono">bio</span> (HTML allowed), <span class="f-mono">tags</span>, <span class="f-mono">models</span>, <span class="f-mono">thumb</span>).
+          <span class="f-mono">tagline</span>, <span class="f-mono">bio</span> (HTML allowed), <span class="f-mono">tags</span>, <span class="f-mono">thumb</span>).
           Titles and bios support inline HTML/CSS (e.g. <span class="f-mono">&lt;h1 style="color:#ffd46b"&gt;…&lt;/h1&gt;</span>); scripts are stripped.
           JSON-only entries stay hidden until the <span class="f-mono">.html</span> exists; HTML-only files stay hidden until listed in JSON.
           Copy from <span class="f-mono">info.template.json</span> in the repo. Without a title, the shelf falls back to the game file’s
@@ -511,7 +544,6 @@ pre.code s{color:#4f7386;text-decoration:none}
       "title": <b>"Neon Deep Sea"</b>,
       "tagline": <b>"Cast for glowing catches"</b>,
       "tags": [<b>"arcade"</b>, <b>"casual"</b>],
-      "models": [<b>"Gemini 4 Argon"</b>, <b>"Grok 4.7"</b>],
       "thumb": <b>"https://…/cover.png"</b>,
       "hot": false
     }
@@ -577,6 +609,12 @@ const CFG = {
      • missing / empty / broken link  ⇒  auto neon plate with the FIRST LETTER of the title
    ========================================================================== */
 const GAMES = [
+  {
+    file: "Prophunt.html",
+    title: "Prop Hunt",
+    tagline: "Hide as furniture. Hunt as a team — props scout with Z freecam while alive.",
+    tags: ["multiplayer", "3d", "pvp"],
+  },
   /* { file: "fishing.html", title: "…", tagline: "…", tags: ["arcade"], thumb: "data:image/…" }, */
 ];
 
@@ -607,6 +645,7 @@ const ARCADE = (() => {
   /* ---------- tiny utils ---------- */
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const bind = (sel, ev, fn) => { const n = $(sel); if (n) n.addEventListener(ev, fn); };
   const esc = (s = "") => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   function stripHtml(s = "") {
     const t = document.createElement("div");
@@ -818,7 +857,6 @@ const ARCADE = (() => {
     try {
       return JSON.parse(clean);
     } catch (e1) {
-      // Attempt to repair common JSON syntax issues (missing commas between lines, trailing commas)
       let repaired = clean.replace(/([0-9]|true|false|null|\]|\"[^\"\\\r\n]*(?:\\.[^\"\\\r\n]*)*\")(\s*\r?\n\s*[\"{])/g, '$1,$2');
       repaired = repaired.replace(/,(\s*[}\]])/g, '$1');
       try {
@@ -1399,7 +1437,7 @@ const ARCADE = (() => {
   }
 
   function isDirectOpen(file) {
-    return !!S.directAll;
+    return !!S.directAll || S.direct.has(key(file));
   }
 
   function recordPlay(file) {
@@ -1419,6 +1457,68 @@ const ARCADE = (() => {
     const tagHtml = spoiler ? "" : (g.tagline ? richMeta(g.tagline) : "");
     const bioHtml = spoiler ? "" : (g.bio ? richMeta(g.bio) : "");
     const ariaTitle = metaPlain(shelfTitle(g));
+
+    // Description length / line checks: show + button if long / 3+ lines or bio exists
+    const descPlain = metaPlain(g.tagline || "");
+    const descLines = (g.tagline || "").split(/\r?\n/).filter(Boolean).length;
+    const hasLongDesc = descLines >= 3 || descPlain.length > 70 || Boolean(g.bio);
+
+    // AI Models: replace overhanging model with + button
+    const allModels = gameModels(g);
+    let displayModels = allModels;
+    let hasMoreModels = false;
+    let moreModelsCount = 0;
+
+    if (allModels.length >= 3) {
+      const w0 = (allModels[0] || "").length * 6.2 + 18;
+      const w1 = (allModels[1] || "").length * 6.2 + 18;
+      if (w0 + w1 + 5 + 34 > 184) {
+        displayModels = allModels.slice(0, 1);
+        hasMoreModels = true;
+        moreModelsCount = allModels.length - 1;
+      } else {
+        displayModels = allModels.slice(0, 2);
+        hasMoreModels = true;
+        moreModelsCount = allModels.length - 2;
+      }
+    } else if (allModels.length === 2) {
+      const w0 = (allModels[0] || "").length * 6.2 + 18;
+      const w1 = (allModels[1] || "").length * 6.2 + 18;
+      if (w0 + w1 + 5 > 184) {
+        displayModels = allModels.slice(0, 1);
+        hasMoreModels = true;
+        moreModelsCount = 1;
+      }
+    }
+
+    // Tags: replace overhanging tag with + button
+    const allTags = g.tags || [];
+    let displayTags = allTags;
+    let hasMoreTags = false;
+    let moreTagsCount = 0;
+
+    if (allTags.length >= 3) {
+      const w0 = (allTags[0] || "").length * 6.0 + 18;
+      const w1 = (allTags[1] || "").length * 6.0 + 18;
+      if (w0 + w1 + 6 + 32 > 170) {
+        displayTags = allTags.slice(0, 1);
+        hasMoreTags = true;
+        moreTagsCount = allTags.length - 1;
+      } else {
+        displayTags = allTags.slice(0, 2);
+        hasMoreTags = true;
+        moreTagsCount = allTags.length - 2;
+      }
+    } else if (allTags.length === 2) {
+      const w0 = (allTags[0] || "").length * 6.0 + 18;
+      const w1 = (allTags[1] || "").length * 6.0 + 18;
+      if (w0 + w1 + 6 > 170) {
+        displayTags = allTags.slice(0, 1);
+        hasMoreTags = true;
+        moreTagsCount = 1;
+      }
+    }
+
     return `<article class="gcard reveal" data-file="${esc(g.file)}" tabindex="0" role="button"
               aria-label="Play ${esc(ariaTitle)}">
       <div class="aura"></div>
@@ -1440,19 +1540,28 @@ const ARCADE = (() => {
                   <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
               </div>
             </div>
-            <div class="gtagline">${tagHtml}</div>
-            <div class="gbio">${bioHtml}</div>
+            <div class="gdesc-block">
+              <div class="gdesc-text">
+                <div class="gtagline">${tagHtml}</div>
+                <div class="gbio">${bioHtml}</div>
+              </div>
+              ${spoiler ? "" : (hasLongDesc ? `<button type="button" class="desc-more notch-s" data-info="${esc(g.file)}" title="Full description & info"><i class="fa-solid fa-plus text-[9px]"></i></button>` : "")}
+            </div>
             <div class="flex flex-wrap items-center gap-1.5">
               <span class="gfile"><i class="fa-regular fa-file-code"></i> ${hideSpoiler ? "???" : esc(g.file)}</span>
             </div>
             ${S.showModels && !hideSpoiler ? `<div class="gmodels" title="AI models used">
               <span class="gmodels-lbl"><i class="fa-solid fa-microchip"></i> AI</span>
-              <div class="gmodels-list">${
-                gameModels(g).map(m => `<span class="mchip ${!hasKnownModels(g) || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s">${esc(m)}</span>`).join("")
-              }</div>
+              <div class="gmodels-list">
+                ${displayModels.map(m => `<span class="mchip ${!hasKnownModels(g) || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s">${esc(m)}</span>`).join("")}
+                ${hasMoreModels ? `<button type="button" class="mchip-more notch-s" data-info="${esc(g.file)}" title="Show all AI models & game info">+&nbsp;${moreModelsCount}</button>` : ""}
+              </div>
             </div>` : ""}
             <div class="gfoot">
-              <div class="gtags">${g.tags.slice(0, 3).map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}</div>
+              <div class="gtags">
+                ${displayTags.map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}
+                ${hasMoreTags ? `<button type="button" class="tag-more notch-s" data-info="${esc(g.file)}" title="Show all tags & game info">+&nbsp;${moreTagsCount}</button>` : ""}
+              </div>
               <div class="f-mono text-[9.5px] tracking-[.18em] shrink-0 ${plays ? "text-[var(--cyan)]" : "text-[var(--dim)]"}">
                 ${plays ? "×" + plays : (S.recent[0] === g.file ? "NEW" : "UNPLAYED")}
               </div>
@@ -1494,6 +1603,68 @@ const ARCADE = (() => {
     return out;
   }
 
+  function adjustOverhangingChips(rackEl = $("#rack")) {
+    if (!rackEl) return;
+    const cards = rackEl.querySelectorAll(".gcard");
+    cards.forEach(cardEl => {
+      const file = cardEl.dataset.file;
+      const g = S.games.find(x => x.file === file || key(x.file) === key(file));
+      if (!g) return;
+
+      // 1. Adjust AI Models if overflowing
+      const modelsBox = cardEl.querySelector(".gmodels");
+      const modelsList = cardEl.querySelector(".gmodels-list");
+      if (modelsBox && modelsList) {
+        const allModels = gameModels(g);
+        if (allModels.length > 1) {
+          const lbl = modelsBox.querySelector(".gmodels-lbl");
+          const lblWidth = lbl ? lbl.offsetWidth + 6 : 0;
+          const availWidth = modelsBox.clientWidth - lblWidth;
+
+          if (availWidth > 0 && modelsList.scrollWidth > availWidth) {
+            const m0 = allModels[0];
+            const rem = allModels.length - 1;
+            modelsList.innerHTML = `
+              <span class="mchip ${!hasKnownModels(g) || m0.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s">${esc(m0)}</span>
+              <button type="button" class="mchip-more notch-s" data-info="${esc(g.file)}" title="Show all AI models & game info">+&nbsp;${rem}</button>
+            `;
+            modelsList.querySelector("[data-info]")?.addEventListener("click", e => {
+              e.stopPropagation();
+              Snd.click();
+              gameInfo(g.file);
+            });
+          }
+        }
+      }
+
+      // 2. Adjust Tags if overflowing
+      const foot = cardEl.querySelector(".gfoot");
+      const tagsBox = cardEl.querySelector(".gtags");
+      if (foot && tagsBox) {
+        const allTags = g.tags || [];
+        if (allTags.length > 1) {
+          const playsEl = foot.querySelector(".f-mono");
+          const playsWidth = playsEl ? playsEl.offsetWidth + 8 : 0;
+          const availWidth = foot.clientWidth - playsWidth;
+
+          if (availWidth > 0 && tagsBox.scrollWidth > availWidth) {
+            const t0 = allTags[0];
+            const rem = allTags.length - 1;
+            tagsBox.innerHTML = `
+              <span class="tag notch-s">${esc(t0)}</span>
+              <button type="button" class="tag-more notch-s" data-info="${esc(g.file)}" title="Show all tags & game info">+&nbsp;${rem}</button>
+            `;
+            tagsBox.querySelector("[data-info]")?.addEventListener("click", e => {
+              e.stopPropagation();
+              Snd.click();
+              gameInfo(g.file);
+            });
+          }
+        }
+      }
+    });
+  }
+
   function render() {
     const list = visible();
     const rack = $("#rack");
@@ -1532,7 +1703,7 @@ const ARCADE = (() => {
     $$(".gcard", rack).forEach(el => {
       el.addEventListener("mouseenter", () => Snd.hover());
       el.addEventListener("click", e => {
-        if (e.target.closest("[data-fav]") || e.target.closest("[data-direct]")) return;
+        if (e.target.closest("[data-fav]") || e.target.closest("[data-direct]") || e.target.closest("[data-info]")) return;
         launch(el.dataset.file);
       });
       el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); launch(el.dataset.file); } });
@@ -1543,8 +1714,13 @@ const ARCADE = (() => {
       S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
       save("arcade.favs", [...S.favs]); Snd.click(); renderTags(); render();
     }));
-
+    $$("[data-info]", rack).forEach(b => b.addEventListener("click", e => {
+      e.stopPropagation();
+      Snd.click();
+      gameInfo(b.dataset.info);
+    }));
     revealObserve();
+    adjustOverhangingChips(rack);
     renderTicker();
   }
 
@@ -1586,6 +1762,175 @@ const ARCADE = (() => {
   }
 
   /* ---------- launcher ---------- */
+  const OFFLINE_COPY_KEY = "omega_arcade_offline_copy";
+  const gameCacheKey = f => `omega_arcade_game:${f}`;
+  /** Bootstrap-injected copy only (see download builder meta inject). Source arcade never has this. */
+  function isDownloadedOfflineShell() {
+    return !!document.querySelector('meta[name="omega-arcade-offline"][content="1"]');
+  }
+  function withGameBase(html, pageUrl) {
+    const baseHref = String(pageUrl || "").replace(/[#?].*$/, "").replace(/[^/]*$/, "");
+    const tag = `<base href="${baseHref}">`;
+    if (!html || /<base[\s>]/i.test(html)) return html;
+    if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, m => m + tag);
+    return "<!DOCTYPE html><html><head>" + tag + "</head><body>" + html + "</body></html>";
+  }
+  function syncPointerLockChrome() {
+    const shell = $("#shell");
+    const fr = $("#m-frame");
+    if (!shell) return;
+    let locked = !!document.pointerLockElement;
+    try { locked = locked || !!fr?.contentDocument?.pointerLockElement; } catch {}
+    shell.classList.toggle("ptrlock", locked);
+  }
+  function watchGamePointerLock() {
+    if (watchGamePointerLock.armed) return;
+    watchGamePointerLock.armed = true;
+    document.addEventListener("pointerlockchange", syncPointerLockChrome);
+    const fr = $("#m-frame");
+    if (!fr) return;
+    fr.addEventListener("load", () => {
+      try { fr.contentDocument?.addEventListener("pointerlockchange", syncPointerLockChrome); } catch {}
+      syncPointerLockChrome();
+    });
+  }
+  function toggleDownloadedMaximize() {
+    const shell = $("#shell");
+    if (!shell) return;
+    const on = shell.classList.toggle("maximized");
+    const btn = $("#m-max") || $("#m-newtab");
+    if (btn) {
+      btn.title = on ? "Restore" : "Maximize";
+      const icon = btn.querySelector("i");
+      if (icon) icon.className = on ? "fa-solid fa-down-left-and-up-right-to-center" : "fa-solid fa-up-right-and-down-left-from-center";
+    }
+  }
+  function setupDownloadedMaximize() {
+    if (!isDownloadedOfflineShell()) return;
+    document.querySelector('label[for="set-direct-all"]')?.remove();
+    document.getElementById("set-direct-all")?.remove();
+    const btn = document.getElementById("m-newtab") || document.getElementById("m-max");
+    if (btn && !btn.dataset.maxReady) {
+      btn.dataset.maxReady = "1";
+      btn.id = "m-max";
+      btn.title = "Maximize";
+      btn.innerHTML = '<i class="fa-solid fa-up-right-and-down-left-from-center"></i>';
+      btn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); toggleDownloadedMaximize(); });
+    }
+    watchGamePointerLock();
+  }
+  async function loadDownloadedFrame(file, url) {
+    const fr = $("#m-frame");
+    const html = await fetchGameHtml(file);
+    if (curFile !== file || !fr) return;
+    if (!html) {
+      fr.removeAttribute("srcdoc");
+      fr.src = url;
+      return;
+    }
+    fr.removeAttribute("src");
+    fr.srcdoc = withGameBase(html, url);
+  }
+  function clearStaleOfflineFlags() {
+    try {
+      localStorage.removeItem(OFFLINE_COPY_KEY);
+      sessionStorage.removeItem(OFFLINE_COPY_KEY);
+    } catch {}
+  }
+  function openHostedGameTab(file) {
+    if (!file) return;
+    const url = fileURL(file);
+    /* omit noopener/noreferrer in features — they often make window.open return null while the tab still opens */
+    const w = window.open(url, "_blank");
+    if (w) {
+      try { w.opener = null; } catch {}
+      return;
+    }
+    showAnnouncement({ title: "Pop-up blocked", body: "Allow pop-ups to open games in a new tab.", kind: "warn", ms: 10000 });
+  }
+  function openGameNewTab(file) {
+    if (!file) return;
+    if (!isDownloadedOfflineShell()) {
+      openHostedGameTab(file);
+      return;
+    }
+    void openGameOfflineTab(file);
+  }
+  async function fetchGameHtml(file) {
+    const base = rawURL(file);
+    try {
+      const r = await fetch(base + (base.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+      if (r.ok) {
+        const html = await r.text();
+        try { localStorage.setItem(gameCacheKey(file), html); } catch {}
+        return html;
+      }
+    } catch {}
+    try { return localStorage.getItem(gameCacheKey(file)); } catch {}
+    return null;
+  }
+  function showGameTabMessage(w, heading, body) {
+    if (!w || w.closed) return;
+    try {
+      const doc = w.document;
+      doc.open();
+      doc.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(heading || "Omega Arcade")}</title><style>body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;display:grid;place-items:center;min-height:100vh;padding:24px;text-align:center}.m{max-width:440px;line-height:1.55}h1{font-size:17px;color:#eafcff;margin:0 0 10px}</style></head><body><div class="m"><h1>${esc(heading || "")}</h1><p>${body || ""}</p></div></body></html>`);
+      doc.close();
+    } catch {}
+  }
+  function mountOfflineGameInWindow(w, html, title) {
+    if (!w || w.closed) throw new Error("game window unavailable");
+    const doc = w.document;
+    if (!doc) throw new Error("game window document blocked");
+    const safeTitle = esc(title || "Game");
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title><style>html,body{margin:0;height:100%;overflow:hidden;background:#070c16}</style></head><body></body></html>`);
+    doc.close();
+    const iframe = doc.createElement("iframe");
+    iframe.title = title || "Game";
+    iframe.setAttribute("allow", "autoplay; fullscreen; gamepad; clipboard-write; xr-spatial-tracking");
+    iframe.style.cssText = "position:fixed;inset:0;border:0;margin:0;width:100%;height:100%;display:block;background:#070c16";
+    doc.body.appendChild(iframe);
+    const BlobCtor = w.Blob || Blob;
+    const URLCtor = w.URL || URL;
+    const gameUrl = URLCtor.createObjectURL(new BlobCtor([html], { type: "text/html;charset=utf-8" }));
+    if (!gameUrl || /^blob:null/i.test(gameUrl)) throw new Error("invalid game blob URL");
+    iframe.src = gameUrl;
+  }
+  async function openGameOfflineTab(file) {
+    if (!file) return;
+    if (!isDownloadedOfflineShell()) {
+      openHostedGameTab(file);
+      return;
+    }
+    const w = window.open("about:blank", "_blank");
+    if (!w) {
+      showAnnouncement({ title: "Pop-up blocked", body: "Allow pop-ups to open games in a new tab.", kind: "warn", ms: 10000 });
+      return;
+    }
+    try { w.opener = null; } catch {}
+    try {
+      w.document.title = "Loading…";
+      w.document.body.innerHTML = "<p style=\"font-family:system-ui,sans-serif;padding:24px;margin:0;color:#ccc\">Loading game…</p>";
+    } catch {}
+    const html = await fetchGameHtml(file);
+    if (!html) {
+      showGameTabMessage(w, "Offline", `No cached copy of ${esc(file)}. Go online once to fetch it.`);
+      showAnnouncement({
+        title: "Offline",
+        body: `No cached copy of <span class="f-mono">${esc(file)}</span>. Go online once to fetch it.`,
+        kind: "warn",
+        ms: 12000,
+      });
+      return;
+    }
+    try {
+      mountOfflineGameInWindow(w, html, file.replace(/\.html?$/i, "") || file);
+    } catch {
+      showGameTabMessage(w, "Launch failed", "Could not load the game in this tab.");
+      showAnnouncement({ title: "Launch failed", body: "Could not open the game in a new tab.", kind: "warn", ms: 10000 });
+    }
+  }
   let curFile = "", loadTimer = 0;
   function openGameDirect(file) {
     const g = S.games.find(x => x.file === file);
@@ -1593,19 +1938,21 @@ const ARCADE = (() => {
     Snd.insert();
     recordPlay(file);
     render();
-    window.open(fileURL(file), "_blank", "noopener");
+    openHostedGameTab(file);
   }
   function launch(file) {
     const g = S.games.find(x => x.file === file); if (!g) return;
-    if (isDirectOpen(file)) { openGameDirect(file); return; }
+    if (!isDownloadedOfflineShell() && isDirectOpen(file)) { openGameDirect(file); return; }
     curFile = file;
     const url = fileURL(file);
     $("#m-title").innerHTML = richMeta(g.title);
-    $("#m-file").innerHTML = `<span class="text-[var(--cyan)]">${esc(file)}</span> · <span class="text-[#9dc0d1]"><i class="fa-solid fa-microchip text-[var(--ice)]"></i> ${esc(gameModels(g).join(", "))}</span> · ${esc(url.replace(/^https?:\/\//, ""))}`;
-    $("#m-loadurl").textContent = url.replace(/^https?:\/\//, "").slice(0, 74);
+    $("#m-file").innerHTML = `<span class="text-[var(--cyan)]">${esc(file)}</span> · <span class="text-[#9dc0d1]"><i class="fa-solid fa-microchip text-[var(--ice)]"></i> ${esc(gameModels(g).join(", "))}</span> · ${esc(isDownloadedOfflineShell() ? file : url.replace(/^https?:\/\//, ""))}`;
+    $("#m-loadurl").textContent = (isDownloadedOfflineShell() ? file : url.replace(/^https?:\/\//, "")).slice(0, 74);
     $("#m-load").style.display = "grid";
     const fr = $("#m-frame");
-    fr.src = url;
+    fr.removeAttribute("srcdoc");
+    if (isDownloadedOfflineShell()) loadDownloadedFrame(file, url);
+    else fr.src = url;
     Snd.insert();
     recordPlay(file);
     render();
@@ -1613,13 +1960,19 @@ const ARCADE = (() => {
     document.body.style.overflow = "hidden";
     clearTimeout(loadTimer);
     loadTimer = setTimeout(() => {
-      if ($("#m-load").style.display !== "none")
-        $("#m-loadurl").innerHTML = `slow or blocked signal — <button class="btn notch-s" style="padding:3px 8px" onclick="ARCADE.newtab()">open in new tab</button>`;
+      if ($("#m-load").style.display === "none") return;
+      if (isDownloadedOfflineShell()) {
+        $("#m-loadurl").textContent = "slow or blocked signal";
+        return;
+      }
+      $("#m-loadurl").innerHTML = `slow or blocked signal — <button class="btn notch-s" style="padding:3px 8px" onclick="ARCADE.newtab()">open in new tab</button>`;
     }, 9000);
   }
   function closeGame() {
-    $("#shell").classList.remove("open");
-    $("#m-frame").src = "about:blank";
+    $("#shell").classList.remove("open", "ptrlock");
+    const fr = $("#m-frame");
+    fr.removeAttribute("srcdoc");
+    fr.src = "about:blank";
     document.body.style.overflow = "";
     Snd.play(220, .12, "triangle", .04, -120);
   }
@@ -1664,6 +2017,7 @@ const ARCADE = (() => {
 
   /* ==================== boot sequence ==================== */
   async function boot() {
+    clearStaleOfflineFlags();
     const steps = [
       ["arcade.html kernel v2.6 …", 120],
       [`mount repo <span class="dim">"${esc(CFG.owner)}/${esc(CFG.repo)}:${esc(CFG.branch)}"</span>`, 150],
@@ -1721,27 +2075,41 @@ const ARCADE = (() => {
 
   /* ==================== wiring ==================== */
   function wire() {
-    $("#q").addEventListener("input", e => { S.query = e.target.value; render(); });
-    $("#sort").addEventListener("change", e => { S.sort = e.target.value; render(); Snd.click(); });
-    $("#tags").addEventListener("click", e => {
+    clearStaleOfflineFlags();
+    setupDownloadedMaximize();
+    bind("#q", "input", e => { S.query = e.target.value; render(); });
+    bind("#sort", "change", e => { S.sort = e.target.value; render(); Snd.click(); });
+    bind("#tags", "click", e => {
       const b = e.target.closest("[data-tag]"); if (!b) return;
       S.tag = b.dataset.tag; Snd.click(); renderTags(); render();
     });
-    const setView = v => { S.view = v; $("#v-grid").setAttribute("aria-pressed", v === "grid"); $("#v-list").setAttribute("aria-pressed", v === "list"); save("arcade.view", v); Snd.click(); render(); };
-    $("#v-grid").addEventListener("click", () => setView("grid"));
-    $("#v-list").addEventListener("click", () => setView("list"));
+    const setView = v => {
+      S.view = v;
+      $("#v-grid")?.setAttribute("aria-pressed", v === "grid");
+      $("#v-list")?.setAttribute("aria-pressed", v === "list");
+      save("arcade.view", v); Snd.click(); render();
+    };
+    bind("#v-grid", "click", () => setView("grid"));
+    bind("#v-list", "click", () => setView("list"));
     setView(load("arcade.view", "grid") || "grid");
 
-    $("#btn-refresh").addEventListener("click", () => { Snd.click(); rescan(); });
-    $("#btn-settings").addEventListener("click", () => { Snd.click(); settings(true); });
+    let resizeDebounce = 0;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeDebounce);
+      resizeDebounce = setTimeout(() => adjustOverhangingChips($("#rack")), 80);
+    }, { passive: true });
+
+    bind("#btn-refresh", "click", () => { Snd.click(); rescan(); });
+    bind("#btn-download", "click", () => { Snd.click(); downloadArcade(); });
+    bind("#btn-settings", "click", () => { Snd.click(); settings(true); });
     syncDirectAllUI();
-    $("#set-direct-all").addEventListener("change", e => {
+    bind("#set-direct-all", "change", e => {
       S.directAll = e.target.checked;
       save("arcade.directAll", S.directAll);
       Snd.click();
       render();
     });
-    $("#set-no-spoiler").addEventListener("change", e => {
+    bind("#set-no-spoiler", "change", e => {
       S.noSpoiler = e.target.checked;
       if (!S.noSpoiler) { S.hideSpoilerTitles = false; save("arcade.hideSpoilerTitles", false); }
       save("arcade.noSpoiler", S.noSpoiler);
@@ -1749,50 +2117,52 @@ const ARCADE = (() => {
       Snd.click();
       render();
     });
-    $("#set-hide-spoiler-titles").addEventListener("change", e => {
+    bind("#set-hide-spoiler-titles", "change", e => {
       if (!S.noSpoiler) { e.target.checked = false; return; }
       S.hideSpoilerTitles = e.target.checked;
       save("arcade.hideSpoilerTitles", S.hideSpoilerTitles);
       Snd.click();
       render();
     });
-    $("#set-update-notifier").addEventListener("change", e => {
+    bind("#set-update-notifier", "change", e => {
       S.updateNotifier = e.target.checked;
       save("arcade.updateNotifier", S.updateNotifier);
       if (S.updateNotifier && S.games.length) save("arcade.shelfSnapshot", S.games.map(g => key(g.file)));
       Snd.click();
     });
-    $("#set-show-models").addEventListener("change", e => {
+    bind("#set-show-models", "change", e => {
       S.showModels = e.target.checked;
       save("arcade.showModels", S.showModels);
       Snd.click();
       render();
     });
-    $("#settingsshell").addEventListener("click", e => { if (e.target.id === "settingsshell") settings(false); });
-
-    $("#btn-sound").addEventListener("click", e => {
+    bind("#settingsshell", "click", e => { if (e.target.id === "settingsshell") settings(false); });
+    bind("#gameinfoshell", "click", e => { if (e.target.id === "gameinfoshell") gameInfo(""); });
+    bind("#btn-sound", "click", e => {
       S.sound = !S.sound; save("arcade.sound", S.sound);
       e.currentTarget.setAttribute("aria-pressed", S.sound);
       e.currentTarget.innerHTML = `<i class="fa-solid fa-volume-${S.sound ? "high" : "xmark"}"></i>`;
       if (S.sound) Snd.click();
     });
-    $("#m-close").addEventListener("click", closeGame);
-    $("#m-reload").addEventListener("click", () => reload());
-    $("#m-fs").addEventListener("click", () => full());
-    $("#m-newtab").addEventListener("click", () => newtab());
-    $("#m-frame").addEventListener("load", () => { $("#m-load").style.display = "none"; });
-    $("#shell").addEventListener("click", e => { if (e.target.id === "shell") closeGame(); });
-    $("#helpshell").addEventListener("click", e => { if (e.target.id === "helpshell") help(false); });
-    $("#copycfg").addEventListener("click", async () => {
+    bind("#m-close", "click", closeGame);
+    bind("#m-reload", "click", () => reload());
+    bind("#m-fs", "click", () => full());
+    bind("#m-newtab", "click", () => newtab());
+    bind("#m-frame", "load", () => { const veil = $("#m-load"); if (veil) veil.style.display = "none"; });
+    bind("#shell", "click", e => { if (e.target.id === "shell") closeGame(); });
+    bind("#helpshell", "click", e => { if (e.target.id === "helpshell") help(false); });
+    bind("#copycfg", "click", async () => {
       try { await navigator.clipboard.writeText($("#cfgsnippet").innerText); Snd.click();
         $("#copycfg").innerHTML = '<i class="fa-solid fa-check"></i>copied'; setTimeout(() => $("#copycfg").innerHTML = '<i class="fa-regular fa-copy"></i>Copy snippet', 1600);
       } catch { ARCADE.help(false); }
     });
-    $("#help-url").textContent = (CFG.pagesBase || "").replace(/\/$/, "") + "/arcade.html";
+    const helpUrl = $("#help-url");
+    if (helpUrl) helpUrl.textContent = (CFG.pagesBase || "").replace(/\/$/, "") + "/arcade.html";
 
     /* [MK-0z5t2] KEYBOARD */
     addEventListener("keydown", e => {
       if (e.key === "Escape") {
+        if ($("#shell").classList.contains("ptrlock")) return;
         if ($("#shell").classList.contains("open")) closeGame();
         else if ($("#settingsshell").classList.contains("open")) settings(false);
         else help(false);
@@ -1814,22 +2184,144 @@ const ARCADE = (() => {
     const el = $("#m-screen");
     document.fullscreenElement ? document.exitFullscreen() : (el.requestFullscreen?.() || el.webkitRequestFullscreen?.());
   }
-  function reload() { const f = $("#m-frame"); const s = f.src; f.src = "about:blank"; $("#m-load").style.display = "grid"; setTimeout(() => f.src = s, 120); Snd.play(660, .07, "square", .04); }
+  function reload() {
+    const f = $("#m-frame");
+    const doc = f.getAttribute("srcdoc");
+    const s = f.src;
+    $("#m-load").style.display = "grid";
+    if (doc) {
+      f.removeAttribute("srcdoc");
+      setTimeout(() => { f.srcdoc = doc; }, 120);
+    } else {
+      f.src = "about:blank";
+      setTimeout(() => { f.src = s; }, 120);
+    }
+    Snd.play(660, .07, "square", .04);
+  }
   function newtab() {
-    if (!curFile) return;
-    window.open(fileURL(curFile), "_blank", "noopener");
+    if (!curFile || isDownloadedOfflineShell()) return;
+    openHostedGameTab(curFile);
     closeGame();
   }
+  function renderGameInfoModal(file) {
+    const wrap = $("#gameinfo-content");
+    if (!wrap) return;
+    const g = S.games.find(x => x.file === file || key(x.file) === key(file));
+    if (!g) { gameInfo(""); return; }
+
+    const fav = S.favs.has(key(g.file));
+    const plays = S.plays[key(g.file)] || 0;
+    const spoiler = spoilerActive(g);
+    const hideSpoiler = spoiler && S.hideSpoilerTitles;
+    const titleHtml = hideSpoiler ? esc("???") : richMeta(shelfTitle(g));
+    const filenameText = hideSpoiler ? "???" : esc(g.file);
+    const allModels = gameModels(g);
+    const knownModels = !hideSpoiler && hasKnownModels(g);
+    const allTags = g.tags || [];
+
+    wrap.innerHTML = `
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div class="min-w-0">
+          <div class="f-mono text-[10px] tracking-[.34em] text-[var(--cyan)] flex items-center gap-1.5">
+            <i class="fa-solid fa-microchip text-[var(--mag)]"></i> CARTRIDGE TELEMETRY
+          </div>
+          <h2 class="f-disp text-2xl sm:text-3xl font-black text-[#f2feff] neon mt-1.5 leading-snug">${titleHtml}</h2>
+          <div class="f-mono text-[11px] text-[var(--dim)] mt-1 flex flex-wrap items-center gap-2">
+            <span><i class="fa-regular fa-file-code text-[var(--cyan)]"></i> ${filenameText}</span>
+            <span>·</span>
+            <span class="${plays ? "text-[var(--cyan)]" : "text-[var(--dim)]"}">${plays ? "×" + plays + " plays" : "UNPLAYED"}</span>
+            ${g.hot ? `<span class="badge" style="position:static;padding:2px 6px;color:var(--mag);border-color:rgba(255,47,135,.6)"><i class="fa-solid fa-bolt"></i> HOT</span>` : ""}
+          </div>
+        </div>
+        <button class="ico-btn notch-s" onclick="ARCADE.gameInfo('')" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- preview plate -->
+      <div class="gthumb notch-s mb-5 ${spoiler ? "gthumb-spoiler" : ""}" style="max-height:220px;border:1px solid rgba(47,243,208,.2)">
+        ${thumbHTML(g)}
+        <div class="sweep"></div>
+        ${spoiler ? `<div class="badge" style="top:10px;right:10px;color:var(--ice);border-color:rgba(124,196,255,.5)"><i class="fa-solid fa-eye-slash"></i> UNPLAYED · SPOILER MODE</div>` : ""}
+      </div>
+
+      <!-- actions -->
+      <div class="flex flex-wrap items-center gap-2 mb-5">
+        <button type="button" class="btn notch-s flex-1 justify-center py-2.5" style="border-color:var(--cyan);background:rgba(47,243,208,.12);color:#eafcff" onclick="ARCADE.gameInfo(''); ARCADE.launch('${esc(g.file)}')">
+          <i class="fa-solid fa-play text-[var(--cyan)]"></i> Launch Game
+        </button>
+        <button type="button" class="btn notch-s" title="Open in new tab" onclick="window.open(ARCADE.fileURL('${esc(g.file)}'), '_blank', 'noopener')">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> New Tab
+        </button>
+        <button type="button" class="btn notch-s ${fav ? "text-[var(--amber)]" : ""}" onclick="ARCADE.toggleFav('${esc(g.file)}'); ARCADE.gameInfo('${esc(g.file)}')">
+          <i class="fa-${fav ? "solid" : "regular"} fa-star"></i> ${fav ? "Favorited" : "Favorite"}
+        </button>
+      </div>
+
+      <!-- description & bio -->
+      <div class="p-4 border border-[rgba(47,243,208,.16)] bg-[rgba(47,243,208,.03)] notch-s mb-4 space-y-2">
+        <div class="f-mono text-[10px] tracking-[.25em] text-[var(--ice)] uppercase flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info"></i> Description & Bio
+        </div>
+        ${hideSpoiler
+          ? `<div class="text-[13px] text-[var(--dim)] italic py-1">Description hidden in spoiler mode until you launch this game.</div>`
+          : `${g.tagline ? `<div class="text-[13.5px] text-[#c9e4f2] leading-relaxed">${richMeta(g.tagline)}</div>` : ""}
+             ${g.bio ? `<div class="text-[12.5px] text-[#8fb2c4] leading-relaxed pt-2 border-t border-[rgba(47,243,208,.1)]">${richMeta(g.bio)}</div>` : ""}
+             ${!g.tagline && !g.bio ? `<div class="text-[12.5px] text-[var(--dim)] italic">No description provided for this cartridge.</div>` : ""}`
+        }
+      </div>
+
+      <!-- AI models -->
+      <div class="p-4 border border-[rgba(47,243,208,.16)] bg-[rgba(47,243,208,.03)] notch-s mb-4">
+        <div class="f-mono text-[10px] tracking-[.25em] text-[var(--cyan)] uppercase flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-microchip"></i> AI Models Used (${allModels.length})</span>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-3">
+          ${hideSpoiler
+            ? `<span class="mchip is-unknown notch-s" style="font-size:11px;padding:4px 9px">???</span>`
+            : allModels.map(m => `<span class="mchip ${!knownModels || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s" style="font-size:11px;padding:4px 9px">${esc(m)}</span>`).join("")
+          }
+        </div>
+      </div>
+
+      <!-- tags -->
+      <div class="p-4 border border-[rgba(255,194,71,.18)] bg-[rgba(255,194,71,.03)] notch-s">
+        <div class="f-mono text-[10px] tracking-[.25em] text-[var(--amber)] uppercase flex items-center gap-1.5">
+          <i class="fa-solid fa-tags"></i> Cartridge Tags (${allTags.length})
+        </div>
+        <div class="flex flex-wrap gap-2 mt-3">
+          ${hideSpoiler
+            ? `<span class="tag notch-s" style="font-size:10px;padding:4px 9px">???</span>`
+            : (allTags.length
+                ? allTags.map(t => `<span class="tag notch-s" style="font-size:10px;padding:4px 9px">${esc(t)}</span>`).join("")
+                : `<span class="f-mono text-[11px] text-[var(--dim)] italic">No tags assigned</span>`)
+          }
+        </div>
+      </div>
+    `;
+  }
+
+  function gameInfo(file = "") {
+    const open = Boolean(file);
+    const shell = $("#gameinfoshell");
+    if (!shell) return;
+    shell.classList.toggle("open", open);
+    if (open) {
+      help(false);
+      settings(false);
+      renderGameInfoModal(file);
+    }
+    document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#helpshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
+  }
+
   function settings(on) {
     const open = on !== false;
     $("#settingsshell").classList.toggle("open", open);
-    if (open) { help(false); syncDirectAllUI(); }
+    if (open) { help(false); gameInfo(""); syncDirectAllUI(); }
     document.body.style.overflow = open || $("#helpshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
   }
   function help(on) {
     const open = on !== false;
     $("#helpshell").classList.toggle("open", open);
-    if (open) settings(false);
+    if (open) { settings(false); gameInfo(""); }
     document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
   }
   function rescan() {
@@ -1840,6 +2332,251 @@ const ARCADE = (() => {
       localStorage.removeItem(repoInfoCacheKey());
     } catch {}
     build(true).catch(e => setStatus("scan failed: " + esc(e.message)));
+  }
+
+  function stripDownloadBtnFromHtml(html) {
+    if (!html) return html;
+    try {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      doc.getElementById("btn-download")?.remove();
+      return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+    } catch {
+      return html.replace(/<button\b[^>]*\bid=["']btn-download["'][^>]*>[\s\S]*?<\/button>\s*/gi, "");
+    }
+  }
+  function injectOfflineBootstrapMeta(html) {
+    if (!html) return html;
+    try {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      doc.getElementById("btn-download")?.remove();
+      doc.getElementById("m-newtab")?.remove();
+      doc.querySelector('label[for="set-direct-all"]')?.remove();
+      doc.getElementById("set-direct-all")?.remove();
+      doc.querySelector('meta[name="omega-arcade-offline"]')?.remove();
+      doc.querySelector('meta[name="omega-arcade-build"]')?.remove();
+      const head = doc.head || doc.querySelector("head");
+      if (head) {
+        const m = doc.createElement("meta");
+        m.setAttribute("name", "omega-arcade-offline");
+        m.setAttribute("content", "1");
+        head.insertBefore(m, head.firstChild);
+      }
+      return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+    } catch {
+      return html;
+    }
+  }
+
+  /* Download → index.html bootstrap: fetch latest raw arcade.html, cache localStorage, embedded fallback.
+     Cache keys: omega_arcade_cached_html, omega_arcade_cached_at. Hosted arcade.html unchanged. */
+  async function downloadArcade() {
+    const pageUrl = location.href.replace(/[#?].*$/, "");
+    let snap = "";
+    try {
+      const r = await fetch(pageUrl, { cache: "no-store" });
+      if (r.ok) snap = await r.text();
+    } catch { /* file:// — clone below */ }
+    if (!snap) {
+      const root = document.documentElement.cloneNode(true);
+      root.querySelector("#btn-download")?.remove();
+      snap = "<!DOCTYPE html>\n" + root.outerHTML;
+    } else snap = stripDownloadBtnFromHtml(snap);
+    const embed = btoa(unescape(encodeURIComponent(snap)));
+    const raw = rawURL("arcade.html");
+    const loader = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Omega Arcade</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;display:grid;place-items:center;min-height:100vh;padding:24px;text-align:center}
+.msg{max-width:440px;line-height:1.55;font-size:14px}
+.msg h1{font-size:17px;margin:0 0 10px;color:#eafcff}
+</style>
+</head>
+<body>
+<p class="msg" id="boot">Loading Omega Arcade…</p>
+<script>
+(function(){
+  var RAW=${JSON.stringify(raw)};
+  var K_HTML="omega_arcade_cached_html";
+  var K_AT="omega_arcade_cached_at";
+  var EMBED=${JSON.stringify(embed)};
+  var MAX_CSS=${JSON.stringify(`#shell.maximized{padding:0;background:#000;align-items:stretch}#shell.maximized .cab{width:100%;height:100%;max-height:none;background:#000}#shell.maximized .edge{padding:0;background:transparent;height:100%;display:flex;flex-direction:column}#shell.maximized .edge>.edge-in{height:100%;background:#000;clip-path:none}#shell.maximized .notch,#shell.maximized .notch-s{clip-path:none}#shell.maximized #m-bar{order:2;justify-content:flex-end;gap:6px;padding:4px 8px;border-bottom:0;border-top:1px solid rgba(47,243,208,.22);background:rgba(6,10,18,.94)}#shell.maximized #m-bar>.m-chrome,#shell.maximized #m-bar>*:not(#m-actions){display:none!important}#shell.maximized #m-actions{display:flex!important}#shell.maximized #m-actions .ico-btn{width:26px;height:26px}#shell.maximized .screen{order:1;flex:1;min-height:0}#shell.ptrlock #m-bar{display:none!important}`)};
+  var MAX_JS=${JSON.stringify(`(function(){
+    var RAW=${JSON.stringify(raw)};
+    function sync(){
+      var shell=document.getElementById("shell");
+      var fr=document.getElementById("m-frame");
+      if(!shell) return;
+      var locked=!!document.pointerLockElement;
+      try{ locked=locked||!!(fr&&fr.contentDocument&&fr.contentDocument.pointerLockElement);}catch(e){}
+      shell.classList.toggle("ptrlock", locked);
+    }
+    function rawOf(page){
+      try{
+        var file=String(page).split("/").pop().split("?")[0].split("#")[0];
+        return RAW.replace(/arcade\\.html.*$/,"")+file;
+      }catch(e){ return page; }
+    }
+    function withBase(html, pageUrl){
+      var base=String(pageUrl||"").replace(/[#?].*$/,"").replace(/[^/]*$/,"");
+      var tag='<base href="'+base+'">';
+      if(!html||/<base[\\s>]/i.test(html)) return html;
+      if(/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, function(m){return m+tag;});
+      return "<!DOCTYPE html><html><head>"+tag+"</head><body>"+html+"</body></html>";
+    }
+    function hook(){
+      var fr=document.getElementById("m-frame");
+      if(!fr||fr.dataset.srcHook) return;
+      fr.dataset.srcHook="1";
+      var desc=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,"src");
+      Object.defineProperty(fr,"src",{
+        configurable:true,
+        get:function(){ if(fr.getAttribute("srcdoc")&&fr.dataset.gameSrc) return fr.dataset.gameSrc; return desc.get.call(fr); },
+        set:function(v){
+          if(!v||v==="about:blank"){
+            fr.removeAttribute("srcdoc");
+            delete fr.dataset.gameSrc;
+            desc.set.call(fr, v||"about:blank");
+            return;
+          }
+          fr.dataset.gameSrc=v;
+          var raw=rawOf(v);
+          fetch(raw+(raw.indexOf("?")>=0?"&":"?")+"t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():null;}).then(function(html){
+            if(!html){ desc.set.call(fr,v); return; }
+            fr.removeAttribute("src");
+            fr.srcdoc=withBase(html,v);
+          }).catch(function(){ desc.set.call(fr,v); });
+        }
+      });
+      fr.addEventListener("load", function(){
+        try{ if(fr.contentDocument) fr.contentDocument.addEventListener("pointerlockchange", sync); }catch(e){}
+        sync();
+      });
+    }
+    function takeOver(){
+      var dl=document.getElementById("btn-download");
+      if(dl) dl.style.setProperty("display","none","important");
+      var row=document.querySelector('label[for="set-direct-all"]');
+      if(row) row.remove();
+      var btn=document.getElementById("m-max")||document.getElementById("m-newtab");
+      if(!btn||btn.dataset.maxArmed) return;
+      var fresh=btn.cloneNode(true);
+      fresh.id="m-max";
+      fresh.dataset.maxArmed="1";
+      fresh.dataset.maxReady="1";
+      fresh.title="Maximize";
+      fresh.innerHTML='<i class="fa-solid fa-up-right-and-down-left-from-center"><\\/i>';
+      btn.replaceWith(fresh);
+      fresh.addEventListener("click", function(e){
+        e.preventDefault(); e.stopPropagation();
+        var shell=document.getElementById("shell");
+        if(!shell) return;
+        var on=shell.classList.toggle("maximized");
+        fresh.title=on?"Restore":"Maximize";
+        var i=fresh.querySelector("i");
+        if(i) i.className=on?"fa-solid fa-down-left-and-up-right-to-center":"fa-solid fa-up-right-and-down-left-from-center";
+      });
+    }
+    function bind(){
+      hook();
+      document.addEventListener("pointerlockchange", sync);
+      if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", function(){ setTimeout(takeOver, 0); });
+      else setTimeout(takeOver, 0);
+    }
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bind);
+    else bind();
+  })();`)};
+  function prepareInjectedArcade(h){
+    try{
+      var d=new DOMParser().parseFromString(h,"text/html");
+      var b=d.getElementById("btn-download");
+      if(b){ b.style.setProperty("display","none","important"); b.setAttribute("hidden","hidden"); }
+      var fs=d.getElementById("m-fs");
+      if(fs&&fs.parentElement){
+        if(!fs.parentElement.id)fs.parentElement.id="m-actions";
+        if(fs.parentElement.parentElement&&!fs.parentElement.parentElement.id)fs.parentElement.parentElement.id="m-bar";
+      }
+      var directRow=d.querySelector('label[for="set-direct-all"]');
+      if(directRow) directRow.style.setProperty("display","none","important");
+      var head=d.head||d.querySelector("head");
+      if(head&&!d.getElementById("omega-null-guard")){
+        var guard=d.createElement("script");
+        guard.id="omega-null-guard";
+        guard.textContent="(function(){var q=Document.prototype.querySelector;var dummy=document.createElement('span');dummy.hidden=true;var ids={'btn-download':1,'m-newtab':1,'m-max':1,'set-direct-all':1,'q':1,'sort':1,'tags':1,'v-grid':1,'v-list':1,'btn-refresh':1,'btn-settings':1,'set-no-spoiler':1,'set-hide-spoiler-titles':1,'set-update-notifier':1,'settingsshell':1,'btn-sound':1,'m-close':1,'m-reload':1,'m-fs':1,'m-frame':1,'shell':1,'helpshell':1,'copycfg':1,'help-url':1,'m-load':1,'m-title':1,'m-file':1,'m-hint':1,'m-screen':1,'m-bar':1,'m-actions':1};Document.prototype.querySelector=function(sel){var n=q.call(this,sel);if(n||typeof sel!=='string'||sel.charAt(0)!=='#')return n;return ids[sel.slice(1)]?dummy:n;};})();";
+        head.insertBefore(guard, head.firstChild);
+      }
+      if(head&&!d.getElementById("omega-max-css")){
+        var st=d.createElement("style");
+        st.id="omega-max-css";
+        st.textContent=MAX_CSS;
+        head.appendChild(st);
+      }
+      if(d.body&&!d.getElementById("omega-max-boot")){
+        var sc=d.createElement("script");
+        sc.id="omega-max-boot";
+        sc.textContent=MAX_JS;
+        d.body.appendChild(sc);
+      }
+      var off=d.querySelector('meta[name="omega-arcade-offline"]');
+      if(off)off.remove();
+      var src=d.querySelector('meta[name="omega-arcade-build"]');
+      if(src)src.remove();
+      if(head){
+        var m=d.createElement("meta");
+        m.setAttribute("name","omega-arcade-offline");
+        m.setAttribute("content","1");
+        head.insertBefore(m,head.firstChild);
+      }
+      return "<!DOCTYPE html>\\n"+d.documentElement.outerHTML;
+    }catch(e){
+      return h;
+    }
+  }
+  function cacheSave(h){
+    try{localStorage.setItem(K_HTML,h);localStorage.setItem(K_AT,String(Date.now()));}catch(e){}
+  }
+  function run(h){
+    h=prepareInjectedArcade(h);
+    cacheSave(h);
+    document.open();
+    document.write(h);
+    document.close();
+  }
+  function noArcade(msg){
+    document.body.innerHTML='<div class="msg"><h1>Omega Arcade — offline</h1><p>'+msg+'</p></div>';
+  }
+  async function boot(){
+    try{
+      var u=RAW+(RAW.indexOf("?")>=0?"&":"?")+"t="+Date.now();
+      var r=await fetch(u,{cache:"no-store"});
+      if(r.ok){run(await r.text());return;}
+    }catch(e){}
+    try{
+      var c=localStorage.getItem(K_HTML);
+      if(c){run(c);return;}
+    }catch(e){}
+    if(EMBED){
+      try{run(decodeURIComponent(escape(atob(EMBED))));return;}catch(e){}
+    }
+    noArcade("Could not reach GitHub and no saved copy was found. Connect once, or open the hosted arcade.");
+  }
+  boot();
+})();
+<\/script>
+</body>
+</html>`;
+    const blob = new Blob([loader], { type: "text/html;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "index.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    log("saved <span class=\"dim\">index.html</span> (live loader + embedded fallback)", "dim");
   }
   function brokenThumb(img) {
     const holder = img.closest(".gthumb"); if (!holder) return;
@@ -1859,7 +2596,7 @@ const ARCADE = (() => {
   }
 
   /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
-  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, probeCmd, runCmd: runCmdScript, showAnnouncement, cmdEngine: 3, CFG, GAMES, key, S };
+  return { boot, wire, stars, rescan, help, settings, gameInfo, downloadArcade, download: downloadArcade, fileURL, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, probeCmd, runCmd: runCmdScript, showAnnouncement, cmdEngine: 3, CFG, GAMES, key, S };
 })();
 
 document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
