@@ -23,7 +23,8 @@
       "tagline": "4D escape room by Gemini + Grok",
       "tags": ["multiplayer", "fun", "casual"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/hyperrooms.webp",
-      "hidden": false
+      "hidden": false,
+      "models": ["Gemini 4 Argon", "Grok 4.7"]
     },
     {
       "file": "prophunt.html",
@@ -32,6 +33,7 @@
       "tags": ["multiplayer", "casual"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/prophunt.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5", "Gemini 4 Argon"]
     },
      {
       "file": "dodgeballultimate.html",
@@ -40,6 +42,7 @@
       "tags": ["multiplayer", "fun"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/dodgeballultimate.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5"]
     },
     {
       "file": "paintballpro.html",
@@ -48,6 +51,7 @@
       "tags": ["multiplayer", "fun", "fps"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/paintballpro.webp",
       "hidden": false
+      "models": ["Claude Fable 5.1"]
     },
     {
       "file": "floodescape.html",
@@ -56,6 +60,7 @@
       "tags": ["multiplayer", "fun", "casual"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/floodescape.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5"]
     },
     {
       "file": "murdermayhem.html",
@@ -64,6 +69,7 @@
       "tags": ["multiplayer", "fun", "casual"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/murdermayhem.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5"]
     },
     {
       "file": "ultimate_jenga.html",
@@ -72,6 +78,7 @@
       "tags": ["multiplayer", "party", "fun"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/ultimate_jenga.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5"]
     },
     {
       "file": "blankd.html",
@@ -88,6 +95,7 @@
       "tags": ["multiplayer", "fun"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/voxelcraft2.webp",
       "hidden": false
+      "models": ["Claude Opus 5.5"]
     },
     {
       "file": "infodeck.html",
