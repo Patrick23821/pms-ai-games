@@ -309,7 +309,6 @@ pre.code s{color:#4f7386;text-decoration:none}
       <div class="flex flex-col items-end gap-3">
         <div class="flex items-center gap-2">
           <button class="btn notch-s" id="btn-refresh"><i class="fa-solid fa-rotate"></i>Rescan repo</button>
-          <button class="btn notch-s" id="btn-models" title="View AI models per game"><i class="fa-solid fa-microchip"></i>AI Models</button>
           <button class="btn notch-s" id="btn-settings" title="Arcade settings"><i class="fa-solid fa-gear"></i>Settings</button>
           <button class="btn notch-s" id="btn-sound" aria-pressed="true" title="Toggle blips"><i class="fa-solid fa-volume-high"></i></button>
         </div>
@@ -382,7 +381,6 @@ pre.code s{color:#4f7386;text-decoration:none}
         </div>
         <div class="f-mono text-[9px] tracking-[.24em] text-[var(--dim)] hidden md:block" id="m-hint">[F] full · [R] reload · [ESC] exit</div>
         <div class="flex items-center gap-1.5">
-          <button class="ico-btn notch-s" id="m-models" title="View AI models"><i class="fa-solid fa-microchip"></i></button>
           <button class="ico-btn notch-s" id="m-reload" title="Reload (R)"><i class="fa-solid fa-rotate-right"></i></button>
           <button class="ico-btn notch-s" id="m-newtab" title="Open in new tab"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
           <button class="ico-btn notch-s" id="m-fs" title="Fullscreen (F)"><i class="fa-solid fa-expand"></i></button>
@@ -442,40 +440,13 @@ pre.code s{color:#4f7386;text-decoration:none}
           <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Toast when new games appear on the shelf after a rescan or sync. With spoiler mode, only the count is shown.</span>
         </span>
       </label>
-    </div>
-  </div>
-</div>
-
       <label class="setting-row notch-s mt-3" for="set-show-models">
         <input type="checkbox" id="set-show-models">
         <span>
-          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Show AI models on cards</span>
-          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Display the AI models used per game on its shelf card (shows <span class="f-mono text-[var(--cyan)]">Unknown</span> if none are specified).</span>
+          <span class="block f-disp text-[13px] font-bold text-[#eafcff] tracking-wide">Show AI models</span>
+          <span class="block text-[13px] text-[#8fb2c4] mt-1 leading-relaxed">Display AI models used on game cards (shows <span class="f-mono text-[var(--cyan)]">Unknown</span> if none are specified).</span>
         </span>
       </label>
-      <div class="mt-4 pt-4 border-t border-[rgba(47,243,208,.14)] flex justify-end">
-        <button type="button" class="btn notch-s" onclick="ARCADE.settings(false);ARCADE.models(true)"><i class="fa-solid fa-microchip"></i>View AI Models per Game</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================ AI MODELS PANEL ============================ -->
-<div class="shell" id="modelsshell" role="dialog" aria-modal="true" aria-label="AI Models per game">
-  <div class="w-[min(680px,100%)] max-h-[88vh] overflow-auto edge notch">
-    <div class="edge-in notch p-6 sm:p-8">
-      <div class="flex items-start justify-between gap-4 mb-5">
-        <div>
-          <div class="f-mono text-[10px] tracking-[.34em] text-[var(--cyan)]"><i class="fa-solid fa-microchip mr-1"></i>CARTRIDGE TELEMETRY</div>
-          <h2 class="f-disp text-2xl sm:text-3xl font-black text-[#f2feff] neon mt-1" id="models-heading">AI MODELS</h2>
-          <p class="text-[12.5px] text-[#8fb2c4] mt-1" id="models-sub">Models used to build each game in the vault (unspecified games show <span class="f-mono text-[var(--cyan)]">Unknown</span>).</p>
-        </div>
-        <button class="ico-btn notch-s" onclick="ARCADE.models(false)" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div id="models-actions" class="hidden mb-4">
-        <button type="button" class="btn notch-s" id="models-show-all"><i class="fa-solid fa-layer-group"></i>Show all games</button>
-      </div>
-      <div id="models-body" class="space-y-2.5"></div>
     </div>
   </div>
 </div>
@@ -841,6 +812,23 @@ const ARCADE = (() => {
     };
   }
 
+  function parseLenientJson(text) {
+    if (!text || typeof text !== "string") return null;
+    const clean = text.replace(/^\uFEFF/, "").trim();
+    try {
+      return JSON.parse(clean);
+    } catch (e1) {
+      // Attempt to repair common JSON syntax issues (missing commas between lines, trailing commas)
+      let repaired = clean.replace(/([0-9]|true|false|null|\]|\"[^\"\\\r\n]*(?:\\.[^\"\\\r\n]*)*\")(\s*\r?\n\s*[\"{])/g, '$1,$2');
+      repaired = repaired.replace(/,(\s*[}\]])/g, '$1');
+      try {
+        return JSON.parse(repaired);
+      } catch (e2) {
+        return null;
+      }
+    }
+  }
+
   function parseInfoPayload(data) {
     if (!data || typeof data !== "object") return [];
     if (Array.isArray(data)) return data.map(normalizeInfoEntry).filter(Boolean);
@@ -859,7 +847,11 @@ const ARCADE = (() => {
   }
   function readRepoInfoCache() {
     try {
-      const v = JSON.parse(localStorage.getItem(repoInfoCacheKey()));
+      let raw = localStorage.getItem(repoInfoCacheKey());
+      if (!raw) {
+        raw = localStorage.getItem("arcade.repoInfo.v1:" + [CFG.owner, CFG.repo, CFG.branch || "main", CFG.infoFile || "info.json"].join("|"));
+      }
+      const v = JSON.parse(raw);
       if (!v || !Array.isArray(v.entries)) return null;
       return v.entries;
     } catch { return null; }
@@ -889,7 +881,9 @@ const ARCADE = (() => {
         const r = await fetch(u, { signal: ctrl.signal, cache: "no-store" });
         clearTimeout(t);
         if (!r.ok) continue;
-        const data = await r.json();
+        const text = await r.text();
+        const data = parseLenientJson(text);
+        if (!data) continue;
         const entries = parseInfoPayload(data);
         if (entries.length) {
           writeRepoInfoCache(entries);
@@ -964,9 +958,10 @@ const ARCADE = (() => {
         ...repoInfo.map(g => key(g.file)).filter(Boolean),
         ...GAMES.map(g => key(g.file)).filter(Boolean),
       ]);
+      const hasJsonCatalog = jsonListed.size > 0;
       const all = [...new Set(found)]
         .filter(f => /\.html?$/i.test(f))
-        .filter(f => jsonListed.has(key(f)))
+        .filter(f => !hasJsonCatalog || jsonListed.has(key(f)))
         .sort((a, b) => a.localeCompare(b));
 
       const mergedList = all.map(f => {
@@ -1419,7 +1414,8 @@ const ARCADE = (() => {
     const fav = S.favs.has(key(g.file));
     const plays = S.plays[key(g.file)] || 0;
     const spoiler = spoilerActive(g);
-    const titleHtml = spoiler && S.hideSpoilerTitles ? esc("???") : richMeta(shelfTitle(g));
+    const hideSpoiler = spoiler && S.hideSpoilerTitles;
+    const titleHtml = hideSpoiler ? esc("???") : richMeta(shelfTitle(g));
     const tagHtml = spoiler ? "" : (g.tagline ? richMeta(g.tagline) : "");
     const bioHtml = spoiler ? "" : (g.bio ? richMeta(g.bio) : "");
     const ariaTitle = metaPlain(shelfTitle(g));
@@ -1440,8 +1436,6 @@ const ARCADE = (() => {
             <div class="ghead">
               <div class="gtitle">${titleHtml}</div>
               <div class="ghead-actions">
-                <button type="button" class="ico-btn notch-s" data-models="${esc(g.file)}" title="View AI models">
-                  <i class="fa-solid fa-microchip"></i></button>
                 <button type="button" class="ico-btn notch-s ${fav ? "on" : ""}" data-fav="${esc(g.file)}" title="Favorite">
                   <i class="fa-${fav ? "solid" : "regular"} fa-star"></i></button>
               </div>
@@ -1449,15 +1443,14 @@ const ARCADE = (() => {
             <div class="gtagline">${tagHtml}</div>
             <div class="gbio">${bioHtml}</div>
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="gfile"><i class="fa-regular fa-file-code"></i> ${spoiler && S.hideSpoilerTitles ? "???" : esc(g.file)}</span>
+              <span class="gfile"><i class="fa-regular fa-file-code"></i> ${hideSpoiler ? "???" : esc(g.file)}</span>
             </div>
-            ${S.showModels ? `<div class="gmodels" title="AI models used">
+            ${S.showModels && !hideSpoiler ? `<div class="gmodels" title="AI models used">
               <span class="gmodels-lbl"><i class="fa-solid fa-microchip"></i> AI</span>
               <div class="gmodels-list">${
-                spoiler && S.hideSpoilerTitles
-                  ? `<span class="mchip is-unknown notch-s">???</span>`
-                  : gameModels(g).map(m => `<span class="mchip ${!hasKnownModels(g) || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s">${esc(m)}</span>`).join("")
-              }</div></div>` : ""}
+                gameModels(g).map(m => `<span class="mchip ${!hasKnownModels(g) || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s">${esc(m)}</span>`).join("")
+              }</div>
+            </div>` : ""}
             <div class="gfoot">
               <div class="gtags">${g.tags.slice(0, 3).map(t => `<span class="tag notch-s">${esc(t)}</span>`).join("")}</div>
               <div class="f-mono text-[9.5px] tracking-[.18em] shrink-0 ${plays ? "text-[var(--cyan)]" : "text-[var(--dim)]"}">
@@ -1539,7 +1532,7 @@ const ARCADE = (() => {
     $$(".gcard", rack).forEach(el => {
       el.addEventListener("mouseenter", () => Snd.hover());
       el.addEventListener("click", e => {
-        if (e.target.closest("[data-fav]") || e.target.closest("[data-direct]") || e.target.closest("[data-models]")) return;
+        if (e.target.closest("[data-fav]") || e.target.closest("[data-direct]")) return;
         launch(el.dataset.file);
       });
       el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); launch(el.dataset.file); } });
@@ -1550,11 +1543,7 @@ const ARCADE = (() => {
       S.favs.has(k) ? S.favs.delete(k) : S.favs.add(k);
       save("arcade.favs", [...S.favs]); Snd.click(); renderTags(); render();
     }));
-    $$("[data-models]", rack).forEach(b => b.addEventListener("click", e => {
-      e.stopPropagation();
-      Snd.click();
-      models(true, b.dataset.models);
-    }));
+
     revealObserve();
     renderTicker();
   }
@@ -1744,7 +1733,6 @@ const ARCADE = (() => {
     setView(load("arcade.view", "grid") || "grid");
 
     $("#btn-refresh").addEventListener("click", () => { Snd.click(); rescan(); });
-    $("#btn-models").addEventListener("click", () => { Snd.click(); models(true); });
     $("#btn-settings").addEventListener("click", () => { Snd.click(); settings(true); });
     syncDirectAllUI();
     $("#set-direct-all").addEventListener("change", e => {
@@ -1781,8 +1769,7 @@ const ARCADE = (() => {
       render();
     });
     $("#settingsshell").addEventListener("click", e => { if (e.target.id === "settingsshell") settings(false); });
-    $("#modelsshell").addEventListener("click", e => { if (e.target.id === "modelsshell") models(false); });
-    $("#models-show-all").addEventListener("click", () => { Snd.click(); models(true); });
+
     $("#btn-sound").addEventListener("click", e => {
       S.sound = !S.sound; save("arcade.sound", S.sound);
       e.currentTarget.setAttribute("aria-pressed", S.sound);
@@ -1790,7 +1777,6 @@ const ARCADE = (() => {
       if (S.sound) Snd.click();
     });
     $("#m-close").addEventListener("click", closeGame);
-    $("#m-models").addEventListener("click", () => { Snd.click(); models(true, curFile); });
     $("#m-reload").addEventListener("click", () => reload());
     $("#m-fs").addEventListener("click", () => full());
     $("#m-newtab").addEventListener("click", () => newtab());
@@ -1808,7 +1794,6 @@ const ARCADE = (() => {
     addEventListener("keydown", e => {
       if (e.key === "Escape") {
         if ($("#shell").classList.contains("open")) closeGame();
-        else if ($("#modelsshell").classList.contains("open")) models(false);
         else if ($("#settingsshell").classList.contains("open")) settings(false);
         else help(false);
       }
@@ -1835,79 +1820,17 @@ const ARCADE = (() => {
     window.open(fileURL(curFile), "_blank", "noopener");
     closeGame();
   }
-  function renderModelsModal(focusFile = "") {
-    const body = $("#models-body");
-    const heading = $("#models-heading");
-    const sub = $("#models-sub");
-    const actions = $("#models-actions");
-    if (!body) return;
-    const vis = S.games.filter(g => !g.hidden);
-    const focused = focusFile ? vis.find(g => g.file === focusFile || key(g.file) === key(focusFile)) : null;
-    if (focused) {
-      const spoiler = spoilerActive(focused);
-      const tHtml = spoiler && S.hideSpoilerTitles ? esc("???") : richMeta(shelfTitle(focused));
-      const fText = spoiler && S.hideSpoilerTitles ? "???" : esc(focused.file);
-      const mList = spoiler && S.hideSpoilerTitles ? ["???"] : gameModels(focused);
-      const known = !(spoiler && S.hideSpoilerTitles) && hasKnownModels(focused);
-      if (heading) heading.innerHTML = `AI MODELS · <span class="text-[var(--cyan)]">${tHtml}</span>`;
-      if (sub) sub.innerHTML = `<span class="f-mono text-[11px] text-[var(--dim)]"><i class="fa-regular fa-file-code"></i> ${fText}</span>`;
-      if (actions) actions.classList.toggle("hidden", vis.length <= 1);
-      body.innerHTML = `<div class="model-row is-focus notch-s">
-        <div class="min-w-0">
-          <div class="f-mono text-[10px] tracking-[.22em] text-[var(--ice)] uppercase mb-1">AI Models Used</div>
-          <div class="flex flex-wrap gap-2 mt-1.5">${
-            mList.map(m => `<span class="mchip ${!known || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s" style="font-size:12px;padding:5px 11px">${esc(m)}</span>`).join("")
-          }</div>
-        </div>
-      </div>`;
-      return;
-    }
-    if (heading) heading.textContent = "AI MODELS PER GAME";
-    if (sub) sub.innerHTML = `Models used to build each game in the vault (unspecified games show <span class="f-mono text-[var(--cyan)]">Unknown</span>).`;
-    if (actions) actions.classList.add("hidden");
-    if (!vis.length) {
-      body.innerHTML = `<div class="f-mono text-xs text-[var(--dim)] py-6 text-center">No games loaded on the shelf.</div>`;
-      return;
-    }
-    const sorted = [...vis].sort((a, b) => metaPlain(a.title).localeCompare(metaPlain(b.title)));
-    body.innerHTML = sorted.map(g => {
-      const spoiler = spoilerActive(g);
-      const tHtml = spoiler && S.hideSpoilerTitles ? esc("???") : richMeta(shelfTitle(g));
-      const fText = spoiler && S.hideSpoilerTitles ? "???" : esc(g.file);
-      const mList = spoiler && S.hideSpoilerTitles ? ["???"] : gameModels(g);
-      const known = !(spoiler && S.hideSpoilerTitles) && hasKnownModels(g);
-      return `<div class="model-row notch-s">
-        <div class="min-w-0 flex-1">
-          <div class="f-disp font-bold text-[14px] text-[#eafcff] leading-snug">${tHtml}</div>
-          <div class="f-mono text-[10px] text-[var(--dim)] mt-0.5"><i class="fa-regular fa-file-code"></i> ${fText}</div>
-        </div>
-        <div class="flex flex-wrap gap-1.5 justify-end">${
-          mList.map(m => `<span class="mchip ${!known || m.toLowerCase() === "unknown" ? "is-unknown" : ""} notch-s">${esc(m)}</span>`).join("")
-        }</div>
-      </div>`;
-    }).join("");
-  }
-  function models(on, focusFile = "") {
-    const open = on !== false;
-    $("#modelsshell").classList.toggle("open", open);
-    if (open) {
-      help(false);
-      settings(false);
-      renderModelsModal(focusFile);
-    }
-    document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#helpshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
-  }
   function settings(on) {
     const open = on !== false;
     $("#settingsshell").classList.toggle("open", open);
-    if (open) { help(false); models(false); syncDirectAllUI(); }
-    document.body.style.overflow = open || $("#helpshell").classList.contains("open") || $("#modelsshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
+    if (open) { help(false); syncDirectAllUI(); }
+    document.body.style.overflow = open || $("#helpshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
   }
   function help(on) {
     const open = on !== false;
     $("#helpshell").classList.toggle("open", open);
-    if (open) { settings(false); models(false); }
-    document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#modelsshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
+    if (open) settings(false);
+    document.body.style.overflow = open || $("#settingsshell").classList.contains("open") || $("#shell").classList.contains("open") ? "hidden" : "";
   }
   function rescan() {
     setStatus("rescanning…");
@@ -1936,7 +1859,7 @@ const ARCADE = (() => {
   }
 
   /* [MK-d4k8v6] PUBLIC API (used by inline handlers) */
-  return { boot, wire, stars, rescan, help, settings, models, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, probeCmd, runCmd: runCmdScript, showAnnouncement, cmdEngine: 3, CFG, GAMES, key, S };
+  return { boot, wire, stars, rescan, help, settings, newtab, launch, closeGame, toggleFav, toggleDirect, brokenThumb, iconsFallback, reloadCmd, probeCmd, runCmd: runCmdScript, showAnnouncement, cmdEngine: 3, CFG, GAMES, key, S };
 })();
 
 document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
