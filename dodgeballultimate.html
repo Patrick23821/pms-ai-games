@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dodgeball Ultimate">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Dodgeball Ultimate</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,12 +32,12 @@
   --shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0d1b3d; font-family: var(--font); color: var(--white); user-select: none; }
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; background: #0d1b3d; font-family: var(--font); color: var(--white); user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 #renderCanvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; touch-action: none; }
 #ui { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
 #ui > * { pointer-events: none; }
-button { font-family: var(--font-head); cursor: pointer; border: none; outline: none; }
-input, select { font-family: var(--font); }
+button { font-family: var(--font-head); cursor: pointer; border: none; outline: none; touch-action: manipulation; }
+input, select { font-family: var(--font); user-select: text; -webkit-user-select: text; }
 h2 { font-family: var(--font-head); font-size: 34px; margin: 0 0 12px; text-align: center; letter-spacing: 1px; text-shadow: 0 4px 0 rgba(0,0,0,0.35); }
 h3 { font-family: var(--font-head); margin: 18px 0 8px; font-size: 20px; letter-spacing: 0.5px; color: var(--yellow); text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
 .center { text-align: center; justify-content: center; }
@@ -160,7 +164,7 @@ h3 { font-family: var(--font-head); margin: 18px 0 8px; font-size: 20px; letter-
 /* ---------- modal ---------- */
 .modal-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(10,6,40,.55); backdrop-filter: blur(3px); opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; pointer-events: none; }
 .modal-wrap.open { opacity: 1; visibility: visible; pointer-events: auto !important; }
-.modal { position: relative; width: min(560px, 94vw); max-height: 90vh; overflow-y: auto; padding: 26px 28px; border-radius: 30px; background: linear-gradient(180deg, #4a3bb8, #2a1f78); border: 5px solid var(--ink); box-shadow: 0 12px 0 var(--ink), 0 30px 60px rgba(0,0,0,.5), inset 0 4px 0 rgba(255,255,255,.2); transform: scale(.7); transition: transform .3s cubic-bezier(.3,1.6,.5,1); pointer-events: auto; }
+.modal { position: relative; width: min(560px, 94vw); max-height: 90vh; max-height: 90dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; padding: 26px 28px; border-radius: 30px; background: linear-gradient(180deg, #4a3bb8, #2a1f78); border: 5px solid var(--ink); box-shadow: 0 12px 0 var(--ink), 0 30px 60px rgba(0,0,0,.5), inset 0 4px 0 rgba(255,255,255,.2); transform: scale(.7); transition: transform .3s cubic-bezier(.3,1.6,.5,1); pointer-events: auto; }
 .modal-wrap.open .modal { transform: scale(1); }
 .modal.wide { width: min(980px, 96vw); }
 .modal.small { width: min(440px, 94vw); }
@@ -237,7 +241,7 @@ input[type=range] { width: 100%; accent-color: var(--yellow); height: 26px; }
 .av-emotes { display: flex; gap: 6px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 .av-emotes button { font-size: 22px; width: 44px; height: 44px; border-radius: 12px; background: rgba(0,0,0,.3); border: 3px solid var(--ink); }
 .av-emotes button:hover { transform: scale(1.12); }
-.av-opts { max-height: 460px; overflow-y: auto; padding: 4px; }
+.av-opts { max-height: 460px; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding: 4px; }
 .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
 .swatches.small { margin-bottom: 12px; } .swatches.small .sw { width: 36px; height: 36px; }
 .sw { width: 52px; height: 52px; border-radius: 50%; border: 4px solid var(--ink); box-shadow: 0 4px 0 var(--ink), inset 0 4px 0 rgba(255,255,255,.35); transition: transform .12s cubic-bezier(.3,1.6,.5,1); position: relative; }
@@ -323,17 +327,28 @@ input[type=range] { width: 100%; accent-color: var(--yellow); height: 26px; }
 
 /* ---------- HUD ---------- */
 #hud * { pointer-events: none; }
-.hud-top { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); text-align: center; }
+.hud-top { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); text-align: center; }
 .hud-mode { display: inline-flex; gap: 8px; align-items: center; padding: 4px 16px; border-radius: 14px; background: var(--panel); border: 3px solid var(--ink); font-family: var(--font-head); font-size: 17px; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .hud-timer { font-family: var(--font-head); font-size: 50px; line-height: 1; margin-top: 4px; -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill; letter-spacing: 1px; }
 .hud-timer.low { color: var(--red); animation: pulse .5s infinite; }
 .hud-timer.ot { color: var(--orange); }
 .hud-sub { font-family: var(--font-head); font-size: 18px; margin-top: 2px; -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; }
-.hud-room { position: absolute; top: 16px; left: 18px; padding: 8px 14px; border-radius: 14px; background: var(--panel); border: 3px solid var(--ink); font-weight: 700; font-size: 15px; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.hud-left-bar { position: absolute; top: max(14px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); display: flex; align-items: center; gap: 8px; z-index: 8; pointer-events: auto !important; flex-wrap: wrap; }
+.hud-left-bar * { pointer-events: auto !important; }
+.hud-btn { position: relative; width: 46px; height: 46px; border-radius: 15px; font-size: 21px; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.hud-room { padding: 8px 14px; border-radius: 14px; background: var(--panel); border: 3px solid var(--ink); font-weight: 700; font-size: 15px; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .hud-room b { font-family: var(--font-head); color: var(--yellow); letter-spacing: 2px; font-size: 18px; }
-.hud-coins { position: absolute; top: 14px; right: 18px; }
-.hud-admin { position: absolute; top: 64px; right: 18px; width: 46px; height: 46px; font-size: 22px; pointer-events: auto !important; }
-.killfeed { position: absolute; top: 120px; right: 18px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.hud-coins { position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(18px, env(safe-area-inset-right)); }
+.hud-admin { position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 50px); right: max(18px, env(safe-area-inset-right)); width: 48px; height: 48px; font-size: 24px; pointer-events: auto !important; z-index: 9; background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); }
+.emote-wheel { position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 56px); left: max(16px, env(safe-area-inset-left)); display: none; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; border-radius: 20px; background: var(--panel); border: 4px solid var(--ink); box-shadow: 0 8px 0 var(--ink); z-index: 30; pointer-events: auto !important; }
+.emote-wheel.open { display: grid; animation: popUp .2s cubic-bezier(.3,1.6,.5,1); }
+.emote-wheel * { pointer-events: auto !important; }
+.ew-btn { position: relative; width: 68px; height: 68px; border-radius: 16px; background: rgba(255,255,255,.12); border: 3px solid var(--ink); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.ew-btn span { font-size: 28px; line-height: 1; }
+.ew-btn small { font-size: 10px; font-family: var(--font); font-weight: 700; max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ew-btn i { position: absolute; top: 3px; left: 5px; font-style: normal; font-size: 10px; color: var(--yellow); opacity: .85; }
+.ew-btn:active, .ew-btn:hover { background: rgba(255,210,63,.3); transform: scale(1.06); }
+.killfeed { position: absolute; top: calc(max(14px, env(safe-area-inset-top)) + 106px); right: max(18px, env(safe-area-inset-right)); display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .kf-row { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 12px; background: rgba(20, 12, 56, 0.92); border: 3px solid var(--ink); font-weight: 700; font-size: 15px; animation: kfIn .3s cubic-bezier(.3,1.6,.5,1); box-shadow: 0 3px 0 rgba(0,0,0,.35); transition: opacity .5s, transform .5s; }
 .kf-row.mine { border-color: var(--yellow); box-shadow: 0 0 12px rgba(255,210,63,.6), 0 3px 0 rgba(0,0,0,.35); }
 .kf-name { color: #fff; font-family: var(--font-head); font-weight: 400; letter-spacing: .3px; display: inline-flex; align-items: center; gap: 5px; text-shadow: 0 2px 0 rgba(0,0,0,.45); }
@@ -378,27 +393,93 @@ input[type=range] { width: 100%; accent-color: var(--yellow); height: 26px; }
 .fuse.danger { animation: fuseShake .3s infinite; }
 .fuse.danger span { background: var(--red); }
 @keyframes fuseShake { 25% { transform: translateX(calc(-50% - 4px)); } 75% { transform: translateX(calc(-50% + 4px)); } }
-.spec-bar { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); padding: 10px 20px; border-radius: 16px; background: var(--panel); border: 3px solid var(--ink); font-weight: 700; opacity: 0; transition: .3s; white-space: nowrap; }
-.spec-bar.show { opacity: 1; transform: translateX(-50%); }
+.spec-bar { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); padding: 10px 16px; border-radius: 16px; background: var(--panel); border: 3px solid var(--ink); font-weight: 700; opacity: 0; transition: .3s; white-space: nowrap; display: flex; align-items: center; gap: 8px; z-index: 15; }
+.spec-bar.show { opacity: 1; transform: translateX(-50%); pointer-events: auto !important; }
+.spec-bar * { pointer-events: auto !important; }
+.spec-btn { padding: 5px 10px; font-size: 13px; }
 #hud.dead .actionbar { opacity: .35; }
-.chat { position: absolute; left: 16px; bottom: 16px; width: 420px; }
-.chat-log { max-height: 230px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; padding: 6px; scrollbar-width: none; }
+body.touch-mode .actionbar { display: none; }
+body.touch-mode .spec-bar { bottom: auto; top: calc(max(12px, env(safe-area-inset-top)) + 108px); }
+
+/* ---------- mobile / iPad / iPhone joystick & touch controls ---------- */
+.mobile-controls { display: none; position: absolute; inset: 0; pointer-events: none; z-index: 12; }
+body.touch-mode .mobile-controls { display: block; }
+.mobile-controls.menu-blocked { opacity: 0.15; pointer-events: none !important; }
+.mobile-controls.menu-blocked * { pointer-events: none !important; }
+#hud.dead .touch-actions .t-throw,
+#hud.dead .touch-actions .t-catch,
+#hud.dead .touch-actions .t-dash { opacity: .25; pointer-events: none !important; }
+
+.joy-zone { position: absolute; left: max(8px, env(safe-area-inset-left)); bottom: max(8px, env(safe-area-inset-bottom)); width: min(44vw, 360px); height: min(54vh, 340px); pointer-events: auto !important; touch-action: none; }
+.joy-base { position: absolute; left: calc(36px * var(--touch-scale, 1)); bottom: calc(28px * var(--touch-scale, 1)); width: calc(138px * var(--touch-scale, 1)); height: calc(138px * var(--touch-scale, 1)); border-radius: 50%; background: radial-gradient(circle, rgba(27, 19, 64, 0.35), rgba(27, 19, 64, 0.72)); border: 4px solid rgba(255, 255, 255, 0.45); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 18px rgba(63, 167, 255, 0.25); pointer-events: none; transition: border-color .15s, box-shadow .15s; }
+.joy-base.active { transform: translate(-50%, -50%); border-color: var(--yellow); box-shadow: 0 0 24px rgba(255, 210, 63, 0.55), 0 6px 20px rgba(0, 0, 0, 0.5); }
+.joy-ring { position: absolute; inset: 14%; border-radius: 50%; border: 2px dashed rgba(255, 255, 255, 0.22); pointer-events: none; }
+.joy-stick { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: calc(64px * var(--touch-scale, 1)); height: calc(64px * var(--touch-scale, 1)); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffffff, #7cc6ff 50%, #2a5bd7); border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink), inset 0 4px 0 rgba(255, 255, 255, 0.65); pointer-events: none; }
+.joy-base.active .joy-stick { background: radial-gradient(circle at 35% 30%, #fff8c4, var(--yellow) 55%, var(--orange)); }
+
+.touch-actions { position: absolute; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); width: calc(270px * var(--touch-scale, 1)); height: calc(250px * var(--touch-scale, 1)); pointer-events: none; }
+.t-btn { position: absolute; border-radius: 50%; background: rgba(27, 19, 64, 0.82); border: 4px solid var(--ink); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4), inset 0 3px 0 rgba(255, 255, 255, 0.25); pointer-events: auto !important; touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; transition: transform .1s, border-color .15s, box-shadow .15s; }
+.t-btn * { pointer-events: none; }
+.t-btn span { font-size: calc(30px * var(--touch-scale, 1)); line-height: 1; z-index: 2; }
+.t-btn small { font-family: var(--font-head); font-size: calc(10px * var(--touch-scale, 1)); letter-spacing: 0.4px; margin-top: 2px; opacity: .92; z-index: 2; text-shadow: 0 1px 0 var(--ink); }
+.t-btn.pressed { transform: scale(0.92); filter: brightness(1.18); }
+
+.t-throw { right: 4px; bottom: 4px; width: calc(112px * var(--touch-scale, 1)); height: calc(112px * var(--touch-scale, 1)); background: radial-gradient(circle at 35% 30%, rgba(90, 72, 190, 0.9), rgba(35, 24, 90, 0.92)); }
+.t-throw .t-ic { font-size: calc(42px * var(--touch-scale, 1)); }
+.t-throw.on { border-color: var(--yellow); background: radial-gradient(circle at 35% 30%, #ff8aa0, var(--red) 60%, var(--red-d)); box-shadow: 0 0 24px rgba(255, 210, 63, 0.65), 0 6px 0 rgba(0, 0, 0, 0.45); }
+.t-throw.hot { border-color: #fff; animation: pulse .3s infinite; }
+.t-throw.charging { transform: scale(1.07); box-shadow: 0 0 30px rgba(255, 210, 63, 0.9), 0 6px 0 rgba(0, 0, 0, 0.45); }
+.t-charge-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); z-index: 1; }
+.t-charge-ring { fill: none; stroke: var(--yellow); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 282.7; stroke-dashoffset: 282.7; }
+
+.t-catch { right: calc(130px * var(--touch-scale, 1)); bottom: calc(4px * var(--touch-scale, 1)); width: calc(78px * var(--touch-scale, 1)); height: calc(78px * var(--touch-scale, 1)); background: linear-gradient(180deg, rgba(63, 167, 255, 0.85), rgba(28, 111, 196, 0.9)); }
+.t-catch.active { border-color: var(--green); transform: scale(1.1); box-shadow: 0 0 20px var(--green); }
+.t-jump { right: calc(6px * var(--touch-scale, 1)); bottom: calc(128px * var(--touch-scale, 1)); width: calc(78px * var(--touch-scale, 1)); height: calc(78px * var(--touch-scale, 1)); background: linear-gradient(180deg, rgba(61, 220, 132, 0.85), rgba(31, 158, 87, 0.9)); }
+.t-dash { right: calc(106px * var(--touch-scale, 1)); bottom: calc(98px * var(--touch-scale, 1)); width: calc(74px * var(--touch-scale, 1)); height: calc(74px * var(--touch-scale, 1)); background: linear-gradient(180deg, rgba(182, 92, 255, 0.85), rgba(122, 47, 194, 0.9)); }
+.t-down { right: calc(92px * var(--touch-scale, 1)); bottom: calc(182px * var(--touch-scale, 1)); width: calc(64px * var(--touch-scale, 1)); height: calc(64px * var(--touch-scale, 1)); background: linear-gradient(180deg, rgba(255, 140, 66, 0.88), rgba(201, 95, 26, 0.92)); display: none; }
+.t-down.show { display: flex; }
+.t-cancel { right: calc(194px * var(--touch-scale, 1)); bottom: calc(88px * var(--touch-scale, 1)); width: calc(62px * var(--touch-scale, 1)); height: calc(62px * var(--touch-scale, 1)); background: linear-gradient(180deg, #ff8aa0, var(--red-d)); font-family: var(--font-head); font-size: calc(20px * var(--touch-scale, 1)); display: none; }
+.t-cancel.show { display: flex; animation: popUp .15s cubic-bezier(.3,1.6,.5,1); }
+.t-cancel.hover-cancel { transform: scale(1.2); border-color: var(--yellow); box-shadow: 0 0 20px var(--red); }
+
+/* ---------- chat (desktop + mobile / iOS keyboard-safe) ---------- */
+.chat { position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: max(16px, env(safe-area-inset-bottom)); width: min(420px, 92vw); z-index: 20; }
+.chat-head { display: none; align-items: center; justify-content: space-between; padding: 4px 6px 8px; font-family: var(--font-head); font-size: 18px; color: var(--yellow); border-bottom: 2px solid rgba(255,255,255,.15); margin-bottom: 6px; }
+.chat.open .chat-head { display: flex; pointer-events: auto !important; }
+.chat-head * { pointer-events: auto !important; }
+.chat-head-btns { display: flex; gap: 6px; align-items: center; }
+.chat-cmd-btn { padding: 5px 10px; border-radius: 10px; background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); font-size: 13px; border: 2px solid var(--ink); }
+.chat-close { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(#ff8aa0, var(--red-d)); color: #fff; font-size: 15px; border: 2px solid var(--ink); }
+.chat-log { max-height: 220px; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 3px; padding: 6px; scrollbar-width: none; }
 .chat-log::-webkit-scrollbar { display: none; }
-.chat-msg { padding: 4px 10px; border-radius: 10px; background: rgba(15,10,45,.6); font-size: 14px; font-weight: 600; line-height: 1.35; animation: chatIn .25s cubic-bezier(.3,1.6,.5,1); word-wrap: break-word; transition: opacity 1s; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
+.chat-msg { padding: 4px 10px; border-radius: 10px; background: rgba(15,10,45,.62); font-size: 14px; font-weight: 600; line-height: 1.35; animation: chatIn .25s cubic-bezier(.3,1.6,.5,1); word-wrap: break-word; transition: opacity 1s; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
 .chat-msg.old { opacity: 0; }
+.chat.open { background: linear-gradient(180deg, rgba(42, 31, 120, 0.96), rgba(24, 16, 62, 0.96)); padding: 10px 12px; border-radius: 20px; border: 4px solid var(--ink); box-shadow: 0 10px 0 var(--ink), 0 16px 40px rgba(0,0,0,.55); pointer-events: auto !important; }
 .chat.open .chat-msg.old { opacity: 1; }
-.chat.open .chat-log { pointer-events: auto !important; background: rgba(0,0,0,.25); border-radius: 12px; }
+.chat.open .chat-log { pointer-events: auto !important; background: rgba(0,0,0,.28); border-radius: 12px; max-height: 170px; }
 @keyframes chatIn { from { transform: translateX(-30px); opacity: 0; } }
 .adm-tag { background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); font-family: var(--font-head); font-size: 11px; padding: 1px 6px; border-radius: 6px; margin-right: 5px; }
 .title-tag { background: rgba(255,255,255,.18); font-size: 11px; padding: 1px 6px; border-radius: 6px; margin-right: 5px; color: var(--yellow); }
-#chatInput { width: 100%; padding: 10px 14px; border-radius: 14px; border: 3px solid var(--ink); background: rgba(255,255,255,.95); color: var(--ink); font-weight: 700; font-size: 15px; outline: none; display: none; pointer-events: auto !important; }
-.chat.open #chatInput { display: block; }
-.chat-emojis { display: none; gap: 4px; margin: 4px 0; flex-wrap: wrap; }
-.chat.open .chat-emojis { display: flex; }
-.chat-emojis button { pointer-events: auto !important; padding: 4px 8px; border-radius: 9px; background: var(--panel); color: #fff; border: 2px solid var(--ink); font-size: 14px; }
-.chat-emojis button:hover { transform: scale(1.15); }
-.lobby { position: absolute; right: 18px; top: 50%; transform: translate(120%, -50%); width: 300px; padding: 16px; border-radius: 22px; background: var(--panel); border: 4px solid var(--ink); box-shadow: var(--shadow); transition: transform .4s cubic-bezier(.3,1.4,.5,1); }
-.lobby.show { transform: translate(0, -50%); }
+.chat-bar { display: none; gap: 8px; margin-top: 6px; align-items: center; }
+.chat.open .chat-bar { display: flex; pointer-events: auto !important; }
+#chatInput { flex: 1; width: 100%; padding: 10px 14px; border-radius: 14px; border: 3px solid var(--ink); background: rgba(255,255,255,.97); color: var(--ink); font-weight: 700; font-size: 16px; outline: none; pointer-events: auto !important; }
+.chat-send { padding: 10px 16px; border-radius: 14px; background: linear-gradient(#5ff29e, var(--green) 50%, var(--green-d)); color: #fff; font-size: 15px; border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); pointer-events: auto !important; white-space: nowrap; }
+.chat-send:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.chat-emojis { display: none; gap: 5px; margin: 6px 0 4px; flex-wrap: wrap; max-height: 76px; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.chat.open .chat-emojis { display: flex; pointer-events: auto !important; }
+.chat-emojis button { pointer-events: auto !important; padding: 5px 9px; border-radius: 10px; background: rgba(0,0,0,.4); color: #fff; border: 2px solid var(--ink); font-size: 14px; }
+.chat-emojis button.adm-chip { background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); font-size: 12px; }
+.chat-emojis button:active, .chat-emojis button:hover { transform: scale(1.08); }
+
+/* In touch mode, keep passive chat log in top-left above joystick, and dock open chat at top-center above iOS keyboard */
+body.touch-mode .chat:not(.open) { top: calc(max(14px, env(safe-area-inset-top)) + 54px); left: max(16px, env(safe-area-inset-left)); bottom: auto; width: min(330px, 46vw); }
+body.touch-mode .chat:not(.open) .chat-log { max-height: 96px; pointer-events: auto !important; }
+body.touch-mode .chat.open { position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); bottom: auto; width: min(560px, 95vw); z-index: 65; }
+body.touch-mode .chat.open .chat-log { max-height: min(140px, 24vh); }
+
+.lobby { position: absolute; right: max(18px, env(safe-area-inset-right)); top: 50%; transform: translate(120%, -50%); width: 300px; padding: 16px; border-radius: 22px; background: var(--panel); border: 4px solid var(--ink); box-shadow: var(--shadow); transition: transform .4s cubic-bezier(.3,1.4,.5,1); z-index: 14; }
+.lobby.show { transform: translate(0, -50%); pointer-events: auto !important; }
+.lobby * { pointer-events: auto; }
 .lb-tag { font-family: var(--font-head); font-size: 14px; color: var(--teal); letter-spacing: 2px; }
 .lb-mode { display: flex; gap: 12px; align-items: center; margin: 8px 0; padding: 10px; border-radius: 16px; background: color-mix(in srgb, var(--c) 30%, transparent); border: 3px solid var(--c); }
 .lb-ic { font-size: 44px; animation: floaty 2s ease-in-out infinite; }
@@ -408,7 +489,8 @@ input[type=range] { width: 100%; accent-color: var(--yellow); height: 26px; }
 .lb-desc { font-size: 13px; font-weight: 600; opacity: .9; line-height: 1.35; }
 .lb-count { margin-top: 10px; font-family: var(--font-head); font-size: 20px; text-align: center; }
 .lb-count b { color: var(--yellow); font-size: 30px; }
-.lb-host, .lb-code { font-size: 12px; text-align: center; margin-top: 6px; opacity: .85; font-weight: 700; }
+.lb-host, .lb-code { font-size: 12px; text-align: center; margin-top: 6px; opacity: .85; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.lb-host-btns { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
 .lb-code b { color: var(--yellow); font-family: var(--font-head); font-size: 16px; letter-spacing: 2px; }
 .rewards { position: absolute; right: 18px; bottom: 120px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .reward { display: flex; gap: 10px; align-items: center; padding: 8px 14px; border-radius: 14px; background: var(--panel); border: 3px solid var(--ink); font-family: var(--font-head); font-size: 20px; animation: rewardIn .4s cubic-bezier(.3,1.8,.5,1); box-shadow: 0 4px 0 rgba(0,0,0,.3); }
@@ -432,15 +514,16 @@ input[type=range] { width: 100%; accent-color: var(--yellow); height: 26px; }
 .banner.danger { background: linear-gradient(#ff8aa0, var(--red-d)); }
 .banner.gold { background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); }
 .banner.rainbow { background: linear-gradient(90deg, #ff4d6d, #ff8c42, #ffd23f, #3ddc84, #3fa7ff, #b65cff, #ff4d6d); background-size: 300% 100%; animation: rainbowMove 2s linear infinite; text-shadow: 0 2px 0 var(--ink); }
-.scoreboard { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.8); width: min(640px, 92vw); padding: 18px; border-radius: 24px; background: var(--panel); border: 4px solid var(--ink); opacity: 0; transition: .2s cubic-bezier(.3,1.5,.5,1); }
-.scoreboard.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.scoreboard { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.8); width: min(640px, 92vw); max-height: 82vh; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; padding: 18px; border-radius: 24px; background: var(--panel); border: 4px solid var(--ink); opacity: 0; transition: .2s cubic-bezier(.3,1.5,.5,1); z-index: 25; }
+.scoreboard.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto !important; }
+.scoreboard * { pointer-events: auto; }
 .sb-head { display: flex; justify-content: space-between; font-family: var(--font-head); font-size: 20px; margin-bottom: 10px; }
 .scoreboard table, .final-table { width: 100%; border-collapse: collapse; font-weight: 700; }
 .scoreboard th, .final-table th { font-family: var(--font-head); text-align: left; font-size: 14px; color: var(--yellow); padding: 4px 8px; }
 .scoreboard td, .final-table td { padding: 6px 8px; border-top: 2px solid rgba(255,255,255,.08); }
 .scoreboard tr.me, .final-table tr.me { background: rgba(255,210,63,.18); }
 .sb-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; border: 2px solid var(--ink); }
-.round-end { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(20,10,60,.25), rgba(10,5,30,.7)); opacity: 0; visibility: hidden; transition: .3s; }
+.round-end { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(20,10,60,.25), rgba(10,5,30,.7)); opacity: 0; visibility: hidden; transition: .3s; z-index: 22; }
 .round-end.show { opacity: 1; visibility: visible; }
 .re-card { text-align: center; transform: scale(.6); transition: transform .5s cubic-bezier(.3,1.6,.5,1); }
 .round-end.show .re-card { transform: scale(1); }
@@ -486,40 +569,74 @@ body:not(.in-game) #nameplates { display: none; }
 .np-bubble::after { content: ''; position: absolute; bottom: -10px; left: 50%; margin-left: -8px; border: 8px solid transparent; border-top-color: var(--ink); border-bottom: 0; }
 .np-bubble.show { opacity: 1; transform: scale(1); }
 
-/* ---------- admin panel ---------- */
-.admin-panel { position: fixed; top: 70px; right: 20px; width: min(560px, 96vw); max-height: 84vh; display: flex; flex-direction: column; border-radius: 22px; background: linear-gradient(180deg, #2a1f78, #1b1340); border: 4px solid var(--yellow); box-shadow: 0 10px 0 var(--ink), 0 0 40px rgba(255,210,63,.35); z-index: 55; opacity: 0; transform: translateX(40px) scale(.95); visibility: hidden; transition: .25s cubic-bezier(.3,1.5,.5,1); pointer-events: none; }
+/* ---------- admin panel (desktop + mobile / iPad / iPhone + floating quick-bar) ---------- */
+.admin-panel { position: fixed; top: max(64px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); width: min(600px, 96vw); max-height: min(85vh, 85dvh); display: flex; flex-direction: column; border-radius: 22px; background: linear-gradient(180deg, #2a1f78, #1b1340); border: 4px solid var(--yellow); box-shadow: 0 10px 0 var(--ink), 0 0 40px rgba(255,210,63,.35); z-index: 55; opacity: 0; transform: translateX(40px) scale(.95); visibility: hidden; transition: opacity .22s, transform .22s cubic-bezier(.3,1.5,.5,1), visibility .22s; pointer-events: none; }
 .admin-panel.open { opacity: 1; transform: none; visibility: visible; pointer-events: auto !important; }
 .admin-panel * { pointer-events: auto; }
-.adm-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: move; border-bottom: 3px solid rgba(255,210,63,.4); background: linear-gradient(90deg, rgba(255,210,63,.25), transparent); border-radius: 18px 18px 0 0; }
-.adm-title { font-family: var(--font-head); font-size: 22px; color: var(--yellow); letter-spacing: 1px; text-shadow: 0 2px 0 var(--ink); }
-.adm-sub { font-size: 12px; opacity: .7; font-weight: 700; flex: 1; }
-.adm-x { width: 36px; height: 36px; border-radius: 12px; color: #fff; background: linear-gradient(#ff8aa0, var(--red-d)); border: 3px solid var(--ink); }
-.adm-target { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+.adm-full { display: flex; flex-direction: column; max-height: min(84vh, 84dvh); overflow: hidden; }
+.adm-quickbar { display: none; align-items: center; gap: 6px; padding: 8px 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; scrollbar-width: none; }
+.adm-quickbar::-webkit-scrollbar { display: none; }
+.admin-panel.minimized { top: max(10px, env(safe-area-inset-top)) !important; left: 50% !important; right: auto !important; transform: translateX(-50%) !important; width: auto; max-width: 96vw; border-radius: 999px; box-shadow: 0 6px 0 var(--ink), 0 0 24px rgba(255,210,63,.45); }
+.admin-panel.minimized .adm-full { display: none; }
+.admin-panel.minimized .adm-quickbar { display: flex; }
+.aq-tgt { padding: 7px 11px; border-radius: 999px; background: rgba(0,0,0,.45); color: var(--yellow); border: 2px solid var(--yellow); font-size: 13px; white-space: nowrap; flex: none; }
+.aq-btn { padding: 7px 11px; border-radius: 999px; background: rgba(255,255,255,.12); color: #fff; border: 2px solid var(--ink); font-size: 13px; white-space: nowrap; flex: none; }
+.aq-btn.on { background: linear-gradient(#5ff29e, var(--green-d)); color: #fff; border-color: #fff; }
+.aq-btn.exec { background: linear-gradient(#7cc6ff, var(--blue-d)); }
+.aq-btn:active { transform: scale(.93); }
+.aq-expand { padding: 7px 12px; border-radius: 999px; background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); border: 2px solid var(--ink); font-size: 13px; white-space: nowrap; flex: none; }
+.aq-close { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(#ff8aa0, var(--red-d)); color: #fff; border: 2px solid var(--ink); font-size: 14px; flex: none; }
+
+.adm-head { display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: move; border-bottom: 3px solid rgba(255,210,63,.4); background: linear-gradient(90deg, rgba(255,210,63,.25), transparent); border-radius: 18px 18px 0 0; flex: none; }
+.adm-title { font-family: var(--font-head); font-size: 21px; color: var(--yellow); letter-spacing: 1px; text-shadow: 0 2px 0 var(--ink); }
+.adm-sub { font-size: 11px; opacity: .7; font-weight: 700; flex: 1; }
+.adm-min { padding: 6px 11px; border-radius: 11px; color: var(--ink); background: linear-gradient(#ffe88a, var(--yellow-d)); border: 2px solid var(--ink); font-size: 13px; }
+.adm-x { width: 38px; height: 38px; border-radius: 12px; color: #fff; background: linear-gradient(#ff8aa0, var(--red-d)); border: 3px solid var(--ink); font-size: 16px; }
+.adm-top-controls { display: flex; align-items: center; gap: 10px; padding: 8px 14px 4px; flex-wrap: wrap; flex: none; }
+.adm-annc { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; padding: 0; opacity: .92; white-space: nowrap; }
+.adm-search-wrap { position: relative; flex: 1; min-width: 160px; display: flex; align-items: center; }
+#admSearch { width: 100%; padding: 7px 30px 7px 11px; border-radius: 11px; border: 2px solid var(--ink); background: rgba(0,0,0,.35); color: #fff; font-weight: 700; font-size: 14px; outline: none; }
+#admSearch::placeholder { color: rgba(255,255,255,.55); }
+#admSearch:focus { border-color: var(--yellow); background: rgba(0,0,0,.55); }
+.adm-search-x { position: absolute; right: 6px; width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.2); color: #fff; font-size: 11px; display: none; align-items: center; justify-content: center; }
+
+.adm-target-wrap { padding: 4px 14px 8px; display: flex; flex-direction: column; gap: 6px; flex: none; }
+.adm-target { display: flex; align-items: center; gap: 10px; padding: 0; }
 .adm-target label { font-family: var(--font-head); white-space: nowrap; }
-.adm-tabs { display: flex; gap: 6px; padding: 0 14px 8px; flex-wrap: wrap; }
-.adm-tabs button { padding: 7px 10px; border-radius: 10px; font-size: 13px; color: #fff; background: rgba(0,0,0,.35); border: 2px solid var(--ink); }
+.adm-qtargets { display: flex; gap: 5px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px; }
+.adm-qtargets::-webkit-scrollbar { display: none; }
+.adm-qtargets button { padding: 5px 10px; border-radius: 10px; font-size: 12px; color: #fff; background: rgba(0,0,0,.35); border: 2px solid var(--ink); white-space: nowrap; flex: none; }
+.adm-qtargets button.on { background: linear-gradient(#7cc6ff, var(--blue-d)); border-color: var(--yellow); }
+
+.adm-tabs { display: flex; gap: 6px; padding: 0 14px 8px; flex-wrap: wrap; flex: none; }
+.adm-tabs button { padding: 8px 11px; border-radius: 11px; font-size: 13px; color: #fff; background: rgba(0,0,0,.35); border: 2px solid var(--ink); }
 .adm-tabs button.on { background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); }
-.adm-body { overflow-y: auto; padding: 0 14px 14px; }
+.adm-body { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; padding: 0 14px 16px; flex: 1; }
 .adm-page { display: none; } .adm-page.on { display: block; }
 .adm-note { font-size: 12px; opacity: .75; font-weight: 700; margin-bottom: 8px; }
-.adm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.adm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 8px; }
 .adm-grid.tog { grid-template-columns: 1fr 1fr; }
-.adm-cmd { padding: 8px; border-radius: 14px; background: rgba(0,0,0,.3); border: 2px solid rgba(255,255,255,.1); display: flex; flex-direction: column; gap: 6px; }
+.adm-cmd { padding: 9px; border-radius: 14px; background: rgba(0,0,0,.32); border: 2px solid rgba(255,255,255,.12); display: flex; flex-direction: column; gap: 6px; justify-content: space-between; }
 .adm-cmd.flash { animation: admFlash .5s; }
 @keyframes admFlash { 0% { background: rgba(61,220,132,.6); transform: scale(1.05); } }
 .adm-cmd-h { display: flex; gap: 6px; align-items: center; font-family: var(--font-head); font-size: 14px; }
 .adm-ic { font-size: 20px; }
 .adm-args { display: flex; flex-direction: column; gap: 4px; }
-.adm-cmd input, .adm-cmd select { padding: 5px 8px; font-size: 13px; border-width: 2px; border-radius: 8px; }
-.adm-run { padding: 6px; border-radius: 9px; color: #fff; background: linear-gradient(#5ff29e, var(--green-d)); border: 2px solid var(--ink); font-size: 13px; }
+.adm-cmd input, .adm-cmd select { padding: 6px 8px; font-size: 14px; border-width: 2px; border-radius: 8px; }
+.adm-num-row { display: flex; align-items: center; gap: 4px; }
+.adm-num-row input { flex: 1; min-width: 0; text-align: center; }
+.adm-step { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.18); color: #fff; border: 2px solid var(--ink); font-size: 16px; flex: none; display: flex; align-items: center; justify-content: center; }
+.adm-step:active { background: var(--yellow); color: var(--ink); }
+.adm-run { padding: 8px; border-radius: 10px; color: #fff; background: linear-gradient(#5ff29e, var(--green-d)); border: 2px solid var(--ink); font-size: 14px; box-shadow: 0 2px 0 var(--ink); }
 .adm-run:hover { filter: brightness(1.15); }
-.adm-tog { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 10px; border-radius: 14px; background: rgba(0,0,0,.3); border: 2px solid rgba(255,255,255,.08); transition: .2s; }
-.adm-tog.on { border-color: var(--green); background: rgba(61,220,132,.15); }
-.adm-tog-l { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.adm-run:active { transform: translateY(2px); box-shadow: none; }
+.adm-tog { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 9px 10px; border-radius: 14px; background: rgba(0,0,0,.32); border: 2px solid rgba(255,255,255,.08); transition: .2s; cursor: pointer; }
+.adm-tog.on { border-color: var(--green); background: rgba(61,220,132,.18); }
+.adm-tog-l { display: flex; gap: 8px; align-items: center; font-size: 13px; flex: 1; }
 .adm-tog-l small { display: block; font-size: 10px; opacity: .7; font-weight: 600; }
 .adm-tog-r { display: flex; gap: 6px; align-items: center; }
-.adm-opt, .adm-num { width: 80px; padding: 4px; border-radius: 8px; border: 2px solid var(--ink); font-weight: 700; font-size: 12px; }
-.adm-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.adm-opt, .adm-num { width: 82px; padding: 5px; border-radius: 8px; border: 2px solid var(--ink); font-weight: 700; font-size: 13px; }
+.adm-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
 .adm-slider label { font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; }
 .adm-slider b { color: var(--yellow); }
 .adm-row { display: flex; gap: 8px; margin: 10px 0; }
@@ -530,20 +647,13 @@ body:not(.in-game) #nameplates { display: none; }
 .adm-check { font-weight: 700; font-size: 14px; display: flex; gap: 8px; align-items: center; }
 #admTexPrev { display: none; max-width: 160px; border-radius: 12px; border: 3px solid var(--ink); }
 
-/* responsive */
-@media (max-width: 1250px) {
-  .home-main { grid-template-columns: 300px 1fr 260px; gap: 16px; }
-  .logo-b { font-size: 80px; } .logo-a { font-size: 50px; }
-  .profile-card { height: 220px; }
-}
-@media (max-height: 820px) {
-  .home-main { top: 210px; }
-  .logo-b { font-size: 72px; } .logo-a { font-size: 44px; } .logo-sub { font-size: 16px; }
-  .big-btn { padding: 10px 14px; } .big-btn b { font-size: 22px; } .bb-ic { width: 46px; height: 46px; font-size: 30px; }
-  .profile-card { height: 200px; }
-}
+/* Prevent iOS Safari zoom on input focus (requires >=16px font-size) */
+body.touch-mode input,
+body.touch-mode select,
+body.ios-device input,
+body.ios-device select { font-size: 16px !important; }
 
-/* moderation */
+/* ---------- moderation ---------- */
 .mod-h { font-family: var(--font-head); font-weight: 400; margin: 12px 0 6px; color: var(--yellow); font-size: 15px; }
 .mod-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; border-radius: 12px; background: rgba(0,0,0,.3); margin-bottom: 6px; }
 .mod-row > b { font-size: 14px; }
@@ -554,6 +664,75 @@ body:not(.in-game) #nameplates { display: none; }
 .btn-mini.red { background: linear-gradient(#ff8aa0, var(--red-d)); }
 .btn-mini.gold { background: linear-gradient(#ffe88a, var(--yellow-d)); color: var(--ink); }
 .denied-ic { font-size: 80px; text-align: center; animation: auPop .6s cubic-bezier(.3,1.8,.5,1); }
+
+/* ---------- responsive: iPad, iPhone, & tablets ---------- */
+@media (max-width: 1250px) {
+  .home-main { grid-template-columns: 280px 1fr 250px; gap: 16px; }
+  .logo-b { font-size: 76px; } .logo-a { font-size: 46px; }
+  .profile-card { height: 210px; }
+}
+@media (max-height: 820px) {
+  .home-main { top: 190px; bottom: 32px; }
+  .logo-b { font-size: 68px; } .logo-a { font-size: 42px; } .logo-sub { font-size: 15px; margin-top: 8px; }
+  .big-btn { padding: 10px 14px; } .big-btn b { font-size: 21px; } .bb-ic { width: 46px; height: 46px; font-size: 28px; }
+  .profile-card { height: 185px; }
+}
+
+/* iPad Portrait & Compact Landscape (<= 980px wide) */
+@media (max-width: 980px) {
+  #home { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+  .home-top { position: sticky; top: 0; left: 0; right: 0; padding: max(12px, env(safe-area-inset-top)) 16px 10px; background: linear-gradient(180deg, rgba(13,27,61,.9), rgba(13,27,61,0)); z-index: 5; }
+  .logo-wrap { position: relative; top: auto; left: auto; transform: none; margin: 4px auto 12px; animation: none; }
+  .logo-b { font-size: 62px; } .logo-a { font-size: 38px; } .logo-sub { font-size: 14px; margin-top: 6px; }
+  .home-main { position: relative; top: auto; left: auto; right: auto; bottom: auto; padding: 0 16px 46px; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .home-center { grid-column: 1 / -1; order: 2; max-width: 100%; }
+  .home-left { order: 1; }
+  .home-right { order: 1; }
+  .avatar-ed { grid-template-columns: 260px 1fr; gap: 14px; }
+  .av-left canvas { height: 300px; }
+  .admin-panel:not(.minimized) { top: max(10px, env(safe-area-inset-top)) !important; left: 50% !important; right: auto !important; transform: translateX(-50%) !important; width: min(680px, 96vw); max-height: 88dvh; }
+  .lobby { width: 250px; padding: 12px; }
+}
+
+/* iPhone Portrait & Narrow Screens (<= 660px wide) */
+@media (max-width: 660px) {
+  .home-main { grid-template-columns: 1fr; gap: 14px; }
+  .home-left, .home-right, .home-center { order: unset; }
+  .logo-b { font-size: 48px; } .logo-a { font-size: 30px; letter-spacing: 5px; }
+  .xpbar { width: 84px; }
+  .pill { font-size: 17px; padding: 5px 12px 5px 6px; }
+  .icon-btn { width: 46px; height: 46px; font-size: 22px; border-radius: 14px; }
+  .modal { padding: 18px 16px; border-radius: 22px; }
+  h2 { font-size: 26px; }
+  .form-row, .adm-grid.tog, .adm-sliders { grid-template-columns: 1fr; }
+  .avatar-ed { grid-template-columns: 1fr; }
+  .av-left canvas { height: 220px; }
+  .set-row, .set-row:has(.switch), .set-row:has(.seg) { grid-template-columns: 1fr; gap: 4px; }
+  .hud-room { display: none; }
+  .hud-timer { font-size: 38px; }
+  .hud-mode { font-size: 14px; padding: 3px 10px; }
+  .lobby { top: auto; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; right: auto; transform: translate(-50%, 130%); width: min(320px, 92vw); }
+  .lobby.show { transform: translate(-50%, 0); }
+}
+
+/* iPhone / Mobile Landscape (short viewport <= 520px high) */
+@media (max-height: 520px) {
+  #home { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+  .home-top { position: sticky; top: 0; padding: 8px 16px; z-index: 5; }
+  .logo-wrap { position: relative; top: auto; left: auto; transform: none; margin: -6px auto 8px; animation: none; }
+  .logo-b { font-size: 44px; } .logo-a { font-size: 28px; } .logo-sub { display: none; }
+  .home-main { position: relative; top: auto; left: auto; right: auto; bottom: auto; padding: 0 16px 28px; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: start; }
+  .big-btn { padding: 8px 10px; border-radius: 16px; }
+  .big-btn b { font-size: 17px; } .big-btn small { font-size: 11px; }
+  .bb-ic { width: 38px; height: 38px; font-size: 22px; border-radius: 11px; }
+  .profile-card { height: 140px; }
+  .hud-timer { font-size: 34px; }
+  .hud-mode { font-size: 14px; padding: 2px 10px; }
+  .hud-sub { font-size: 13px; }
+  .modal { padding: 14px 18px; max-height: 94dvh; }
+  .admin-panel:not(.minimized) { top: 6px !important; max-height: 94dvh; }
+  .adm-full { max-height: 92dvh; }
+}
 
 </style>
 </head>
@@ -880,7 +1059,46 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     return Math.atan2(v2 - Math.sqrt(disc), g * dx);
   };
 
-  U.copyText = (t) => { try { navigator.clipboard.writeText(t); return true; } catch (e) { return false; } };
+  U.copyText = (t) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t);
+        return true;
+      }
+    } catch (e) { /* fallback below */ }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = String(t);
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      return true;
+    } catch (e2) { return false; }
+  };
+
+  // iOS (iPhone, iPad, iPod) including iPadOS 13+ desktop-class Safari (MacIntel + touch points)
+  U.isIOS = () => {
+    const ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  };
+
+  U.isIPad = () => {
+    const ua = navigator.userAgent || '';
+    return /iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  };
+
+  U.isMobileDevice = () => {
+    if (U.isIOS()) return true;
+    const ua = navigator.userAgent || '';
+    if (/Android|webOS|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua)) return true;
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return true;
+    return false;
+  };
 
   window.U = U;
 })();
@@ -906,7 +1124,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       owned: [],
       equipped: { killFx: 'poof', trail: 'basic', ballSkin: 'classic', title: 'rookie' },
       stats: { games: 0, wins: 0, hits: 0, elims: 0, catches: 0, throws: 0, deaths: 0, timesHit: 0, jumps: 0, dashes: 0, playTime: 0, bestStreak: 0, coinsEarned: 0, kothPoints: 0, bountiesClaimed: 0, potatoesSurvived: 0, infections: 0, botWins: 0, onlineWins: 0, modeWins: {} },
-      settings: { master: 0.8, sfx: 1, music: 0.45, sens: 1, invertY: false, fov: 100, adminAnnounce: false, quality: 'high', trajectory: true, fps: false, shake: true, nameplates: true, bubbles: true },
+      settings: { master: 0.8, sfx: 1, music: 0.45, sens: 1, touchSens: 1, touchControls: 'auto', joyScale: 1, autoAimAssist: true, invertY: false, fov: 100, adminAnnounce: false, quality: 'high', trajectory: true, fps: false, shake: true, nameplates: true, bubbles: true },
       daily: { last: null, streak: 0 },
       quests: { date: null, list: [] },
       solo: { bots: 5, diff: 'medium', rounds: 5, mode: 'classic', map: 'random', hit: 'stun', teams: 'solo' },
@@ -10976,12 +11194,17 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       const blocked = this.inputBlocked();
       const k = (c) => !blocked && I.keys[c];
       const pre = g.state.phase === 'pre';
+      const kbMx = (k('KeyD') ? 1 : 0) - (k('KeyA') ? 1 : 0);
+      const kbMz = (k('KeyW') ? 1 : 0) - (k('KeyS') ? 1 : 0);
+      const jx = !blocked && !pre ? (I.joy.x || 0) : 0;
+      const jy = !blocked && !pre ? (I.joy.y || 0) : 0;
       const inp = {
-        mx: pre ? 0 : (k('KeyD') ? 1 : 0) - (k('KeyA') ? 1 : 0),
-        mz: pre ? 0 : (k('KeyW') ? 1 : 0) - (k('KeyS') ? 1 : 0),
+        mx: pre ? 0 : U.clamp(kbMx + jx, -1, 1),
+        mz: pre ? 0 : U.clamp(kbMz + jy, -1, 1),
         jump: !blocked && !pre && I.hit('Space'),
         dash: !blocked && !pre && (I.hit('ShiftLeft') || I.hit('ShiftRight') || I.hit('KeyQ')),
-        up: k('Space'), down: k('ControlLeft') || k('KeyC'),
+        up: k('Space') || (!blocked && !!I.vbtns.jump),
+        down: k('ControlLeft') || k('KeyC') || (!blocked && !!I.vbtns.down),
         yaw: this.yaw, pitch: this.pitch
       };
       if (p.stunT > 0) { p.stunT -= g.auth ? 0 : 0; }
@@ -10995,6 +11218,14 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       if (g.role === 'client') { g.separatePlayersLocal && 0; this.separateLocal(p); }
       if (p.y < g.world.waterLevel - 30) p.y = g.world.waterLevel - 30;
       // ---- actions ----
+      if (I.cancelCharge) {
+        I.cancelCharge = false;
+        p.charge = -1;
+        if (this.chargeSnd) { SFX.chargeStop(); this.chargeSnd = false; }
+        I.mouse[0] = false;
+        I.hit('Mouse0');
+        return;
+      }
       if (stunned || blocked || pre) {
         if (p.charge >= 0 && (stunned || pre)) { p.charge = -1; }
         if (this.chargeSnd && p.charge < 0) { SFX.chargeStop(); this.chargeSnd = false; }
@@ -11002,15 +11233,16 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         return;
       }
       const lmbDown = I.mouse[0];
+      const activeLook = I.isActiveLook();
       if (p.mods.gun) {
-        if (lmbDown && this.app.input.locked) {
+        if (lmbDown && activeLook) {
           const dir = this.aimDir(); const o = g.handPos(p);
           if (g.auth) g.doShoot(p, o, dir);
           else { const rates = { pistol: 0.28, smg: 0.085, rifle: 0.13, shotgun: 0.85, sniper: 1.2, rocket: 1.0 }; const r = (rates[p.mods.gun] || 0.3) * (p.mods.rapid ? 0.4 : 1); if (g.time - this.lastGunFire >= r) { this.lastGunFire = g.time; g.doShoot(p, o, dir); } }
         }
         I.hit('Mouse0');
       } else if (p.holding != null) {
-        if (I.hit('Mouse0') && this.app.input.locked) { p.charge = 0; SFX.chargeStart(); this.chargeSnd = true; }
+        if (I.hit('Mouse0') && activeLook) { p.charge = 0; SFX.chargeStart(); this.chargeSnd = true; }
         if (p.charge >= 0) {
           p.charge = Math.min(1, p.charge + dt / C().CHARGE_TIME * (p.mods.rapid ? 4 : 1));
           SFX.chargeUpdate(p.charge);
@@ -11053,17 +11285,35 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       const f = V3(Math.sin(this.yaw) * cp, -sp, Math.cos(this.yaw) * cp);
       // aim at the point under the crosshair, then add a slight lob
       const cam = this.app.camera.position;
+      const p = this.game.local;
       let T = null;
+      let directPlayerHit = false;
       for (let t = 2; t < 90; t += 0.5) {
         const x = cam.x + f.x * t, y = cam.y + f.y * t, z = cam.z + f.z * t;
         const h = this.game.map.heightAtBelow(x, z, y);
         if (y < this.game.world.waterLevel || (h !== -Infinity && y < h + 0.15)) { T = V3(x, y, z); break; }
         let hitP = false;
-        for (const o of this.game.players.values()) { if (o.id === this.game.localId || !this.game.isAlive(o)) continue; const dx = o.x - x, dz = o.z - z, dy = o.y + 1 - y; if (dx * dx + dz * dz < 0.5 && Math.abs(dy) < 1) { hitP = true; break; } }
+        for (const o of this.game.players.values()) { if (o.id === this.game.localId || !this.game.isAlive(o)) continue; const dx = o.x - x, dz = o.z - z, dy = o.y + 1 - y; if (dx * dx + dz * dz < 0.5 && Math.abs(dy) < 1) { hitP = true; directPlayerHit = true; break; } }
         if (hitP) { T = V3(x, y, z); break; }
       }
       if (!T) T = V3(cam.x + f.x * 60, cam.y + f.y * 60, cam.z + f.z * 60);
-      const p = this.game.local; const o = this.game.handPos(p);
+      // Gentle mobile aim assist on touch devices
+      if (!directPlayerHit && p && this.app.input.isTouch() && Save.data.settings.autoAimAssist !== false) {
+        let bestDot = 0.968, bestPos = null;
+        for (const o of this.game.players.values()) {
+          if (o.id === this.game.localId || !this.game.isAlive(o) || this.game.sameTeam(p, o) || (o.mods && o.mods.invisible)) continue;
+          const tx = o.x + (o.vx || 0) * 0.1, ty = o.y + 0.95 * (o.scale || 1), tz = o.z + (o.vz || 0) * 0.1;
+          const vx = tx - cam.x, vy = ty - cam.y, vz = tz - cam.z;
+          const dist = Math.hypot(vx, vy, vz);
+          if (dist < 2 || dist > 44) continue;
+          const dot = (vx * f.x + vy * f.y + vz * f.z) / dist;
+          if (dot > bestDot) { bestDot = dot; bestPos = V3(tx, ty, tz); }
+        }
+        if (bestPos) {
+          T = V3(U.lerp(T.x, bestPos.x, 0.62), U.lerp(T.y, bestPos.y, 0.62), U.lerp(T.z, bestPos.z, 0.62));
+        }
+      }
+      const o = this.game.handPos(p);
       const d = T.subtract(V3(o.x, o.y, o.z)); d.normalize();
       d.y += 0.07; d.normalize();
       return d;
@@ -11101,9 +11351,9 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       const I = this.app.input;
       const local = g.local;
       const alive = local && g.isAlive(local);
-      // mouse look
+      // mouse / touch look
       const sens = 0.0022 * (Save.data.settings.sens || 1);
-      if (I.locked && !UI.menuOpen()) {
+      if (I.isActiveLook() && !UI.menuOpen()) {
         const inv = Save.data.settings.invertY ? -1 : 1;
         if (alive || !this.specTarget) {
           if (alive) { this.yaw += I.mdx * sens; this.pitch = U.clamp(this.pitch + I.mdy * sens * inv, -1.2, 1.35); }
@@ -11250,16 +11500,19 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         let mv = V3(0, 0, 0);
         if (k('KeyW')) mv.addInPlace(f); if (k('KeyS')) mv.subtractInPlace(f);
         if (k('KeyD')) mv.addInPlace(right); if (k('KeyA')) mv.subtractInPlace(right);
-        if (k('Space') || k('KeyE')) mv.y += 1; if (k('ControlLeft') || k('KeyQ') || k('KeyC')) mv.y -= 1;
+        if (!blocked && Math.abs(I.joy.y) > 0.01) mv.addInPlace(f.scale(I.joy.y));
+        if (!blocked && Math.abs(I.joy.x) > 0.01) mv.addInPlace(right.scale(I.joy.x));
+        if (k('Space') || k('KeyE') || (!blocked && I.vbtns.jump)) mv.y += 1;
+        if (k('ControlLeft') || k('KeyQ') || k('KeyC') || (!blocked && I.vbtns.down)) mv.y -= 1;
         fc.x += mv.x * spd; fc.y += mv.y * spd; fc.z += mv.z * spd;
         fc.y = U.clamp(fc.y, g.world.waterLevel + 0.6, 150);
         const lim = 160; fc.x = U.clamp(fc.x, -lim, lim); fc.z = U.clamp(fc.z, -lim, lim);
         pos = V3(fc.x, fc.y, fc.z); target = pos.add(f);
-        if (I.hit('Mouse0') && I.locked && !blocked) this.cycleSpectate(1);
+        if (I.hit('Mouse0') && I.isActiveLook() && !blocked) this.cycleSpectate(1);
       }
       if (!g.demo && (!p || !g.isAlive(p)) && this.specTarget) {
         const I = this.app.input;
-        if (I.hit('Mouse0') && I.locked) this.cycleSpectate(1);
+        if (I.hit('Mouse0') && I.isActiveLook()) this.cycleSpectate(1);
         if (I.hit('Mouse2')) { this.specTarget = null; const c = cam.position; this.freecam.x = c.x; this.freecam.y = c.y; this.freecam.z = c.z; this.freecam.yaw = this.yaw; this.freecam.pitch = this.pitch; }
       }
       // shake / dizzy
@@ -11285,7 +11538,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
 
     updateTrajectory() {
       const g = this.game; const p = g.local;
-      const show = p && !g.demo && g.isAlive(p) && p.holding != null && !p.mods.gun && p.stunT <= 0 && Save.data.settings.trajectory && this.app.input.locked;
+      const show = p && !g.demo && g.isAlive(p) && p.holding != null && !p.mods.gun && p.stunT <= 0 && Save.data.settings.trajectory && this.app.input.isActiveLook();
       if (!show) { this.traj.setEnabled(false); this.trajEnd.setEnabled(false); return; }
       const power = p.charge >= 0 ? p.charge : 0;
       const dir = this.aimDir();
@@ -12137,41 +12390,137 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     quickToggle(k) { const g = APP.game; const me = g && g.local; const on = !(me && me.mods[k]); this.send('toggle', 'me', { key: k, on }); UI.toast((on ? '✅ ' : '❌ ') + k, on ? 'good' : 'warn'); },
 
     // ---------------------------------------------------------------
-    // panel UI
+    // panel UI (desktop + iPad / iPhone mobile-friendly + quick-bar)
     // ---------------------------------------------------------------
     openPanel() {
       if (!this.isAdmin()) return;
       let el = document.getElementById('adminPanel');
       if (!el) el = this.buildPanel();
       el.classList.add('open');
-      this.refreshTargets(); this.refreshToggles(); this.refreshMod();
+      el.classList.remove('minimized');
+      if (window.APP && APP.input && APP.input.clearTouch) APP.input.clearTouch();
+      this.refreshTargets(); this.refreshToggles(); this.refreshMod(); this.refreshQuickBar();
       SFX.play('open');
       if (document.pointerLockElement) document.exitPointerLock();
     },
-    closePanel() { const el = document.getElementById('adminPanel'); if (el) el.classList.remove('open'); SFX.play('close'); },
-    togglePanel() { const el = document.getElementById('adminPanel'); if (el && el.classList.contains('open')) this.closePanel(); else this.openPanel(); },
-    isOpen() { const el = document.getElementById('adminPanel'); return !!(el && el.classList.contains('open')); },
+    minimizePanel(min) {
+      const el = document.getElementById('adminPanel');
+      if (!el) return;
+      const toMin = min != null ? !!min : !el.classList.contains('minimized');
+      el.classList.toggle('minimized', toMin);
+      this.refreshQuickBar();
+      SFX.play('click');
+    },
+    closePanel() {
+      const el = document.getElementById('adminPanel');
+      if (el) { el.classList.remove('open'); el.classList.remove('minimized'); }
+      SFX.play('close');
+    },
+    togglePanel() {
+      const el = document.getElementById('adminPanel');
+      if (el && el.classList.contains('open')) {
+        if (el.classList.contains('minimized')) this.minimizePanel(false);
+        else this.closePanel();
+      } else this.openPanel();
+    },
+    isOpen() {
+      const el = document.getElementById('adminPanel');
+      return !!(el && el.classList.contains('open') && !el.classList.contains('minimized'));
+    },
+    isMinimized() {
+      const el = document.getElementById('adminPanel');
+      return !!(el && el.classList.contains('open') && el.classList.contains('minimized'));
+    },
 
     buildPanel() {
       const el = document.createElement('div');
       el.id = 'adminPanel'; el.className = 'admin-panel';
+      const quickTargets = [
+        ['me', '🙋 Me'], ['everyone', '🌍 All'], ['others', '👥 Others'],
+        ['bots', '🤖 Bots'], ['alive', '💚 Alive'], ['dead', '💀 Dead']
+      ];
       el.innerHTML = `
-        <div class="adm-head"><span class="adm-title">${this.isPerm() ? '👑 ADMIN PANEL' : '🛡️ TEMP ADMIN'}</span><span class="adm-sub">commands run on the host</span><button class="adm-x">✕</button></div>
-        <label class="adm-annc"><label class="switch"><input type="checkbox" id="admAnnc" ${Save.data.settings.adminAnnounce ? 'checked' : ''}><span></span></label> Show command confirmations in chat</label>
-        <div class="adm-target"><label>🎯 Target</label><select id="admTarget"></select></div>
-        <div class="adm-tabs">
-          <button data-tab="exec" class="on">⚡ Execute</button><button data-tab="toggle">🔁 Toggles</button><button data-tab="world">🌍 World</button><button data-tab="server">🛠️ Server</button><button data-tab="tex">🖼️ Textures</button><button data-tab="mod">🔨 Moderation</button>
+        <div class="adm-quickbar" id="admQuickBar">
+          <button type="button" class="aq-tgt" id="aqTargetBtn" title="Tap to cycle target">🎯 Me</button>
+          <button type="button" class="aq-btn" data-qtog="god">🛡️ God</button>
+          <button type="button" class="aq-btn" data-qtog="fly">🕊️ Fly</button>
+          <button type="button" class="aq-btn" data-qtog="gun" data-qval="rifle">🔫 Gun</button>
+          <button type="button" class="aq-btn" data-qtog="speed">⚡ Speed</button>
+          <button type="button" class="aq-btn" data-qtog="infinite">♾️ Balls</button>
+          <button type="button" class="aq-btn" data-qtog="rapid">🔥 Rapid</button>
+          <button type="button" class="aq-btn exec" data-qcmd="launch">🚀 Launch</button>
+          <button type="button" class="aq-btn exec" data-qcmd="explode">💥 Boom</button>
+          <button type="button" class="aq-btn exec" data-qcmd="revive">❤️ Revive</button>
+          <button type="button" class="aq-expand" id="aqExpand" title="Expand Full Admin Panel">👑 Panel</button>
+          <button type="button" class="aq-close" id="aqClose" title="Close">✕</button>
         </div>
-        <div class="adm-body">
-          <div class="adm-page on" data-page="exec"></div>
-          <div class="adm-page" data-page="toggle"></div>
-          <div class="adm-page" data-page="world"></div>
-          <div class="adm-page" data-page="server"></div>
-          <div class="adm-page" data-page="tex"></div>
-          <div class="adm-page" data-page="mod"></div>
+        <div class="adm-full">
+          <div class="adm-head">
+            <span class="adm-title">${this.isPerm() ? '👑 ADMIN PANEL' : '🛡️ TEMP ADMIN'}</span>
+            <span class="adm-sub">commands run on the host</span>
+            <button type="button" class="adm-min" title="Minimize to Quick-Bar while playing">⚡ Quick Bar</button>
+            <button type="button" class="adm-x" title="Close">✕</button>
+          </div>
+          <div class="adm-top-controls">
+            <label class="adm-annc"><label class="switch"><input type="checkbox" id="admAnnc" ${Save.data.settings.adminAnnounce ? 'checked' : ''}><span></span></label> Chat confirm</label>
+            <div class="adm-search-wrap">
+              <input type="text" id="admSearch" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="🔍 Filter commands...">
+              <button type="button" id="admSearchClear" class="adm-search-x" title="Clear">✕</button>
+            </div>
+          </div>
+          <div class="adm-target-wrap">
+            <div class="adm-target"><label>🎯 Target</label><select id="admTarget"></select></div>
+            <div class="adm-qtargets" id="admQTargets">
+              ${quickTargets.map(([v, l]) => `<button type="button" data-qt="${v}" class="${v === 'me' ? 'on' : ''}">${l}</button>`).join('')}
+            </div>
+          </div>
+          <div class="adm-tabs">
+            <button type="button" data-tab="exec" class="on">⚡ Execute</button><button type="button" data-tab="toggle">🔁 Toggles</button><button type="button" data-tab="world">🌍 World</button><button type="button" data-tab="server">🛠️ Server</button><button type="button" data-tab="tex">🖼️ Textures</button><button type="button" data-tab="mod">🔨 Moderation</button>
+          </div>
+          <div class="adm-body">
+            <div class="adm-page on" data-page="exec"></div>
+            <div class="adm-page" data-page="toggle"></div>
+            <div class="adm-page" data-page="world"></div>
+            <div class="adm-page" data-page="server"></div>
+            <div class="adm-page" data-page="tex"></div>
+            <div class="adm-page" data-page="mod"></div>
+          </div>
         </div>`;
       document.getElementById('ui').appendChild(el);
+      // Stop touch events inside admin panel from reaching canvas look
+      el.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+      el.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+
       el.querySelector('.adm-x').onclick = () => this.closePanel();
+      el.querySelector('.adm-min').onclick = () => this.minimizePanel(true);
+      el.querySelector('#aqExpand').onclick = () => this.minimizePanel(false);
+      el.querySelector('#aqClose').onclick = () => this.closePanel();
+
+      // Quick bar actions
+      const qCycle = ['me', 'everyone', 'others', 'bots', 'alive'];
+      el.querySelector('#aqTargetBtn').onclick = () => {
+        const s = el.querySelector('#admTarget');
+        const cur = s ? s.value : 'me';
+        const next = qCycle[(qCycle.indexOf(cur) + 1) % qCycle.length];
+        if (s) { s.value = next; s.onchange(); }
+        SFX.play('click');
+      };
+      el.querySelectorAll('[data-qtog]').forEach((b) => b.onclick = () => {
+        const k = b.dataset.qtog;
+        const g = APP.game;
+        const T = g && !g.demo ? this.resolve(g, g.localId, this.target()) : [];
+        const p = T[0] || (g && g.local);
+        const on = !(p && p.mods && p.mods[k]);
+        const value = b.dataset.qval || true;
+        this.send('toggle', this.target(), { key: k, on, value });
+        SFX.play(on ? 'equip' : 'click');
+        setTimeout(() => { this.refreshToggles(); this.refreshQuickBar(); }, 60);
+      });
+      el.querySelectorAll('[data-qcmd]').forEach((b) => b.onclick = () => {
+        this.send(b.dataset.qcmd, this.target(), {});
+        SFX.play('click');
+      });
+
       el.querySelectorAll('.adm-tabs button').forEach((b) => b.onclick = () => {
         el.querySelectorAll('.adm-tabs button').forEach((x) => x.classList.toggle('on', x === b));
         el.querySelectorAll('.adm-page').forEach((pg) => pg.classList.toggle('on', pg.dataset.page === b.dataset.tab));
@@ -12181,18 +12530,74 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         if (b.dataset.tab === 'mod') this.refreshMod();
       });
       el.querySelector('#admAnnc').onchange = (e) => { Save.data.settings.adminAnnounce = e.target.checked; Save.save(); SFX.play('click'); };
-      el.querySelector('#admTarget').onchange = () => this.refreshToggles();
-      // drag
+      const syncQTargetBtns = () => {
+        const v = this.target();
+        el.querySelectorAll('#admQTargets button').forEach((b) => b.classList.toggle('on', b.dataset.qt === v));
+        this.refreshQuickBar();
+      };
+      el.querySelector('#admTarget').onchange = () => { syncQTargetBtns(); this.refreshToggles(); };
+      el.querySelectorAll('#admQTargets button').forEach((b) => b.onclick = () => {
+        const s = el.querySelector('#admTarget');
+        if (s) { s.value = b.dataset.qt; s.onchange(); SFX.play('click'); }
+      });
+
+      // Search filter for Execute, Toggles, Server
+      const searchIn = el.querySelector('#admSearch');
+      const searchClear = el.querySelector('#admSearchClear');
+      const applyFilter = () => {
+        const q = (searchIn.value || '').trim().toLowerCase();
+        searchClear.style.display = q ? 'inline-flex' : 'none';
+        el.querySelectorAll('.adm-cmd, .adm-tog[data-k]').forEach((card) => {
+          const txt = (card.textContent || '').toLowerCase();
+          card.style.display = !q || txt.includes(q) ? '' : 'none';
+        });
+      };
+      searchIn.oninput = applyFilter;
+      searchIn.onkeydown = (e) => e.stopPropagation();
+      searchClear.onclick = () => { searchIn.value = ''; applyFilter(); SFX.play('click'); };
+
+      // Mouse + Touch drag on header (clamped to screen bounds)
       const head = el.querySelector('.adm-head'); let drag = null;
-      head.addEventListener('mousedown', (e) => { if (e.target.tagName === 'BUTTON') return; drag = { x: e.clientX - el.offsetLeft, y: e.clientY - el.offsetTop }; });
-      window.addEventListener('mousemove', (e) => { if (drag) { el.style.left = (e.clientX - drag.x) + 'px'; el.style.top = (e.clientY - drag.y) + 'px'; el.style.right = 'auto'; } });
+      const startDrag = (cx, cy, targetEl) => {
+        if (targetEl && (targetEl.tagName === 'BUTTON' || targetEl.closest('button'))) return;
+        const rc = el.getBoundingClientRect();
+        drag = { x: cx - rc.left, y: cy - rc.top };
+      };
+      const moveDrag = (cx, cy) => {
+        if (!drag) return;
+        const w = el.offsetWidth || 320, h = el.offsetHeight || 240;
+        const nx = U.clamp(cx - drag.x, 4, Math.max(4, window.innerWidth - w - 4));
+        const ny = U.clamp(cy - drag.y, 4, Math.max(4, window.innerHeight - Math.min(h, 120) - 4));
+        el.style.left = nx + 'px'; el.style.top = ny + 'px'; el.style.right = 'auto';
+      };
+      head.addEventListener('mousedown', (e) => startDrag(e.clientX, e.clientY, e.target));
+      window.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
       window.addEventListener('mouseup', () => { drag = null; });
+      head.addEventListener('touchstart', (e) => { if (e.touches[0]) startDrag(e.touches[0].clientX, e.touches[0].clientY, e.target); }, { passive: true });
+      window.addEventListener('touchmove', (e) => { if (drag && e.touches[0]) moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+      window.addEventListener('touchend', () => { drag = null; }, { passive: true });
+
       this.buildCmdPage(el.querySelector('[data-page="exec"]'), EXECS.filter((c) => this.isPerm() || !PERM_ONLY.has(c.c)));
       this.buildCmdPage(el.querySelector('[data-page="server"]'), SERVER);
       this.buildTogglePage(el.querySelector('[data-page="toggle"]'));
       this.buildWorldPage(el.querySelector('[data-page="world"]'));
       this.buildTexPage(el.querySelector('[data-page="tex"]'));
       return el;
+    },
+
+    refreshQuickBar() {
+      const el = document.getElementById('adminPanel'); if (!el) return;
+      const tb = el.querySelector('#aqTargetBtn');
+      const tgt = this.target();
+      const labels = { me: '🎯 Me', everyone: '🌍 All', others: '👥 Others', bots: '🤖 Bots', alive: '💚 Alive', dead: '💀 Dead' };
+      if (tb) tb.textContent = labels[tgt] || ('🎯 ' + tgt.slice(0, 8));
+      const g = window.APP && APP.game;
+      let p = null;
+      if (g && !g.demo) { const T = this.resolve(g, g.localId, tgt); p = T[0]; }
+      el.querySelectorAll('[data-qtog]').forEach((b) => {
+        const k = b.dataset.qtog;
+        b.classList.toggle('on', !!(p && p.mods && p.mods[k]));
+      });
     },
 
     target() { const s = document.getElementById('admTarget'); return s ? s.value : 'me'; },
@@ -12207,6 +12612,9 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       }
       s.innerHTML = html;
       if ([...s.options].some((o) => o.value === cur)) s.value = cur;
+      const el = document.getElementById('adminPanel');
+      if (el) el.querySelectorAll('#admQTargets button').forEach((b) => b.classList.toggle('on', b.dataset.qt === s.value));
+      this.refreshQuickBar();
     },
 
     refreshMod() {
@@ -12243,10 +12651,26 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         const card = document.createElement('div'); card.className = 'adm-cmd';
         let argsHtml = '';
         (cmd.args || []).forEach((a) => {
-          if (a.type === 'select') { const opts = typeof a.opts === 'function' ? a.opts() : a.opts; argsHtml += `<select data-k="${a.k}">${opts.map((o) => `<option value="${o[0]}">${U.escape(o[1])}</option>`).join('')}</select>`; }
-          else argsHtml += `<input data-k="${a.k}" type="${a.type === 'number' ? 'number' : 'text'}" value="${U.escape(a.def)}" placeholder="${a.k}">`;
+          if (a.type === 'select') {
+            const opts = typeof a.opts === 'function' ? a.opts() : a.opts;
+            argsHtml += `<select data-k="${a.k}">${opts.map((o) => `<option value="${o[0]}">${U.escape(o[1])}</option>`).join('')}</select>`;
+          } else if (a.type === 'number') {
+            const step = a.def >= 100 ? Math.max(50, Math.round(a.def * 0.5)) : a.def % 1 !== 0 ? 0.25 : 1;
+            argsHtml += `<div class="adm-num-row"><button type="button" class="adm-step" data-step="${-step}">−</button><input data-k="${a.k}" type="number" inputmode="decimal" value="${U.escape(a.def)}" placeholder="${a.k}"><button type="button" class="adm-step" data-step="${step}">+</button></div>`;
+          } else {
+            argsHtml += `<input data-k="${a.k}" type="text" value="${U.escape(a.def)}" placeholder="${a.k}">`;
+          }
         });
-        card.innerHTML = `<div class="adm-cmd-h"><span class="adm-ic">${cmd.icon}</span><span>${cmd.label}</span></div>${argsHtml ? '<div class="adm-args">' + argsHtml + '</div>' : ''}<button class="adm-run">RUN</button>`;
+        card.innerHTML = `<div class="adm-cmd-h"><span class="adm-ic">${cmd.icon}</span><span>${cmd.label}</span></div>${argsHtml ? '<div class="adm-args">' + argsHtml + '</div>' : ''}<button type="button" class="adm-run">RUN</button>`;
+        card.querySelectorAll('.adm-step').forEach((sb) => sb.onclick = () => {
+          const inp = sb.parentElement.querySelector('input');
+          if (!inp) return;
+          const st = +sb.dataset.step || 1;
+          const next = Math.max(0.1, U.r2((+inp.value || 0) + st));
+          inp.value = next;
+          SFX.play('click');
+        });
+        card.querySelectorAll('input').forEach((inp) => inp.onkeydown = (e) => e.stopPropagation());
         card.querySelector('.adm-run').onclick = () => {
           const args = {}; card.querySelectorAll('[data-k]').forEach((i) => { args[i.dataset.k] = i.value; });
           this.send(cmd.c, this.target(), args);
@@ -12257,23 +12681,31 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     },
 
     buildTogglePage(page) {
-      page.innerHTML = '<div class="adm-note">Toggles run constantly until switched OFF. State shown for the first matching target.</div><div class="adm-grid tog"></div>';
+      page.innerHTML = '<div class="adm-note">Toggles run constantly until switched OFF. Tap any card to toggle!</div><div class="adm-grid tog"></div>';
       const grid = page.querySelector('.adm-grid');
       TOGGLES.forEach((t) => {
         const card = document.createElement('div'); card.className = 'adm-tog'; card.dataset.k = t.k;
         let extra = '';
         if (t.opts) extra = `<select class="adm-opt">${t.opts.map((o) => `<option value="${o}">${o}</option>`).join('')}</select>`;
-        if (t.num) extra = `<input class="adm-num" type="number" min="${t.num.min}" max="${t.num.max}" step="${t.num.step}" value="${t.num.def}">`;
+        if (t.num) extra = `<input class="adm-num" type="number" inputmode="decimal" min="${t.num.min}" max="${t.num.max}" step="${t.num.step}" value="${t.num.def}">`;
         card.innerHTML = `<div class="adm-tog-l"><span class="adm-ic">${t.icon}</span><div><b>${t.label}</b>${t.desc ? '<small>' + t.desc + '</small>' : ''}</div></div><div class="adm-tog-r">${extra}<label class="switch"><input type="checkbox"><span></span></label></div>`;
         const cb = card.querySelector('input[type=checkbox]');
         cb.onchange = () => {
           let value = true;
           if (t.opts) value = card.querySelector('.adm-opt').value;
           if (t.num) value = U.clamp(+card.querySelector('.adm-num').value || t.num.def, t.num.min, t.num.max);
+          card.classList.toggle('on', cb.checked);
           this.send('toggle', this.target(), { key: t.k, on: cb.checked, value });
           SFX.play(cb.checked ? 'equip' : 'click');
+          this.refreshQuickBar();
         };
-        const re = card.querySelector('.adm-opt, .adm-num'); if (re) re.onchange = () => { if (cb.checked) cb.onchange(); };
+        // Allow tapping the left label area of the card on mobile to toggle the switch
+        card.querySelector('.adm-tog-l').onclick = () => { cb.checked = !cb.checked; cb.onchange(); };
+        const re = card.querySelector('.adm-opt, .adm-num');
+        if (re) {
+          re.onkeydown = (e) => e.stopPropagation();
+          re.onchange = () => { if (cb.checked) cb.onchange(); };
+        }
         grid.appendChild(card);
       });
     },
@@ -12287,6 +12719,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         card.querySelector('input[type=checkbox]').checked = on;
         card.classList.toggle('on', on);
       });
+      this.refreshQuickBar();
     },
 
     buildWorldPage(page) {
@@ -12299,13 +12732,17 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       page.querySelectorAll('input[type=range]').forEach((r) => r.oninput = () => { page.querySelector(`[data-v="${r.dataset.k}"]`).textContent = (+r.value).toFixed(2); });
       page.querySelector('#admWorldApply').onclick = () => { const a = {}; page.querySelectorAll('input[type=range]').forEach((r) => { a[r.dataset.k] = +r.value; }); this.send('world', 'me', a); SFX.play('equip'); UI.toast('🌍 World settings applied', 'good'); };
       page.querySelector('#admWorldReset').onclick = () => { this.send('worldreset', 'me', {}); SFX.play('click'); setTimeout(() => this.refreshWorld(), 300); };
-      page.querySelectorAll('[data-wk]').forEach((c) => { const cb = c.querySelector('input'); cb.onchange = () => { this.send('worldtoggle', 'me', { key: c.dataset.wk, on: cb.checked }); SFX.play('click'); }; });
+      page.querySelectorAll('[data-wk]').forEach((c) => {
+        const cb = c.querySelector('input');
+        cb.onchange = () => { c.classList.toggle('on', cb.checked); this.send('worldtoggle', 'me', { key: c.dataset.wk, on: cb.checked }); SFX.play('click'); };
+        c.querySelector('.adm-tog-l').onclick = () => { cb.checked = !cb.checked; cb.onchange(); };
+      });
     },
     refreshWorld() {
       const g = APP.game; const page = document.querySelector('#adminPanel [data-page="world"]'); if (!page) return;
       const w = g ? g.world : {};
       page.querySelectorAll('input[type=range]').forEach((r) => { const v = w[r.dataset.k] != null ? w[r.dataset.k] : 1; r.value = v; page.querySelector(`[data-v="${r.dataset.k}"]`).textContent = (+v).toFixed(2); });
-      page.querySelectorAll('[data-wk]').forEach((c) => { c.querySelector('input').checked = !!w[c.dataset.wk]; });
+      page.querySelectorAll('[data-wk]').forEach((c) => { const on = !!w[c.dataset.wk]; c.querySelector('input').checked = on; c.classList.toggle('on', on); });
     },
 
     buildTexPage(page) {
@@ -12383,7 +12820,9 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       this.coinShown = Save.data.coins;
       this.bindHome();
       this.bindHUD();
+      this.bindMobileControls();
       this.bindKeys();
+      this.syncTouchMode();
       Save.on('coins', (n, reason) => { this.bumpCoins(n); });
       Save.on('levelup', (lvl, bonus) => this.levelUp(lvl, bonus));
       Save.on('xp', () => this.refreshProfile());
@@ -12439,9 +12878,16 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
           <div class="hud-timer" id="hudTimer">0:00</div>
           <div class="hud-sub" id="hudSub"></div>
         </div>
-        <div class="hud-room" id="hudRoom"></div>
+        <div class="hud-left-bar">
+          <button type="button" class="icon-btn hud-btn" id="hudPause" title="Pause / Menu (Esc)">⏸️</button>
+          <div class="hud-room" id="hudRoom"></div>
+          <button type="button" class="icon-btn hud-btn" id="hudChatBtn" title="Chat (Enter)">💬<i class="badge" id="chatBadge" style="display:none">0</i></button>
+          <button type="button" class="icon-btn hud-btn" id="hudScoresBtn" title="Scoreboard (Tab)">📊</button>
+          <button type="button" class="icon-btn hud-btn" id="hudEmoteBtn" title="Emotes (1-8)">🕺</button>
+        </div>
+        <div class="emote-wheel" id="emoteWheel"></div>
         <div class="hud-coins pill coin-pill small"><span class="coin-ic">🪙</span><span class="coin-val" id="hudCoins">0</span></div>
-        <button class="icon-btn hud-admin admin-only" id="hudAdmin" title="Admin Panel (\\)">👑</button>
+        <button type="button" class="icon-btn hud-admin admin-only" id="hudAdmin" title="Admin Panel (\\)">👑</button>
         <div class="killfeed" id="killfeed"></div>
         <div class="crosshair" id="crosshair">
           <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="5" class="ch-dot"/><circle cx="50" cy="50" r="22" class="ch-ring-bg"/><circle cx="50" cy="50" r="22" class="ch-ring" id="chargeRing"/></svg>
@@ -12455,11 +12901,41 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
           <div class="act" id="actDash"><div class="act-ic">💨</div><div class="act-cd"></div><small>SHIFT</small></div>
           <div class="act" id="actJump"><div class="act-ic">⤴️</div><small>SPACE</small></div>
         </div>
+        <div class="mobile-controls" id="mobileControls">
+          <div class="joy-zone" id="joyZone">
+            <div class="joy-base" id="joyBase">
+              <div class="joy-ring"></div>
+              <div class="joy-stick" id="joyStick"></div>
+            </div>
+          </div>
+          <div class="touch-actions" id="touchActions">
+            <button type="button" class="t-btn t-cancel" id="btnTouchCancel">✕<small>CANCEL</small></button>
+            <button type="button" class="t-btn t-down" id="btnTouchDown"><span>⤵️</span><small>DOWN</small></button>
+            <button type="button" class="t-btn t-dash" id="btnTouchDash"><div class="act-cd"></div><span>💨</span><small>DASH</small></button>
+            <button type="button" class="t-btn t-catch" id="btnTouchCatch"><div class="act-cd"></div><span>🧤</span><small>CATCH</small></button>
+            <button type="button" class="t-btn t-jump" id="btnTouchJump"><span>⤴️</span><small>JUMP</small></button>
+            <button type="button" class="t-btn t-throw" id="btnTouchThrow">
+              <svg class="t-charge-svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="t-charge-ring" id="touchChargeRing"/></svg>
+              <span class="t-ic" id="touchThrowIc">🔴</span>
+              <small id="touchThrowLbl">THROW</small>
+            </button>
+          </div>
+        </div>
         <div class="spec-bar" id="specBar"></div>
         <div class="chat" id="chat">
+          <div class="chat-head">
+            <span>💬 CHAT</span>
+            <div class="chat-head-btns">
+              <button type="button" class="chat-cmd-btn admin-only" id="chatAdminBtn">👑 Admin</button>
+              <button type="button" class="chat-close" id="chatCloseBtn">✕</button>
+            </div>
+          </div>
           <div class="chat-log" id="chatLog"></div>
           <div class="chat-emojis" id="chatEmojis"></div>
-          <input id="chatInput" maxlength="160" autocomplete="off" placeholder="Press Enter to chat...">
+          <div class="chat-bar">
+            <input id="chatInput" maxlength="160" autocomplete="off" autocorrect="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Tap to chat or type command...">
+            <button type="button" class="chat-send" id="chatSendBtn">SEND ➤</button>
+          </div>
         </div>
         <div class="lobby" id="lobby"></div>
         <div class="rewards" id="rewards"></div>
@@ -12640,9 +13116,12 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     },
     seg(name, opts, sel) { return `<div class="seg" data-seg="${name}">${opts.map(([v, l]) => `<button data-v="${v}" class="${String(v) === String(sel) ? 'on' : ''}">${l}</button>`).join('')}</div>`; },
     bindSegs(root, cfg) {
-      $$('.seg', root).forEach((s) => $$('button', s).forEach((b) => b.onclick = () => { $$('button', s).forEach((x) => x.classList.toggle('on', x === b)); const raw = b.dataset.v;
+      $$('.seg', root).forEach((s) => $$('button', s).forEach((b) => b.onclick = () => {
+        $$('button', s).forEach((x) => x.classList.toggle('on', x === b));
+        const raw = b.dataset.v;
         cfg[s.dataset.seg] = s.dataset.seg === 'teams' || s.dataset.seg === 'hit' || s.dataset.seg === 'catchRule' || s.dataset.seg === 'diff' || s.dataset.seg === 'mode' ? raw : (isNaN(+raw) ? raw : +raw);
-        SFX.play('click'); if (root._segChange) root._segChange(s.dataset.seg); }));
+        SFX.play('click'); if (root._segChange) root._segChange(s.dataset.seg);
+      }));
     },
     bindModeGrid(root, cfg) {
       $$('.mode-card', root).forEach((c) => c.onclick = () => {
@@ -12938,26 +13417,84 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         this.refreshHomeBadges();
       };
     },
+    syncTouchMode() {
+      const isTouch = !!(this.app && this.app.input && this.app.input.isTouch());
+      document.body.classList.toggle('touch-mode', isTouch);
+      document.body.classList.toggle('ios-device', U.isIOS());
+      document.body.classList.toggle('ipad-device', U.isIPad());
+      const sc = (Save.data && Save.data.settings && Save.data.settings.joyScale) || 1;
+      document.documentElement.style.setProperty('--touch-scale', sc);
+    },
+
+    askAdminCode() {
+      const md = this.modal(`<h2>👑 Admin Access</h2>
+        <p class="center muted">Enter or paste your secret admin code below to unlock the Admin Panel on this device.</p>
+        <input class="big-input" id="admCodeIn" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Secret admin code">
+        <div class="name-err" id="admCodeErr"></div>
+        <div class="row center"><button class="btn btn-yellow big" id="admCodeOk">👑 UNLOCK ADMIN</button></div>`, 'small');
+      const inp = $('#admCodeIn', md);
+      setTimeout(() => inp.focus(), 60);
+      const go = () => {
+        const v = (inp.value || '').trim();
+        if (Admin.tryUnlock(v)) {
+          this.closeModal();
+          this.adminUnlocked();
+          setTimeout(() => Admin.openPanel(), 350);
+        } else {
+          $('#admCodeErr', md).textContent = 'Invalid admin code.';
+          SFX.play('error');
+          md.classList.remove('shake'); void md.offsetWidth; md.classList.add('shake');
+        }
+      };
+      $('#admCodeOk', md).onclick = go;
+      inp.onkeydown = (e) => { e.stopPropagation(); if (e.key === 'Enter') go(); };
+    },
+
     openSettings() {
       const s = Save.data.settings;
+      if (!s.touchControls) s.touchControls = 'auto';
+      if (s.touchSens == null) s.touchSens = 1;
+      if (s.joyScale == null) s.joyScale = 1;
+      if (s.autoAimAssist == null) s.autoAimAssist = true;
       const sl = (k, label, min, max, step, fmt) => `<div class="set-row"><label>${label}</label><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${s[k]}"><b data-v="${k}">${fmt ? fmt(s[k]) : s[k]}</b></div>`;
       const tg = (k, label) => `<div class="set-row"><label>${label}</label><label class="switch"><input type="checkbox" data-t="${k}" ${s[k] ? 'checked' : ''}><span></span></label></div>`;
       const pct = (v) => Math.round(v * 100) + '%';
       const md = this.modal(`<h2>⚙️ SETTINGS</h2><div class="settings">
         <h3>🔊 Audio</h3>${sl('master', 'Master Volume', 0, 1, 0.05, pct)}${sl('sfx', 'Sound Effects', 0, 1, 0.05, pct)}${sl('music', 'Music', 0, 1, 0.05, pct)}
-        <h3>🎮 Controls</h3>${sl('sens', 'Mouse Sensitivity', 0.2, 3, 0.05, (v) => (+v).toFixed(2))}${sl('fov', 'Field of View', 70, 130, 1, (v) => v + '°')}${tg('invertY', 'Invert Y Axis')}
+        <h3>📱 Mobile &amp; Controls</h3>
+        <div class="set-row"><label>Touch Controls</label>${this.seg('touchControls', [['auto', '📱 Auto'], ['on', '✅ On'], ['off', '🖥️ Off']], s.touchControls)}</div>
+        ${sl('touchSens', 'Touch Look Sensitivity', 0.3, 3, 0.05, (v) => (+v).toFixed(2))}
+        ${sl('joyScale', 'Joystick &amp; Button Size', 0.75, 1.35, 0.05, pct)}
+        ${tg('autoAimAssist', 'Mobile Throw Aim Assist')}
+        ${sl('sens', 'Mouse Sensitivity', 0.2, 3, 0.05, (v) => (+v).toFixed(2))}
+        ${sl('fov', 'Field of View', 70, 130, 1, (v) => v + '°')}
+        ${tg('invertY', 'Invert Y Axis')}
         <h3>🖥️ Graphics</h3><div class="set-row"><label>Quality</label>${this.seg('quality', [['low', 'Low'], ['medium', 'Medium'], ['high', 'High']], s.quality)}</div>
         ${tg('trajectory', 'Show Throw Trajectory')}${tg('shake', 'Screen Shake')}${tg('nameplates', 'Show Nameplates')}${tg('bubbles', 'Chat Bubbles')}${tg('fps', 'Show FPS')}
-        <h3>👤 Account</h3><div class="row"><button class="btn" id="setName">✏️ Change Username</button><button class="btn btn-red" id="setReset">🗑️ Reset Progress</button></div>
-        <div class="controls-help"><b>Controls:</b> WASD move · Mouse aim · Hold LMB charge & throw · RMB / F catch · Space jump · Shift / Q dash · 1-8 emotes · Enter chat · Tab scores · Esc menu</div></div>`, '');
+        <h3>👤 Account</h3>
+        <div class="row">
+          <button class="btn" id="setName">✏️ Change Username</button>
+          <button class="btn btn-yellow" id="setAdminCode">${Admin.isAdmin() ? '👑 Admin Panel' : '👑 Admin Code'}</button>
+          <button class="btn btn-red" id="setReset">🗑️ Reset Progress</button>
+        </div>
+        <div class="controls-help"><b>iPad / iPhone:</b> Left joystick to move · Drag screen (or slide while holding 🔴 THROW) to aim · Release 🔴 to throw · Tap 🧤 to catch · ⤴️ Jump · 💨 Dash · 💬 Chat · 👑 Admin<br><b>Desktop:</b> WASD move · Mouse aim · Hold LMB charge &amp; throw · RMB / F catch · Space jump · Shift / Q dash · 1-8 emotes · Enter chat · Tab scores · Esc menu</div></div>`, '');
       $$('input[type=range]', md).forEach((r) => r.oninput = () => {
         s[r.dataset.k] = +r.value; const b = $(`[data-v="${r.dataset.k}"]`, md);
-        b.textContent = ['master', 'sfx', 'music'].includes(r.dataset.k) ? pct(+r.value) : r.dataset.k === 'fov' ? r.value + '°' : (+r.value).toFixed(2);
-        Save.save(); this.app.applySettings();
+        b.textContent = ['master', 'sfx', 'music', 'joyScale'].includes(r.dataset.k) ? pct(+r.value) : r.dataset.k === 'fov' ? r.value + '°' : (+r.value).toFixed(2);
+        Save.save(); this.app.applySettings(); this.syncTouchMode();
       });
       $$('[data-t]', md).forEach((c) => c.onchange = () => { s[c.dataset.t] = c.checked; Save.save(); SFX.play('click'); });
-      const cfg = {}; md._segChange = () => { if (cfg.quality) { this.app.setQuality(cfg.quality); } }; this.bindSegs(md, cfg);
+      const cfg = {};
+      md._segChange = (segKey) => {
+        if (segKey === 'quality' && cfg.quality) this.app.setQuality(cfg.quality);
+        if (segKey === 'touchControls' && cfg.touchControls) { s.touchControls = cfg.touchControls; Save.save(); this.syncTouchMode(); }
+      };
+      this.bindSegs(md, cfg);
       $('#setName', md).onclick = () => this.askName();
+      $('#setAdminCode', md).onclick = () => {
+        if (Admin.isAdmin()) { this.closeModal(); Admin.openPanel(); }
+        else this.askAdminCode();
+      };
       $('#setReset', md).onclick = () => this.confirm('This deletes ALL coins, items and stats forever.', () => { const k = Save.data.k; Save.reset(); Save.data.k = k; Save.data.avatar = AvatarRig.defaultConfig(); Save.flush(); location.reload(); });
     },
 
@@ -12966,6 +13503,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     // ---------------------------------------------------------------
     openPause() {
       const g = this.app.game; if (!g || g.demo) return;
+      if (this.app.input && this.app.input.clearTouch) this.app.input.clearTouch();
       const code = g.net && g.net.code;
       const roomLine = g.role === 'offline' ? '🤖 Solo match' : g.isPublic ? '🌴 Public server' : code ? `🔑 Room code: <b class="code">${code}</b> <button class="btn-mini" id="pCopy">📋 COPY</button>` : '🔗 Online room';
       const md = this.modal(`<h2>⏸️ PAUSED</h2><div class="pause-room">${roomLine}</div><div class="pause-btns">
@@ -12998,6 +13536,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
           if (this.chatOpen) { this.closeChat(); e.preventDefault(); return; }
           if (Admin.isOpen()) { Admin.closePanel(); return; }
           if (this.modalEl.classList.contains('open')) { if (performance.now() - (this.pauseAt || 0) < 400) return; const x = $('.modal-x', this.modalEl); if (x && x.style.display !== 'none') this.closeModal(); return; }
+          if (inGame && this.app.input.isTouch()) { this.openPause(); return; }
           return;
         }
         if (this.isTyping()) return;
@@ -13011,32 +13550,313 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     },
 
     // ---------------------------------------------------------------
-    // HUD
+    // Mobile / iPad / iPhone Joystick & Touch Controls
+    // ---------------------------------------------------------------
+    bindMobileControls() {
+      const I = this.app.input;
+      const joyZone = $('#joyZone');
+      const joyBase = $('#joyBase');
+      const joyStick = $('#joyStick');
+
+      const updateStick = (cx, cy) => {
+        const sc = (Save.data && Save.data.settings && Save.data.settings.joyScale) || 1;
+        const maxR = 54 * sc;
+        const dx = cx - I.joy.ox;
+        const dy = cy - I.joy.oy;
+        const dist = Math.hypot(dx, dy);
+        const clamped = Math.min(dist, maxR);
+        const ang = Math.atan2(dy, dx);
+        const sx = Math.cos(ang) * clamped;
+        const sy = Math.sin(ang) * clamped;
+        joyStick.style.transform = `translate(calc(-50% + ${sx.toFixed(1)}px), calc(-50% + ${sy.toFixed(1)}px))`;
+        const mag = dist / maxR;
+        if (mag < 0.08) {
+          I.joy.x = 0; I.joy.y = 0;
+        } else {
+          const norm = Math.min(1, (mag - 0.08) / 0.92);
+          I.joy.x = Math.cos(ang) * norm;
+          I.joy.y = -Math.sin(ang) * norm;
+        }
+      };
+
+      joyZone.addEventListener('touchstart', (e) => {
+        if (this.menuOpen()) return;
+        e.preventDefault(); e.stopPropagation();
+        if (I.joy.active) return;
+        const t = e.changedTouches[0];
+        if (!t) return;
+        const zr = joyZone.getBoundingClientRect();
+        const pad = 68;
+        const ox = U.clamp(t.clientX, zr.left + pad, zr.right - pad);
+        const oy = U.clamp(t.clientY, zr.top + pad, zr.bottom - pad);
+        I.joy.active = true;
+        I.joy.id = t.identifier;
+        I.joy.ox = ox;
+        I.joy.oy = oy;
+        joyBase.classList.add('active');
+        joyBase.style.left = (ox - zr.left) + 'px';
+        joyBase.style.top = (oy - zr.top) + 'px';
+        joyBase.style.bottom = 'auto';
+        updateStick(t.clientX, t.clientY);
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!I.joy.active) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === I.joy.id) {
+            updateStick(t.clientX, t.clientY);
+            break;
+          }
+        }
+      }, { passive: true });
+
+      const endJoy = (e) => {
+        if (!I.joy.active) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === I.joy.id) {
+            this.resetTouchVisuals();
+            I.joy.active = false; I.joy.id = null; I.joy.x = 0; I.joy.y = 0;
+            break;
+          }
+        }
+      };
+      window.addEventListener('touchend', endJoy, { passive: true });
+      window.addEventListener('touchcancel', endJoy, { passive: true });
+
+      // Throw / Shoot button (Hold to charge, drag while holding to aim, release to throw!)
+      const btnThrow = $('#btnTouchThrow');
+      const btnCancel = $('#btnTouchCancel');
+      let throwTouch = null;
+      const isOverCancel = (cx, cy) => {
+        if (!btnCancel || !btnCancel.classList.contains('show')) return false;
+        const r = btnCancel.getBoundingClientRect();
+        return cx >= r.left - 12 && cx <= r.right + 12 && cy >= r.top - 12 && cy <= r.bottom + 12;
+      };
+
+      btnThrow.addEventListener('touchstart', (e) => {
+        if (this.menuOpen()) return;
+        e.preventDefault(); e.stopPropagation();
+        const t = e.changedTouches[0];
+        if (!t) return;
+        throwTouch = { id: t.identifier, lx: t.clientX, ly: t.clientY };
+        btnThrow.classList.add('pressed');
+        I.mouse[0] = true;
+        I.hits.set('Mouse0', performance.now());
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!throwTouch) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === throwTouch.id) {
+            const dx = t.clientX - throwTouch.lx;
+            const dy = t.clientY - throwTouch.ly;
+            throwTouch.lx = t.clientX;
+            throwTouch.ly = t.clientY;
+            const ts = (Save.data && Save.data.settings && Save.data.settings.touchSens) || 1;
+            I.mdx += dx * 2.2 * ts;
+            I.mdy += dy * 2.2 * ts;
+            btnCancel.classList.toggle('hover-cancel', isOverCancel(t.clientX, t.clientY));
+            break;
+          }
+        }
+      }, { passive: true });
+
+      const endThrow = (e) => {
+        if (!throwTouch) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === throwTouch.id) {
+            if (e.type === 'touchcancel' || isOverCancel(t.clientX, t.clientY)) {
+              I.cancelCharge = true;
+              SFX.play('click');
+            }
+            I.mouse[0] = false;
+            throwTouch = null;
+            btnThrow.classList.remove('pressed');
+            btnCancel.classList.remove('hover-cancel');
+            break;
+          }
+        }
+      };
+      window.addEventListener('touchend', endThrow, { passive: true });
+      window.addEventListener('touchcancel', endThrow, { passive: true });
+
+      btnCancel.addEventListener('touchstart', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        I.cancelCharge = true;
+        I.mouse[0] = false;
+        throwTouch = null;
+        btnThrow.classList.remove('pressed');
+        btnCancel.classList.remove('hover-cancel');
+        SFX.play('click');
+      }, { passive: false });
+
+      // Catch, Dash, Jump, Fly-Down buttons
+      const btnCatch = $('#btnTouchCatch');
+      btnCatch.addEventListener('touchstart', (e) => {
+        if (this.menuOpen()) return;
+        e.preventDefault(); e.stopPropagation();
+        btnCatch.classList.add('pressed');
+        I.hits.set('Mouse2', performance.now());
+        I.hits.set('KeyF', performance.now());
+      }, { passive: false });
+      btnCatch.addEventListener('touchend', () => btnCatch.classList.remove('pressed'), { passive: true });
+      btnCatch.addEventListener('touchcancel', () => btnCatch.classList.remove('pressed'), { passive: true });
+
+      const btnDash = $('#btnTouchDash');
+      btnDash.addEventListener('touchstart', (e) => {
+        if (this.menuOpen()) return;
+        e.preventDefault(); e.stopPropagation();
+        btnDash.classList.add('pressed');
+        I.hits.set('ShiftLeft', performance.now());
+      }, { passive: false });
+      btnDash.addEventListener('touchend', () => btnDash.classList.remove('pressed'), { passive: true });
+      btnDash.addEventListener('touchcancel', () => btnDash.classList.remove('pressed'), { passive: true });
+
+      const btnJump = $('#btnTouchJump');
+      btnJump.addEventListener('touchstart', (e) => {
+        if (this.menuOpen()) return;
+        e.preventDefault(); e.stopPropagation();
+        btnJump.classList.add('pressed');
+        I.hits.set('Space', performance.now());
+        I.keys['Space'] = true;
+        I.vbtns.jump = true;
+      }, { passive: false });
+      const endJump = () => { btnJump.classList.remove('pressed'); I.keys['Space'] = false; I.vbtns.jump = false; };
+      btnJump.addEventListener('touchend', endJump, { passive: true });
+      btnJump.addEventListener('touchcancel', endJump, { passive: true });
+
+      const btnDown = $('#btnTouchDown');
+      btnDown.addEventListener('touchstart', (e) => {
+        if (this.menuOpen()) return;
+        e.preventDefault(); e.stopPropagation();
+        btnDown.classList.add('pressed');
+        I.keys['ControlLeft'] = true;
+        I.vbtns.down = true;
+      }, { passive: false });
+      const endDown = () => { btnDown.classList.remove('pressed'); I.keys['ControlLeft'] = false; I.vbtns.down = false; };
+      btnDown.addEventListener('touchend', endDown, { passive: true });
+      btnDown.addEventListener('touchcancel', endDown, { passive: true });
+    },
+
+    resetTouchVisuals() {
+      const jb = $('#joyBase'); const js = $('#joyStick');
+      if (jb) { jb.classList.remove('active'); jb.style.left = ''; jb.style.top = ''; jb.style.bottom = ''; }
+      if (js) js.style.transform = 'translate(-50%, -50%)';
+      $$('.t-btn.pressed').forEach((b) => b.classList.remove('pressed'));
+    },
+
+    toggleEmoteWheel(force) {
+      const ew = $('#emoteWheel'); if (!ew) return;
+      const open = force != null ? !!force : !ew.classList.contains('open');
+      if (!open) { ew.classList.remove('open'); return; }
+      const owned = Save.ownedEmotes();
+      ew.innerHTML = owned.map((id, i) => {
+        const em = DATA.SHOP.emotes.find((x) => x.id === id) || { icon: '🕺', name: id };
+        return `<button type="button" class="ew-btn" data-em="${id}"><span>${em.icon}</span><small>${esc(em.name)}</small><i>${i + 1}</i></button>`;
+      }).join('');
+      ew.querySelectorAll('.ew-btn').forEach((b) => b.onclick = (e) => {
+        e.stopPropagation();
+        const g = this.app.game; const p = g && g.local;
+        if (p && g.isAlive(p)) { p.emote = b.dataset.em; p.emoteT = 0; SFX.play('click'); }
+        ew.classList.remove('open');
+      });
+      ew.classList.add('open');
+      SFX.play('click');
+    },
+
+    // ---------------------------------------------------------------
+    // HUD & Mobile-Supportive Chat
     // ---------------------------------------------------------------
     bindHUD() {
       const ci = $('#chatInput');
+      const chatEl = $('#chat');
+      chatEl.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+      chatEl.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+
+      const sendNow = () => {
+        const t = ci.value.trim();
+        ci.value = '';
+        if (t) this.submitChat(t);
+        this.closeChat();
+      };
       ci.addEventListener('keydown', (e) => {
         e.stopPropagation();
-        if (e.key === 'Enter') { const t = ci.value.trim(); ci.value = ''; if (t) this.submitChat(t); this.closeChat(); }
-        if (e.key === 'Escape') this.closeChat();
+        if (e.key === 'Enter') { e.preventDefault(); sendNow(); }
+        if (e.key === 'Escape') { e.preventDefault(); this.closeChat(); }
       });
-      const emojis = ['😂', '🔥', '👍', '😎', '💀', '😭', '🤯', '❤️', 'GG', 'EZ', 'NOOO', '🏐'];
-      $('#chatEmojis').innerHTML = emojis.map((e) => `<button>${e}</button>`).join('');
-      $$('#chatEmojis button').forEach((b) => b.onmousedown = (e) => { e.preventDefault(); ci.value += (ci.value && !ci.value.endsWith(' ') ? ' ' : '') + b.textContent; ci.focus(); });
-      $('#hudAdmin').onclick = () => Admin.openPanel();
-      for (let i = 0; i < 6; i++) { /* reserve */ }
+      $('#chatSendBtn').onclick = (e) => { e.stopPropagation(); SFX.play('click'); sendNow(); };
+      $('#chatCloseBtn').onclick = (e) => { e.stopPropagation(); SFX.play('close'); this.closeChat(); };
+      $('#chatAdminBtn').onclick = (e) => { e.stopPropagation(); this.closeChat(); Admin.openPanel(); };
+      $('#chatLog').onclick = () => { if (!this.chatOpen && this.app.input.isTouch()) this.openChat(); };
+
+      this.renderChatQuickBar();
+      $('#hudAdmin').onclick = () => Admin.togglePanel();
+      $('#hudPause').onclick = () => { SFX.play('click'); if (this.modalEl.classList.contains('open')) this.closeModal(); else this.openPause(); };
+      $('#hudChatBtn').onclick = () => { SFX.play('click'); this.toggleChat(); };
+      $('#hudScoresBtn').onclick = () => { SFX.play('click'); this.showScores(!this.scoresOn); };
+      $('#hudEmoteBtn').onclick = () => this.toggleEmoteWheel();
+      $('#scoreboard').onclick = () => { if (this.scoresOn) this.showScores(false); };
+    },
+    renderChatQuickBar() {
+      const ci = $('#chatInput');
+      const box = $('#chatEmojis'); if (!box) return;
+      const emojis = ['😂', '🔥', '👍', '😎', '💀', '😭', '🤯', '❤️', '🏐', 'GG', 'EZ', 'Nice catch!', 'Watch out!'];
+      const admCmds = Admin.isAdmin() ? [['/admin', '👑 Panel'], ['/god', '🛡️ God'], ['/fly', '🕊️ Fly'], ['/gun rifle', '🔫 Gun'], ['/bot', '🤖 +Bot'], ['/disco', '🪩 Disco'], ['/airhorn', '📯 Horn'], ['/start', '▶️ Start']] : [];
+      box.innerHTML = emojis.map((e) => `<button type="button" data-ins="${esc(e)}">${e}</button>`).join('') +
+        admCmds.map(([c, l]) => `<button type="button" class="adm-chip" data-cmd="${esc(c)}">${l}</button>`).join('');
+      $$('button[data-ins]', box).forEach((b) => {
+        const tap = (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const txt = b.dataset.ins;
+          ci.value += (ci.value && !ci.value.endsWith(' ') ? ' ' : '') + txt;
+          SFX.play('click');
+          if (!this.app.input.isTouch()) ci.focus();
+        };
+        b.onclick = tap;
+      });
+      $$('button[data-cmd]', box).forEach((b) => {
+        b.onclick = (e) => {
+          e.preventDefault(); e.stopPropagation();
+          SFX.play('click');
+          const cmd = b.dataset.cmd;
+          this.closeChat();
+          this.submitChat(cmd);
+        };
+      });
     },
     resetHUD() {
       $('#chatLog').innerHTML = ''; $('#killfeed').innerHTML = ''; $('#rewards').innerHTML = '';
+      this.unreadChat = 0; this.updateChatBadge();
       this.hideRoundEnd(); this.hud = {};
+      this.toggleEmoteWheel(false);
+      this.syncTouchMode();
       $$('.admin-only').forEach((e) => e.style.display = Admin.isAdmin() ? '' : 'none');
-      this.chatMsg({ sys: 1, text: '🏐 Welcome to Dodgeball Ultimate! Press Enter to chat.', color: '#1fd1c1' });
+      this.renderChatQuickBar();
+      const isTouch = this.app.input && this.app.input.isTouch();
+      this.chatMsg({ sys: 1, text: isTouch ? '🏐 Welcome to Dodgeball Ultimate! Tap 💬 to chat or use controls below.' : '🏐 Welcome to Dodgeball Ultimate! Press Enter to chat.', color: '#1fd1c1' });
     },
+    updateChatBadge() {
+      const b = $('#chatBadge'); if (!b) return;
+      b.textContent = this.unreadChat > 9 ? '9+' : (this.unreadChat || '');
+      b.style.display = this.unreadChat > 0 && !this.chatOpen ? '' : 'none';
+    },
+    toggleChat() { if (this.chatOpen) this.closeChat(); else this.openChat(); },
     openChat(prefill) {
       const g = this.app.game; if (!g || g.demo) return;
-      this.chatOpen = true; $('#chat').classList.add('open');
+      if (this.app.input && this.app.input.clearTouch) this.app.input.clearTouch();
+      this.toggleEmoteWheel(false);
+      this.chatOpen = true;
+      this.unreadChat = 0; this.updateChatBadge();
+      this.renderChatQuickBar();
+      $('#chat').classList.add('open');
       if (document.pointerLockElement) { this.suppressPause = true; document.exitPointerLock(); }
-      const ci = $('#chatInput'); ci.value = prefill || ''; setTimeout(() => ci.focus(), 0);
+      const ci = $('#chatInput'); ci.value = prefill || '';
+      setTimeout(() => { try { ci.focus(); } catch (e) {} }, 20);
+      const log = $('#chatLog'); if (log) log.scrollTop = log.scrollHeight;
     },
     closeChat() {
       if (!this.chatOpen) return;
@@ -13046,16 +13866,17 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     submitChat(t) {
       if (Admin.tryUnlock(t)) { this.adminUnlocked(); return; }
       if (t[0] === '/' && Admin.chatCommand(t)) return;
-      if (t === '/help') { this.chatMsg({ sys: 1, text: 'Commands: /help · Emotes: keys 1-8 · Tab: scoreboard', color: '#1fd1c1' }); return; }
+      if (t === '/help') { this.chatMsg({ sys: 1, text: 'Commands: /help · Emotes: 🕺 button or keys 1-8 · 📊: scoreboard', color: '#1fd1c1' }); return; }
       const g = this.app.game; if (g) g.sendChat(t);
     },
     adminUnlocked() {
       SFX.play('adminUnlock');
       const o = document.createElement('div'); o.className = 'admin-unlock';
-      o.innerHTML = '<div class="au-shield">👑</div><div class="au-t">ADMIN ACCESS GRANTED</div><div class="au-s">Permanent admin menu unlocked · press \\ or click 👑</div>';
+      o.innerHTML = '<div class="au-shield">👑</div><div class="au-t">ADMIN ACCESS GRANTED</div><div class="au-s">Permanent admin menu unlocked · tap 👑 anytime!</div>';
       document.body.appendChild(o); setTimeout(() => o.classList.add('out'), 3200); setTimeout(() => o.remove(), 4000);
       for (let i = 0; i < 4; i++) setTimeout(() => this.burst(innerWidth / 2 + U.rand(-200, 200), innerHeight / 2 + U.rand(-100, 100), U.pick(['#ffd23f', '#ff5ccd', '#3fa7ff'])), i * 250);
       $$('.admin-only').forEach((e) => e.style.display = '');
+      this.renderChatQuickBar();
       const g = this.app.game; if (g && g.local) { g.local.admin = true; g.local.role = 'perm'; if (g.auth) g.broadcastRoster(); else g.net.send({ t: 'admin', cmd: 'heal', target: 'me', args: {}, tok: Admin.token() }); }
     },
     chatMsg(ev) {
@@ -13066,7 +13887,10 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       log.appendChild(d); while (log.children.length > 60) log.firstChild.remove();
       log.scrollTop = log.scrollHeight;
       setTimeout(() => d.classList.add('old'), 10000);
-      if (!ev.sys && this.app.game && ev.from !== this.app.game.localId) SFX.play('chat', { vol: 0.5 });
+      if (!ev.sys && this.app.game && ev.from !== this.app.game.localId) {
+        SFX.play('chat', { vol: 0.5 });
+        if (!this.chatOpen) { this.unreadChat = (this.unreadChat || 0) + 1; this.updateChatBadge(); }
+      }
     },
     bigText(text, sub, color, dur, pop) {
       const el = $('#bigText'); $('.bt-main', el).textContent = text; $('.bt-sub', el).textContent = sub || '';
@@ -13209,14 +14033,45 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       // local actions
       const p = g.local; const alive = p && g.isAlive(p);
       const holding = p && p.holding != null; const hot = holding && g.balls.get(p.holding) && g.balls.get(p.holding).hot;
-      const ab = $('#actBall'); ab.classList.toggle('on', !!holding); ab.classList.toggle('hot', !!hot);
-      set('abic', $('.act-ic', ab), p && p.mods.gun ? '🔫' : hot ? '🥔' : holding ? '🔴' : '⚪');
-      const cd = (el, frac) => { el.style.setProperty('--cd', (frac * 360) + 'deg'); el.classList.toggle('cooling', frac > 0.001); };
-      cd($('#actCatch .act-cd'), p ? (p.catchT > 0 ? 1 : U.clamp(p.catchCd / GAME_C.CATCH_CD, 0, 1)) : 0);
+      const hasGun = !!(p && p.mods && p.mods.gun);
+      const ab = $('#actBall'); ab.classList.toggle('on', !!holding || hasGun); ab.classList.toggle('hot', !!hot);
+      const ballIc = hasGun ? '🔫' : hot ? '🥔' : holding ? '🔴' : '⚪';
+      set('abic', $('.act-ic', ab), ballIc);
+      const cd = (el, frac) => { if (!el) return; el.style.setProperty('--cd', (frac * 360) + 'deg'); el.classList.toggle('cooling', frac > 0.001); };
+      const catchFrac = p ? (p.catchT > 0 ? 1 : U.clamp(p.catchCd / GAME_C.CATCH_CD, 0, 1)) : 0;
+      const dashFrac = p ? U.clamp(p.dashCd / GAME_C.DASH_CD, 0, 1) : 0;
+      cd($('#actCatch .act-cd'), catchFrac);
       $('#actCatch').classList.toggle('active', !!(p && p.catchT > 0));
-      cd($('#actDash .act-cd'), p ? U.clamp(p.dashCd / GAME_C.DASH_CD, 0, 1) : 0);
+      cd($('#actDash .act-cd'), dashFrac);
+
+      // mobile touch action buttons
+      const ch = p && p.charge >= 0 ? p.charge : 0;
+      const btThrow = $('#btnTouchThrow');
+      if (btThrow) {
+        btThrow.classList.toggle('on', !!holding || hasGun);
+        btThrow.classList.toggle('hot', !!hot);
+        btThrow.classList.toggle('charging', ch > 0);
+        set('tbic', $('#touchThrowIc'), ballIc);
+        set('tblbl', $('#touchThrowLbl'), hasGun ? 'FIRE' : holding ? (ch > 0 ? Math.round(ch * 100) + '%' : 'HOLD/AIM') : 'NO BALL');
+        const tring = $('#touchChargeRing');
+        if (tring) {
+          tring.style.strokeDashoffset = (282.7 * (1 - ch)).toFixed(1);
+          tring.style.stroke = ch >= 1 ? '#ff4d6d' : ch > 0.6 ? '#ff8c42' : '#ffd23f';
+        }
+      }
+      const btCancel = $('#btnTouchCancel');
+      if (btCancel) btCancel.classList.toggle('show', ch > 0);
+      cd($('#btnTouchCatch .act-cd'), catchFrac);
+      $('#btnTouchCatch').classList.toggle('active', !!(p && p.catchT > 0));
+      cd($('#btnTouchDash .act-cd'), dashFrac);
+      const canFlyDown = !!(p && ((alive && p.mods && p.mods.fly) || (!alive && !view.specTarget)));
+      const btDown = $('#btnTouchDown');
+      if (btDown) btDown.classList.toggle('show', canFlyDown);
+      const mc = $('#mobileControls');
+      if (mc) mc.classList.toggle('menu-blocked', this.menuOpen() || $('#roundEnd').classList.contains('show'));
+
       // crosshair / charge
-      const ring = $('#chargeRing'); const ch = p && p.charge >= 0 ? p.charge : 0;
+      const ring = $('#chargeRing');
       ring.style.strokeDashoffset = (138.2 * (1 - ch)).toFixed(1);
       ring.style.stroke = ch >= 1 ? '#ff4d6d' : ch > 0.6 ? '#ff8c42' : '#ffd23f';
       $('#crosshair').classList.toggle('hide', !alive);
@@ -13229,15 +14084,40 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       if (st.potatoFuse > 0 && st.phase === 'play') { fb.classList.add('show'); $('div', fb).style.width = U.clamp(st.potatoFuse / 22 * 100, 0, 100) + '%'; fb.classList.toggle('danger', st.potatoFuse < 5); } else fb.classList.remove('show');
       // spectate
       const sb = $('#specBar');
+      const isTouch = this.app.input.isTouch();
       if (!alive && p) {
         const tgt2 = view.specTarget ? g.players.get(view.specTarget) : null;
-        const txt = (p.state === 'spec' && (st.phase === 'play' || st.phase === 'pre') ? '⏳ Round in progress - you join next round. ' : '') + (tgt2 ? `👀 Watching <b>${esc(tgt2.name)}</b> · Click: next · RMB: freecam` : '👻 FREECAM · WASD fly · Space/Ctrl up/down · Shift fast · Click: spectate players');
-        set('spec', sb, txt, 'html'); sb.classList.add('show');
+        const prefix = (p.state === 'spec' && (st.phase === 'play' || st.phase === 'pre')) ? '⏳ Join next round · ' : '';
+        const specKey = prefix + '|' + (tgt2 ? tgt2.id + ':' + tgt2.name : 'free') + '|' + (isTouch ? 1 : 0);
+        if (H.spec !== specKey) {
+          H.spec = specKey;
+          if (isTouch) {
+            sb.innerHTML = `${prefix}${tgt2 ? `👀 <b>${esc(tgt2.name)}</b>` : '👻 <b>FREECAM</b>'}
+              <button type="button" class="btn-mini spec-btn" data-sp="-1">⏮️</button>
+              <button type="button" class="btn-mini spec-btn" data-sp="1">⏭️ Next</button>
+              ${tgt2 ? '<button type="button" class="btn-mini spec-btn" data-sp="free">👻 Freecam</button>' : ''}`;
+          } else {
+            sb.innerHTML = `${prefix}${tgt2 ? `👀 Watching <b>${esc(tgt2.name)}</b> · Click: next · RMB: freecam` : '👻 FREECAM · WASD fly · Space/Ctrl up/down · Shift fast · Click: spectate players'}
+              <button type="button" class="btn-mini spec-btn" data-sp="1">⏭️ Next</button>
+              ${tgt2 ? '<button type="button" class="btn-mini spec-btn" data-sp="free">👻 Freecam</button>' : ''}`;
+          }
+          sb.querySelectorAll('.spec-btn').forEach((b) => b.onclick = (e) => {
+            e.stopPropagation(); SFX.play('click');
+            if (b.dataset.sp === 'free') {
+              view.specTarget = null;
+              const c = this.app.camera.position;
+              view.freecam.x = c.x; view.freecam.y = c.y; view.freecam.z = c.z; view.freecam.yaw = view.yaw; view.freecam.pitch = view.pitch;
+            } else {
+              view.cycleSpectate(+b.dataset.sp);
+            }
+          });
+        }
+        sb.classList.add('show');
       } else sb.classList.remove('show');
       // lobby panel
       this.updateLobby(g);
-      // click to play
-      const cp = $('#clickPlay'); cp.classList.toggle('show', !this.app.input.locked && !this.menuOpen() && !$('#roundEnd').classList.contains('show'));
+      // click to play (hidden on touch devices)
+      const cp = $('#clickPlay'); cp.classList.toggle('show', !isTouch && !this.app.input.locked && !this.menuOpen() && !$('#roundEnd').classList.contains('show'));
       // round end next timer
       if ($('#roundEnd').classList.contains('show')) { const n = $('#reNext'); if (n) set('ren', n, st.phase === 'post' ? 'Next round in ' + Math.max(0, Math.ceil(st.t)) + '...' : '', 'html'); if (st.phase !== 'post') this.hideRoundEnd(); }
       if (this.scoresOn && (g.tickN % 15 === 0)) this.renderScores();
@@ -13260,8 +14140,11 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         <div class="lb-mode" style="--c:${md.color}"><div class="lb-ic">${md.icon}</div><div><small>NEXT UP</small><b>${md.name}</b><span>${mp ? mp.icon + ' ' + mp.name : ''}</span></div></div>
         <div class="lb-desc">${md.desc}</div>
         <div class="lb-count">${st.phase === 'wait' ? `Waiting for players <b>${g.readyCount()}/2</b>` : `Starting in <b>${Math.max(0, Math.ceil(st.t))}</b>`}</div>
-        ${g.auth && !g.isPublic ? '<div class="lb-host">Host: press <b>Esc</b> for room settings / start now</div>' : ''}
-        ${g.role !== 'offline' && g.net && g.net.code ? `<div class="lb-code">Invite code: <b>${g.net.code}</b></div>` : ''}`;
+        ${g.auth && !g.isPublic ? '<div class="lb-host-btns"><button type="button" class="btn-mini green" id="lbStartNow">▶️ Start Now</button><button type="button" class="btn-mini" id="lbRoomSet">⚙️ Settings</button></div>' : ''}
+        ${g.role !== 'offline' && g.net && g.net.code ? `<div class="lb-code">Invite code: <b>${g.net.code}</b> <button type="button" class="btn-mini" id="lbCopyCode">📋</button></div>` : ''}`;
+      const sn = $('#lbStartNow', el); if (sn) sn.onclick = (e) => { e.stopPropagation(); SFX.play('click'); g.forceStart(); };
+      const rs = $('#lbRoomSet', el); if (rs) rs.onclick = (e) => { e.stopPropagation(); SFX.play('click'); this.openRoomSettings(); };
+      const cc = $('#lbCopyCode', el); if (cc) cc.onclick = (e) => { e.stopPropagation(); SFX.play('click'); U.copyText(g.net.code); this.toast('📋 Code copied!', 'good'); };
     },
 
     frame(dt) {
@@ -13291,6 +14174,12 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     constructor(canvas) {
       this.keys = {}; this.hits = new Map(); this.mouse = [false, false, false];
       this.mdx = 0; this.mdy = 0; this.locked = false; this.canvas = canvas;
+      this.touchDetected = U.isMobileDevice();
+      this.joy = { active: false, id: null, x: 0, y: 0, ox: 0, oy: 0 };
+      this.lookTouch = { active: false, id: null, lx: 0, ly: 0, sx: 0, sy: 0, t0: 0 };
+      this.vbtns = { jump: false, dash: false, catch: false, down: false };
+      this.cancelCharge = false;
+
       window.addEventListener('keydown', (e) => {
         if (UI.isTyping()) return;
         if (['Space', 'Tab', 'ArrowUp', 'ArrowDown'].includes(e.code) && APP.game && !APP.game.demo) e.preventDefault();
@@ -13298,20 +14187,107 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
         this.keys[e.code] = true;
       });
       window.addEventListener('keyup', (e) => { this.keys[e.code] = false; });
-      canvas.addEventListener('mousedown', (e) => { this.mouse[e.button] = true; this.hits.set('Mouse' + e.button, performance.now()); });
-      window.addEventListener('mouseup', (e) => { this.mouse[e.button] = false; });
+      canvas.addEventListener('mousedown', (e) => {
+        if (this.isTouch()) return;
+        this.mouse[e.button] = true; this.hits.set('Mouse' + e.button, performance.now());
+      });
+      window.addEventListener('mouseup', (e) => {
+        if (this.isTouch()) return;
+        this.mouse[e.button] = false;
+      });
       canvas.addEventListener('contextmenu', (e) => e.preventDefault());
       document.addEventListener('mousemove', (e) => { if (this.locked) { this.mdx += e.movementX || 0; this.mdy += e.movementY || 0; } });
       document.addEventListener('pointerlockchange', () => {
         this.locked = document.pointerLockElement === canvas;
         if (!this.locked) { this.mouse = [false, false, false]; APP.onPointerUnlock(); }
       });
+
+      // Touch detection & canvas camera look for iOS (iPad / iPhone) & mobile
+      window.addEventListener('touchstart', () => {
+        if (!this.touchDetected) {
+          this.touchDetected = true;
+          if (window.UI && UI.syncTouchMode) UI.syncTouchMode();
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchstart', (e) => {
+        if (APP.mode !== 'game' || UI.menuOpen()) return;
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (!this.lookTouch.active && t.identifier !== this.joy.id) {
+            this.lookTouch = { active: true, id: t.identifier, lx: t.clientX, ly: t.clientY, sx: t.clientX, sy: t.clientY, t0: performance.now() };
+            break;
+          }
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!this.lookTouch.active) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === this.lookTouch.id) {
+            const dx = t.clientX - this.lookTouch.lx;
+            const dy = t.clientY - this.lookTouch.ly;
+            this.lookTouch.lx = t.clientX;
+            this.lookTouch.ly = t.clientY;
+            const ts = (Save.data && Save.data.settings && Save.data.settings.touchSens) || 1;
+            this.mdx += dx * 2.2 * ts;
+            this.mdy += dy * 2.2 * ts;
+            break;
+          }
+        }
+      }, { passive: true });
+
+      const endLook = (e) => {
+        if (!this.lookTouch.active) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === this.lookTouch.id) {
+            const dt = performance.now() - this.lookTouch.t0;
+            const dist = Math.hypot(t.clientX - this.lookTouch.sx, t.clientY - this.lookTouch.sy);
+            if (dt < 240 && dist < 14 && APP.game && APP.game.local && !APP.game.isAlive(APP.game.local) && !UI.menuOpen()) {
+              this.hits.set('Mouse0', performance.now());
+            }
+            this.lookTouch.active = false;
+            this.lookTouch.id = null;
+            break;
+          }
+        }
+      };
+      window.addEventListener('touchend', endLook, { passive: true });
+      window.addEventListener('touchcancel', endLook, { passive: true });
+
       window.addEventListener('blur', () => this.clear());
     }
+    isTouch() {
+      const pref = Save.data && Save.data.settings ? Save.data.settings.touchControls : 'auto';
+      if (pref === 'on') return true;
+      if (pref === 'off') return false;
+      return !!(this.touchDetected || U.isMobileDevice());
+    }
+    isActiveLook() {
+      return this.locked || (this.isTouch() && APP.mode === 'game');
+    }
     hit(code) { if (this.hits.has(code)) { this.hits.delete(code); return true; } return false; }
-    clear() { this.keys = {}; this.hits.clear(); this.mouse = [false, false, false]; }
+    clearTouch() {
+      this.joy.active = false; this.joy.id = null; this.joy.x = 0; this.joy.y = 0;
+      this.lookTouch.active = false; this.lookTouch.id = null;
+      this.vbtns.jump = false; this.vbtns.dash = false; this.vbtns.catch = false; this.vbtns.down = false;
+      this.cancelCharge = false;
+      if (window.UI && UI.resetTouchVisuals) UI.resetTouchVisuals();
+    }
+    clear() { this.keys = {}; this.hits.clear(); this.mouse = [false, false, false]; this.clearTouch(); }
     prune() { const now = performance.now(); for (const [k, t] of this.hits) if (now - t > 250) this.hits.delete(k); }
-    lock() { if (!this.locked) { try { const r = this.canvas.requestPointerLock({ unadjustedMovement: true }); if (r && r.catch) r.catch(() => { try { this.canvas.requestPointerLock(); } catch (e) { } }); } catch (e) { try { this.canvas.requestPointerLock(); } catch (e2) { } } } }
+    lock() {
+      if (this.isTouch()) return;
+      if (!this.locked && this.canvas.requestPointerLock) {
+        try {
+          const r = this.canvas.requestPointerLock({ unadjustedMovement: true });
+          if (r && r.catch) r.catch(() => { try { this.canvas.requestPointerLock(); } catch (e) { } });
+        } catch (e) { try { this.canvas.requestPointerLock(); } catch (e2) { } }
+      }
+    }
   }
 
   const APP = {
@@ -13345,7 +14321,10 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
       this.last = performance.now() / 1000;
       engine.runRenderLoop(() => this.frame());
       const gesture = () => { SFX.init(); };
-      window.addEventListener('pointerdown', gesture); window.addEventListener('keydown', gesture);
+      window.addEventListener('pointerdown', gesture);
+      window.addEventListener('touchstart', gesture, { passive: true });
+      window.addEventListener('touchend', gesture, { passive: true });
+      window.addEventListener('keydown', gesture);
       UI.boot();
     },
 
@@ -13590,6 +14569,7 @@ function _BabylonUMDDynamicImportUnsupported(){return Promise.reject(new Error("
     },
 
     onPointerUnlock() {
+      if (this.input && this.input.isTouch()) return;
       if (this.mode !== 'game' || UI.suppressPause) { UI.suppressPause = false; return; }
       if (UI.isTyping() || Admin.isOpen() || UI.menuOpen()) return;
       UI.openPause();
