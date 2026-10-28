@@ -1476,7 +1476,7 @@ function hostCreate({ roomName, isPublic, code, slot, myId, myName, offline }) {
     roomName: (roomName || (myName + "'s room")).slice(0, 32),
     hostId: myId,
     settings: {
-      rounds: 10, handSize: 8, maxPlayers: 8,
+      rounds: 10, handSize: 8, maxPlayers: 8, allWildcards: false,
       theme: (prefs.theme !== 'room' && THEME_IDS.has(prefs.theme)) ? prefs.theme : 'default',
       pickTime: 20, revealTime: 10, voteTime: 15, skipAhead: true
     },
@@ -1647,6 +1647,12 @@ function hDrawAnswer() {
 }
 function hRefill(p) {
   const n = H.settings.handSize;
+  // In All-Wild mode every slot is a write-your-own card. Rebuild the hand
+  // each round so this also works after a card has been played.
+  if (H.settings.allWildcards) {
+    p.hand = Array(n).fill(WILDCARD);
+    return;
+  }
   if (p.hand.length > n) p.hand.length = n;
   const isOpening = p.hand.length === 0;
   if (isOpening) {
@@ -1826,6 +1832,7 @@ function hSettings(s) {
   if ('theme' in s && THEME_IDS.has(s.theme)) st.theme = s.theme;
   if ('skipAhead' in s) st.skipAhead = !!s.skipAhead;
   if (inLobby) {
+    if ('allWildcards' in s) st.allWildcards = !!s.allWildcards;
     if ('rounds' in s && ROUND_OPTS.includes(+s.rounds)) st.rounds = +s.rounds;
     if ('handSize' in s && +s.handSize >= 4 && +s.handSize <= 12) st.handSize = Math.round(+s.handSize);
     if ('maxPlayers' in s && +s.maxPlayers >= MIN_PLAYERS && +s.maxPlayers <= 12) st.maxPlayers = Math.max(H.players.length, Math.round(+s.maxPlayers));
@@ -2272,6 +2279,7 @@ function renderLobby() {
           <span class="vis ${S.offline ? 'off' : S.isPublic ? 'pub' : 'priv'}">${S.offline ? 'OFFLINE' : S.isPublic ? 'PUBLIC' : 'PRIVATE'}</span>
           <span class="chip">👥 ${n}/${st.maxPlayers} players</span>
           <span class="chip">🎨 ${esc(themeName(st.theme))}</span>
+          ${st.allWildcards ? '<span class="chip">✨ ALL WILD</span>' : ''}
         </div>
       </div>
       ${(!S.isPublic && !S.offline) ? `<div class="code-box">
@@ -2291,6 +2299,7 @@ function renderLobby() {
         ${field('Inspect time', `<select data-set="revealTime" ${dis}>${optList(REVEAL_OPTS, st.revealTime, v => v + 's')}</select>`)}
         ${field('Vote time', `<select data-set="voteTime" ${dis}>${optList(VOTE_OPTS, st.voteTime, v => v + 's')}</select>`)}
         ${field('Skip ahead', `<label class="switch"><input type="checkbox" data-set="skipAhead" ${st.skipAhead ? 'checked' : ''} ${dis}><span></span> When everyone's done</label>`)}
+        ${field('All cards are wildcards', `<label class="switch"><input type="checkbox" data-set="allWildcards" ${st.allWildcards ? 'checked' : ''} ${dis}><span></span> All Wild</label>`, '✨ Every answer card becomes a custom wildcard for every player and bot.')}
       </div>
     </div>
     ${host ? `<div class="panel bots-panel">
