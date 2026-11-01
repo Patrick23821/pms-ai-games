@@ -35,7 +35,16 @@
       "hidden": false
       "models": ["Claude Opus 5.5", "Gemini 4 Argon"]
     },
-     {
+    {
+      "file": "dahood.html",
+      "title": "The Hood",
+      "tagline": "GTA inspired game where you can commit crimes without being put behind a cell, probably. (Prototype, may contain bugs or issues.)",
+      "tags": ["multiplayer", "casual"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/thehood.webp",
+      "hidden": false
+      "models": ["Claude Opus 5.5"]
+    },
+    {
       "file": "dodgeballultimate.html",
       "title": "Dodgeball Ultimate",
       "tagline": "Claude fable 5.5 when",
