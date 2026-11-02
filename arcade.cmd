@@ -1,1 +1,1 @@
-
+Announcement("https://zinx-arcade.jermy-jimenezperalta.workers.dev")
