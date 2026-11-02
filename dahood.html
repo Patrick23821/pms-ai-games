@@ -38,6 +38,17 @@ kbd { display: inline-block; min-width: 26px; padding: 3px 7px; margin-right: 4p
 #grain { position: absolute; inset: -50%; pointer-events: none; z-index: 50; opacity: .055; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   animation: grain 0.6s steps(6) infinite; }
+/* Low mode keeps the same warm, layered look while avoiding costly full-screen UI effects. */
+#app.low-graphics #grain { opacity: .025; animation: none; }
+/* Chromebook low preset: keep the dark glass look without live backdrop blur. */
+#app.low-graphics .glass, #app.low-graphics .glass-s,
+#app.low-graphics #menuBtn, #app.low-graphics .islot {
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+#app.low-graphics .glass { background: rgba(18,14,12,.84); }
+#app.low-graphics .glass-s, #app.low-graphics #menuBtn, #app.low-graphics .islot { background-color: rgba(14,11,9,.82); }
+#app.low-graphics .glass { backdrop-filter: blur(11px) saturate(1.18); -webkit-backdrop-filter: blur(11px) saturate(1.18); }
+#app.low-graphics .glass-s { backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }
 @keyframes grain { 0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-4%)} 60%{transform:translate(-4%,-1%)} 80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)} }
 
 /* ---------- generic screens ---------- */
@@ -452,7 +463,7 @@ input[type=text], .name-row input, #joinCode, #chatInput, #lobbyInput { backgrou
         <div class="set-row"><label>Master volume</label><input type="range" id="sVol" min="0" max="1" step="0.01" /><output id="oVol"></output></div>
         <div class="set-row"><label>Music / radio</label><input type="range" id="sMusic" min="0" max="1" step="0.01" /><output id="oMusic"></output></div>
         <div class="set-row"><label>Graphics quality</label>
-          <select id="sQuality"><option value="0">Low</option><option value="1">Medium</option><option value="2">High</option><option value="3">Ultra</option></select></div>
+          <select id="sQuality"><option value="0">Low — optimized</option><option value="1">Medium</option><option value="2">High</option><option value="3">Ultra</option></select></div>
         <div class="preview-wrap">
           <canvas id="charPreview" width="340" height="460"></canvas>
           <div class="pv-side">
@@ -464,7 +475,7 @@ input[type=text], .name-row input, #joinCode, #chatInput, #lobbyInput { backgrou
           </div>
         </div>
         <div class="set-row"><label>Camera shake</label><input type="range" id="sShake" min="0" max="1.5" step="0.05" /><output id="oShake"></output></div>
-        <p class="dim small">World options (time of day, traffic, police, PvP…) are chosen in the session waiting room. Settings, records, your weapons and cash are saved in this browser; the world itself resets every visit.</p>
+        <p class="dim small">Low graphics automatically uses a Chromebook-friendly rendering and simulation profile on supported devices. World options (time of day, traffic, police, PvP…) are chosen in the session waiting room. Settings, records, your weapons and cash are saved in this browser; the world itself resets every visit.</p>
       </section>
 
       <section class="panel glass mpanel" id="pRecords">
@@ -2254,7 +2265,9 @@ G.phys = (function () {
     } else b.sleepT = 0;
   }
   P.step = function (dt) {
-    const sub = 2, h = dt / sub;
+    // One solver substep is enough for the low preset and halves the work on
+    // active debris/ragdolls while retaining the same collision response.
+    const sub = G.lowPerfMode ? 1 : 2, h = dt / sub;
     for (let s = 0; s < sub; s++) for (let i = 0; i < P.bodies.length; i++) stepBody(P.bodies[i], h);
     for (const b of P.bodies) {
       if (b.pos.y < -20) { b.pos.y = 1; b.vel.set(0, 0, 0); }
@@ -2550,6 +2563,7 @@ G.inst = (function () {
      and the sun's shadow pass (previously every pole/tree on the map was
      drawn twice per frame). Cells beyond the fog are skipped as well. */
   const CELL = 96;
+  const lowQuality = G.store.settings.quality === 0;
   I.cells = [];
   I.build = function (scene) {
     for (const t of I.types.values()) {
@@ -2592,7 +2606,8 @@ G.inst = (function () {
   };
   /* distance culling: cells hidden in the fog cost nothing */
   I.cull = function (cam) {
-    for (const m of I.cells) { const s = m.boundingSphere; if (!s) continue; m.visible = cam.distanceTo(s.center) - s.radius < 300; }
+    const maxDist = lowQuality ? (G.lowPerfMode ? 205 : 245) : 300;
+    for (const m of I.cells) { const s = m.boundingSphere; if (!s) continue; m.visible = cam.distanceTo(s.center) - s.radius < maxDist; }
   };
   /* Proxy mesh for exact raycasts against an un-promoted instance */
   let proxy = null;
@@ -3183,6 +3198,7 @@ G.fx = (function () {
     return p;
   }
   function updateSys(sys, dt) {
+    if (!sys.n) return;
     let w = 0;
     for (let i = 0; i < sys.n; i++) {
       const p = sys.P[i]; p.life += dt;
@@ -3226,6 +3242,7 @@ G.fx = (function () {
   const M4 = () => new THREE.Matrix4();
   let tmpM, tmpQ, tmpE, tmpS;
   function updateInst(sys, dt) {
+    if (!sys.n) return;
     let w = 0;
     for (let i = 0; i < sys.n; i++) {
       const it = sys.items[i]; it.life += dt;
@@ -3255,16 +3272,17 @@ G.fx = (function () {
 
   /* ---------------------------- init ---------------------------- */
   F.init = function () {
+    const low = !!G.lowPerfMode || G.store.settings.quality === 0;
     tmpM = new THREE.Matrix4(); tmpQ = new THREE.Quaternion(); tmpE = new THREE.Euler(); tmpS = new THREE.Vector3();
-    add = makePoints(1600, THREE.AdditiveBlending, G.tex.soft());
-    norm = makePoints(1400, THREE.NormalBlending, G.tex.smoke());
-    debris = makeInstanced(new THREE.BoxGeometry(1, 0.6, 0.8), new THREE.MeshStandardMaterial({ roughness: 0.8, metalness: 0.2 }), 320, { color: true, shadow: false });
+    add = makePoints(low ? 850 : 1600, THREE.AdditiveBlending, G.tex.soft());
+    norm = makePoints(low ? 700 : 1400, THREE.NormalBlending, G.tex.smoke());
+    debris = makeInstanced(new THREE.BoxGeometry(1, 0.6, 0.8), new THREE.MeshStandardMaterial({ roughness: 0.8, metalness: 0.2 }), low ? 150 : 320, { color: true, shadow: false });
     const shard = new THREE.BufferGeometry(); shard.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0.2, 0.3, 0, 1.1, 0, 0, 0, 0.3, 0, 1.1, 1, 0, 0.2], 3)); shard.computeVertexNormals();
-    glass = makeInstanced(shard, new THREE.MeshStandardMaterial({ color: 0xcfe8ff, metalness: 0.9, roughness: 0.05, transparent: true, opacity: 0.7, side: THREE.DoubleSide }), 220);
+    glass = makeInstanced(shard, new THREE.MeshStandardMaterial({ color: 0xcfe8ff, metalness: 0.9, roughness: 0.05, transparent: true, opacity: 0.7, side: THREE.DoubleSide }), low ? 100 : 220);
     const leaf = new THREE.PlaneGeometry(1, 0.6);
-    leavesI = makeInstanced(leaf, new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, roughness: 0.9 }), 220, { color: true, flutter: true });
+    leavesI = makeInstanced(leaf, new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, roughness: 0.9 }), low ? 100 : 220, { color: true, flutter: true });
     // decals pool
-    decals = { list: [], i: 0, max: 90, geo: new THREE.PlaneGeometry(1, 1), mats: {} };
+    decals = { list: [], i: 0, max: low ? 52 : 90, geo: new THREE.PlaneGeometry(1, 1), mats: {} };
     decals.mats.hole = new THREE.MeshStandardMaterial({ map: G.tex.bulletHole(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: 1 });
     decals.mats.scorch = new THREE.MeshStandardMaterial({ map: G.tex.scorch(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -5, roughness: 1 });
     for (let i = 0; i < decals.max; i++) { const m = new THREE.Mesh(decals.geo, decals.mats.hole); m.visible = false; m.matrixAutoUpdate = false; m.renderOrder = 2; G.scene.add(m); decals.list.push(m); }
@@ -3272,7 +3290,7 @@ G.fx = (function () {
     tracers = { list: [], i: 0 };
     const tg = new THREE.BoxGeometry(1, 1, 1); tg.translate(0, 0, 0.5);
     const tm = new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
-    for (let i = 0; i < 24; i++) { const m = new THREE.Mesh(tg, tm.clone()); m.visible = false; m.userData.life = 0; G.scene.add(m); tracers.list.push(m); }
+    for (let i = 0; i < (low ? 14 : 24); i++) { const m = new THREE.Mesh(tg, tm.clone()); m.visible = false; m.userData.life = 0; G.scene.add(m); tracers.list.push(m); }
     // muzzle flash billboard
     const fc = document.createElement('canvas'); fc.width = fc.height = 64; const fx = fc.getContext('2d');
     const gr = fx.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,230,1)'); gr.addColorStop(0.25, 'rgba(255,200,90,0.9)'); gr.addColorStop(1, 'rgba(255,120,20,0)');
@@ -3284,7 +3302,7 @@ G.fx = (function () {
     shock = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 48), new THREE.MeshBasicMaterial({ color: 0xffc080, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     shock.rotation.x = -Math.PI / 2; shock.visible = false; G.scene.add(shock);
     // tire marks: ring buffer of quads
-    const TM = 700;
+    const TM = low ? 360 : 700;
     tires = { max: TM, i: 0, geo: new THREE.BufferGeometry(), last: new Map() };
     tires.geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TM * 6 * 3), 3).setUsage(THREE.DynamicDrawUsage));
     tires.geo.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(TM * 6 * 2), 2));
@@ -7039,7 +7057,7 @@ G.vehicles = (function () {
     return null;
   };
   V.spawnParked = function () {
-    const spots = G.world.parkingSpots.slice().sort(() => Math.random() - 0.5).slice(0, 16);
+    const spots = G.world.parkingSpots.slice().sort(() => Math.random() - 0.5).slice(0, G.lowPerfMode ? 8 : 16);
     for (const s of spots) V.spawn(U.pick(['sedan', 'hatch', 'muscle', 'pickup', 'sedan', 'van']), s.x, s.z, s.h, { parked: true });
     // guaranteed showcase cars near the spawn
     const sp = G.world.spawn;
@@ -7107,9 +7125,11 @@ G.vehicles = (function () {
     // keep the city alive: traffic budget
     V.trafficT = (V.trafficT || 0) - dt;
     if (V.trafficT <= 0) {
-      V.trafficT = 1.5;
+      V.trafficT = G.lowPerfMode ? 7.5 : 1.5;
       const traffic = V.list.filter(v => v.ai && v.ai.mode === 'cruise').length;
-      if (traffic < Math.round((G.store.settings.quality >= 2 ? 9 : 6) * (G.room.opts.traffic ?? 1))) V.spawnTraffic(false);
+      const q = G.store.settings.quality;
+      const trafficCap = G.lowPerfMode ? 2 : q === 0 ? 5 : q === 1 ? 6 : 9;
+      if (traffic < Math.round(trafficCap * (G.room.opts.traffic ?? 1))) V.spawnTraffic(false);
     }
     if (pv) G.ui.vehicleHUD(pv);
   };
@@ -7489,8 +7509,16 @@ G.npcs = (function () {
   }
 
   /* ------------------------------ update ------------------------------ */
-  let spawnT = 0;
+  let spawnT = 0, lowNpcAccumulator = 0;
   N.update = function (dt) {
+    // AI/navigation/collision for NPCs need not run at the full render rate.
+    // 30Hz keeps movement responsive while taking pressure off Chromebook CPUs.
+    if (G.lowPerfMode) {
+      lowNpcAccumulator += dt;
+      if (lowNpcAccumulator < 1 / 30) return;
+      dt = Math.min(0.1, lowNpcAccumulator);
+      lowNpcAccumulator = 0;
+    }
     const cam = G.camera.position, P = G.player;
     for (const n of N.list.slice()) {
       if (n.removed) continue;
@@ -7515,8 +7543,8 @@ G.npcs = (function () {
         continue;
       }
       // LOD: far NPCs think less often
-      n.lod = (n.lod + 1) % (dc > 70 ? 4 : dc > 40 ? 2 : 1);
-      const ldt = dt * (dc > 70 ? 4 : dc > 40 ? 2 : 1);
+      n.lod = (n.lod + 1) % (G.lowPerfMode ? (dc > 55 ? 8 : dc > 28 ? 3 : 1) : (dc > 70 ? 4 : dc > 40 ? 2 : 1));
+      const ldt = dt * (G.lowPerfMode ? (dc > 55 ? 8 : dc > 28 ? 3 : 1) : (dc > 70 ? 4 : dc > 40 ? 2 : 1));
       if (n.lod === 0) think(n, ldt);
       // separation
       for (const o of N.list) {
@@ -7532,13 +7560,19 @@ G.npcs = (function () {
       n.recoil = U.damp(n.recoil, 0, 12, dt);
       const ch = n.char;
       ch.root.position.copy(n.pos); ch.root.rotation.set(0, n.facing, 0);
-      const vis = dc < 130; ch.root.visible = vis;
-      if (vis && (dc < 60 || n.lod === 0)) ch.update(dc < 60 ? dt : ldt, { speed: n.speed, grounded: true, aiming: n.aiming, aimPitch: n.aiming ? Math.atan2((P.pos.y + 1.2) - (n.pos.y + 1.5), Math.max(1, Math.hypot(P.pos.x - n.pos.x, P.pos.z - n.pos.z))) : 0, recoil: n.recoil, handsUp: n.handsUp, punch: n.punch > 0 ? (n.punch -= dt * 3, 1 - n.punch) : 0 });
+      const lowQuality = G.store.settings.quality === 0;
+      const vis = dc < (lowQuality ? 112 : 130); ch.root.visible = vis;
+      const animateClose = lowQuality ? 48 : 60;
+      if (vis && (dc < animateClose || n.lod === 0)) ch.update(dc < animateClose ? dt : ldt, { speed: n.speed, grounded: true, aiming: n.aiming, aimPitch: n.aiming ? Math.atan2((P.pos.y + 1.2) - (n.pos.y + 1.5), Math.max(1, Math.hypot(P.pos.x - n.pos.x, P.pos.z - n.pos.z))) : 0, recoil: n.recoil, handsUp: n.handsUp, punch: n.punch > 0 ? (n.punch -= dt * 3, 1 - n.punch) : 0 });
       const sh = dc < 32; if (sh !== n.shadow) { n.shadow = sh; ch.setShadows(sh); }
     }
     // population management
     spawnT -= dt;
-    if (spawnT <= 0) { spawnT = 1.0; populate(); if (N.cashier && (N.cashier.dead || N.cashier.removed) && G.player.pos.distanceTo(new THREE.Vector3(G.world.shop.x, 0, G.world.shop.z)) > 60) { if (!N.cashier.removed) N.remove(N.cashier); N.spawnCashier(); } }
+    if (spawnT <= 0) {
+      spawnT = G.lowPerfMode ? 4.0 : 1.0;
+      populate();
+      if (N.cashier && (N.cashier.dead || N.cashier.removed) && G.player.pos.distanceTo(new THREE.Vector3(G.world.shop.x, 0, G.world.shop.z)) > 60) { if (!N.cashier.removed) N.remove(N.cashier); N.spawnCashier(); }
+    }
   };
   function populate() {
     const P = G.player, pp = P.vehicle ? P.vehicle.pos : P.pos;
@@ -7550,9 +7584,10 @@ G.npcs = (function () {
       if ((n.role === 'civilian' && d > 115) || (n.role === 'police' && G.police.level === 0 && d > 90 && !n.dead)) N.remove(n);
     }
     const civ = N.list.filter(n => n.role === 'civilian' && n.onFoot && !n.dead).length;
-    const target = Math.round((G.store.settings.quality >= 2 ? 16 : 10) * (G.room.opts.crowd ?? 1));
+    const q = G.store.settings.quality;
+    const target = Math.round((G.lowPerfMode ? 3 : q === 0 ? 8 : q === 1 ? 10 : 16) * (G.room.opts.crowd ?? 1));
     if (civ < target) {
-      for (let k = 0; k < 2; k++) {
+      for (let k = 0; k < (G.lowPerfMode ? 1 : 2); k++) {
         const node = U.pick(G.world.walkNodes), d = Math.hypot(node.x - pp.x, node.z - pp.z);
         if (d < 35 || d > 100) continue;
         const n = N.create('civilian', node.x + U.rand(-1, 1), node.z + U.rand(-1, 1)); n.wanderNode = node;
@@ -7563,7 +7598,8 @@ G.npcs = (function () {
       const d = Math.hypot(crew.x - pp.x, crew.z - pp.z);
       const alive = N.list.filter(n => n.crew === crew && !n.dead);
       if (G.room.opts.gangs !== false && d < 95 && alive.length === 0 && G.time.elapsed > crew.respawnAt) {
-        for (let i = 0; i < crew.size; i++) { const n = N.create('gang', crew.x + U.rand(-5, 5), crew.z + U.rand(-5, 5), { home: crew }); n.crew = crew; }
+        const crewCount = G.lowPerfMode ? Math.min(2, crew.size) : crew.size;
+        for (let i = 0; i < crewCount; i++) { const n = N.create('gang', crew.x + U.rand(-5, 5), crew.z + U.rand(-5, 5), { home: crew }); n.crew = crew; }
       }
       if (alive.length === 0 && !crew.dead) { crew.dead = true; crew.respawnAt = G.time.elapsed + 120; }
       if (alive.length > 0) crew.dead = false;
@@ -7646,13 +7682,13 @@ G.police = (function () {
     // spawn response
     spawnT -= dt;
     if (spawnT <= 0) {
-      spawnT = 2.5;
+      spawnT = G.lowPerfMode ? 6.0 : 2.5;
       const foot = G.npcs.list.filter(n => n.role === 'police' && !n.dead && n.onFoot).length;
       const cars = G.vehicles.policeCars().length;
       const wantFoot = [0, 2, 3, 4, 6, 7][P.level], wantCars = [0, 0, 1, 2, 3, 4][P.level];
       if (foot < wantFoot) {
         const pp = G.player.pos;
-        for (let k = 0; k < 6; k++) {
+        for (let k = 0; k < (G.lowPerfMode ? 2 : 6); k++) {
           const node = U.pick(G.world.walkNodes), d = Math.hypot(node.x - pp.x, node.z - pp.z);
           if (d < 35 || d > 75) continue;
           const n = G.npcs.create('police', node.x, node.z, { state: hidden ? 'search' : 'chase' }); n.lastSeen = (P.lastCrimePos || pp).clone(); n.searchGoal = n.lastSeen.clone(); break;
@@ -7699,6 +7735,8 @@ G.env = (function () {
   }
 
   E.init = function (renderer, scene) {
+    const q = G.store.settings.quality;
+    const lowSky = !!G.lowPerfMode || q === 0;
     E.hour = G.room.opts.startTime;
     const skyMat = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false,
@@ -7707,7 +7745,7 @@ G.env = (function () {
       fragmentShader: `uniform vec3 top, hor, sunC, sunDir; uniform float night, t; varying vec3 vDir;
         float h(vec3 p){ p = fract(p*0.3183099 + 0.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
         float n2(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f); float a=h(vec3(i,1.0)), b=h(vec3(i+vec2(1,0),1.0)), c=h(vec3(i+vec2(0,1),1.0)), d=h(vec3(i+vec2(1,1),1.0)); return mix(mix(a,b,f.x),mix(c,d,f.x),f.y); }
-        float fbm(vec2 p){ float s=0.0, a=0.5; for(int i=0;i<5;i++){ s+=a*n2(p); p*=2.03; a*=0.5; } return s; }
+        float fbm(vec2 p){ float s=0.0, a=0.5; for(int i=0;i<${lowSky ? 2 : 5};i++){ s+=a*n2(p); p*=2.03; a*=0.5; } return s; }
         void main(){
           vec3 d = normalize(vDir); float y = d.y;
           vec3 col = mix(hor, top, pow(clamp(y,0.0,1.0), 0.55));
@@ -7736,7 +7774,6 @@ G.env = (function () {
     E.groundDisc = groundDisc;
     pmrem = new THREE.PMREMGenerator(renderer);
     sun = new THREE.DirectionalLight(0xffffff, 3);
-    const q = G.store.settings.quality;
     sun.castShadow = q > 0;
     const sz = q >= 3 ? 4096 : q >= 2 ? 2048 : 1024;
     sun.shadow.mapSize.set(sz, sz);
@@ -7747,7 +7784,7 @@ G.env = (function () {
     hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); scene.add(hemi);
     fog = new THREE.FogExp2(0x888888, 0.006); scene.fog = fog;
     // streetlight pool (fixed count, re-assigned to nearest lamps)
-    const n = q >= 2 ? 8 : 6;
+    const n = q >= 2 ? 8 : q === 1 ? 6 : lowSky ? 2 : 4;
     for (let i = 0; i < n; i++) { const l = new THREE.PointLight(0xffb868, 0, 22, 1.6); scene.add(l); lampLights.push(l); }
     // fixed interior / canopy lights
     const W = G.world;
@@ -7778,19 +7815,29 @@ G.env = (function () {
     G.mats.lampOn.emissiveIntensity = 0.3 + E.night * 3.2;
     E.groundDisc.material.color.copy(fog.color).multiplyScalar(0.6);
     // regenerate reflections when the sky changed enough
-    if (force || Math.abs(E.hour - lastEnvHour) > 0.75) {
+    const envRefreshHours = G.store.settings.quality === 0 ? 1.5 : 0.75;
+    // The initial PMREM gives cars/windows a proper reflected sky. Rebuilding
+    // it during play is a large GPU spike on Chromebook; keep that first map
+    // for the session instead of disposing/reallocating render targets.
+    const needsInitialEnv = !envRT;
+    const canRefreshEnv = !G.lowPerfMode && (force || Math.abs(E.hour - lastEnvHour) > envRefreshHours);
+    if (needsInitialEnv || canRefreshEnv) {
       lastEnvHour = E.hour;
       if (envRT) envRT.dispose();
       envRT = pmrem.fromScene(skyScene, 0.02, 1, 600);
       G.scene.environment = envRT.texture;
     }
   };
-  let assignT = 0;
+  let assignT = 0, neonUpdateT = 0, lowEnvApplyT = 0;
   E.update = function (dt, playing) {
     const dayLen = G.room.opts.dayLen;
     if (dayLen > 0 && playing) E.hour = (E.hour + dt * 24 / (dayLen * 60)) % 24;
     sky.material.uniforms.t.value += dt;
-    E.apply(false);
+    if (!G.lowPerfMode) E.apply(false);
+    else {
+      lowEnvApplyT -= dt;
+      if (lowEnvApplyT <= 0) { lowEnvApplyT = 0.08; E.apply(false); }
+    }
     // shadow camera follows the focus point, snapped to texels to avoid shimmer
     const focus = G.player.vehicle ? G.player.vehicle.pos : (G.state === 'menu' ? new THREE.Vector3(10, 0, -20) : G.player.pos);
     const ext = sun.shadow.camera.right, texel = (ext * 2) / sun.shadow.mapSize.x;
@@ -7816,7 +7863,11 @@ G.env = (function () {
     for (const l of lampLights) l.intensity = U.damp(l.intensity, l.userData.target || 0, 6, dt);
     // neon flicker
     const t = G.time.elapsed;
-    G.world.neon.forEach((m, i) => { const f = Math.sin(t * 13 + i * 7) > 0.97 || Math.sin(t * 2.3 + i) > 0.995 ? 0.25 : 1; m.opacity = (0.55 + E.night * 0.45) * f; });
+    neonUpdateT -= dt;
+    if (!G.lowPerfMode || neonUpdateT <= 0) {
+      neonUpdateT = G.lowPerfMode ? 0.12 : 0;
+      G.world.neon.forEach((m, i) => { const f = Math.sin(t * 13 + i * 7) > 0.97 || Math.sin(t * 2.3 + i) > 0.995 ? 0.25 : 1; m.opacity = (0.55 + E.night * 0.45) * f; });
+    }
     G.audio.setAmbience(G.state === 'playing' ? 1 : 0.4, E.night);
   };
   E.clock = function () { const h = Math.floor(E.hour), m = Math.floor((E.hour - h) * 60); return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`; };
@@ -7826,16 +7877,21 @@ G.env = (function () {
 /* =====================================================================
    G.post — HDR render target → bright pass → separable blur (bloom) →
    composite with ACES filmic tone mapping, vignette, grain, chromatic
-   fringe and a damage tint. Disabled on Low quality.
+   fringe and a damage tint. Low uses a lighter, reduced-resolution pass.
    ===================================================================== */
 G.post = (function () {
   const P = { enabled: true };
   let rtScene, rtA, rtB, quad, qScene, qCam, mBright, mBlur, mComp, w = 1, h = 1;
   const vs = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
   P.init = function (renderer) {
-    P.enabled = G.store.settings.quality > 0;
+    // Low uses the renderer's built-in ACES filmic mapping instead of five
+    // full-screen post passes. The scene lighting, sky, fog and subtle film grain
+    // remain, while the costly bloom/composite pipeline is reserved for Medium+.
+    const q = G.store.settings.quality;
+    P.enabled = q > 0;
+    if (!P.enabled) return;
     const isGL2 = renderer.capabilities.isWebGL2;
-    rtScene = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: isGL2 ? (G.store.settings.quality >= 2 ? 4 : 2) : 0 });
+    rtScene = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: isGL2 ? (q >= 2 ? 4 : 2) : 0 });
     rtA = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); rtB = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
     qScene = new THREE.Scene(); qCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null); quad.frustumCulled = false; qScene.add(quad);
@@ -7870,6 +7926,7 @@ G.post = (function () {
         }` });
   };
   P.resize = function (W, H) {
+    if (!P.enabled) return;
     w = W; h = H; rtScene.setSize(W, H);
     const bw = Math.max(1, Math.floor(W / 4)), bh = Math.max(1, Math.floor(H / 4));
     rtA.setSize(bw, bh); rtB.setSize(bw, bh);
@@ -7879,17 +7936,21 @@ G.post = (function () {
     if (!P.enabled) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.setRenderTarget(null); renderer.render(scene, camera); return; }
     renderer.toneMapping = THREE.NoToneMapping;
     renderer.setRenderTarget(rtScene); renderer.render(scene, camera);
-    // bloom chain at quarter res
+    // Low keeps a soft highlight bloom, but uses one blur pair instead of
+    // the three-pass-per-axis chain used by higher presets.
     quad.material = mBright; mBright.uniforms.tex.value = rtScene.texture; mBright.uniforms.thr.value = 1.1 - G.env.night * 0.35;
     renderer.setRenderTarget(rtA); renderer.render(qScene, qCam);
     quad.material = mBlur;
-    for (let i = 0; i < 3; i++) {
+    const quality = G.store.settings.quality;
+    const blurPasses = quality === 0 ? 1 : quality === 1 ? 2 : 3;
+    for (let i = 0; i < blurPasses; i++) {
       mBlur.uniforms.tex.value = rtA.texture; mBlur.uniforms.dir.value.set((1 + i) / rtA.width, 0); renderer.setRenderTarget(rtB); renderer.render(qScene, qCam);
       mBlur.uniforms.tex.value = rtB.texture; mBlur.uniforms.dir.value.set(0, (1 + i) / rtA.height); renderer.setRenderTarget(rtA); renderer.render(qScene, qCam);
     }
     quad.material = mComp;
     const u = mComp.uniforms;
-    u.tex.value = rtScene.texture; u.bloom.value = rtA.texture; u.exposure.value = G.env.exposure || 1; u.bloomStr.value = 0.55 + G.env.night * 0.5;
+    u.tex.value = rtScene.texture; u.bloom.value = rtA.texture; u.exposure.value = G.env.exposure || 1;
+    u.bloomStr.value = quality === 0 ? 0.22 + G.env.night * 0.12 : quality === 1 ? 0.4 + G.env.night * 0.3 : 0.55 + G.env.night * 0.5;
     u.time.value = G.time.elapsed; u.dmg.value = Math.max(0, u.dmg.value - dt * 1.6);
     u.lowHp.value = G.state === 'playing' ? THREE.MathUtils.clamp((35 - G.player.health) / 35, 0, 1) * (0.6 + Math.sin(G.time.elapsed * 6) * 0.15) : 0;
     renderer.setRenderTarget(null); renderer.render(qScene, qCam);
@@ -7973,7 +8034,7 @@ G.ui = (function () {
     bind('sFov', 'fov', v => v + '°');
     bind('sVol', 'vol', v => Math.round(v * 100) + '%', true, () => G.audio.applyVolumes());
     bind('sMusic', 'music', v => Math.round(v * 100) + '%', true, () => G.audio.applyVolumes());
-    bind('sQuality', 'quality', null, true, () => UI.toast('Graphics quality applies after reload (F5)', '', 3));
+    bind('sQuality', 'quality', null, true, () => UI.toast('Graphics quality applies after reload (Ctrl + R)', '', 3));
     const relook = () => { if (G.player && G.player.char) G.player.rebuildLook(); UI.previewDirty = true; };
     bind('sOutfit', 'outfit', null, true, relook);
     bind('sSkin', 'skin', null, true, relook);
@@ -8505,17 +8566,25 @@ G.missions = (function () {
 G.main = (function () {
   const Mn = {};
   const U = G.U;
-  let renderer, scene, camera, clock, frameAvg = 16, resScale = 1, cullT = 0, menuT = 0;
+  let renderer, scene, camera, clock, frameAvg = 16, resScale = 1, basePixelRatio = 1, cullT = 0, menuT = 0, lowFrameLast = 0;
 
   Mn.init = async function () {
     const ui = (p, t) => G.ui.loading ? G.ui.loading(p, t) : null;
     const loadUI = (p, t) => { document.getElementById('loadFill').style.width = Math.round(p * 100) + '%'; document.getElementById('loadText').textContent = t; };
     loadUI(0.08, 'Creating renderer…');
     const q = G.store.settings.quality;
+    const isChromeOS = /\bCrOS\b/i.test(navigator.userAgent || '');
+    const cores = navigator.hardwareConcurrency || 8, memory = navigator.deviceMemory || 8;
+    G.lowPerfMode = q === 0 && (isChromeOS || cores <= 4 || memory <= 4);
+    // Chromebook Low starts at a deliberately modest pixel count, then adapts
+    // to the actual frame time. This lowers GPU work without changing geometry.
+    resScale = q === 0 ? (G.lowPerfMode ? 0.50 : 0.72) : q === 1 ? 0.96 : 1;
+    document.getElementById('app').classList.toggle('low-graphics', q === 0);
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: q === 0, powerPreference: 'high-performance', stencil: false });
+      renderer = new THREE.WebGLRenderer({ antialias: q >= 2, powerPreference: G.lowPerfMode ? 'low-power' : 'high-performance', stencil: false, alpha: false, preserveDrawingBuffer: false, failIfMajorPerformanceCaveat: false });
     } catch (e) { throw new Error('WebGL context could not be created: ' + e.message); }
-    renderer.setPixelRatio(Math.min(devicePixelRatio, q >= 3 ? 2 : q >= 2 ? 1.5 : 1));
+    basePixelRatio = Math.min(devicePixelRatio || 1, q >= 3 ? 2 : q >= 2 ? 1.5 : 1);
+    renderer.setPixelRatio(basePixelRatio * (q === 0 ? resScale : 1));
     renderer.setSize(innerWidth, innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -8545,7 +8614,8 @@ G.main = (function () {
     G.ui.init(); G.ui.initLobby();
     G.missions.init();
     G.vehicles.spawnParked();
-    for (let i = 0; i < 5; i++) G.vehicles.spawnTraffic(false);
+    const initialTraffic = G.lowPerfMode ? 1 : q === 0 ? 3 : q === 1 ? 4 : 5;
+    for (let i = 0; i < initialTraffic; i++) G.vehicles.spawnTraffic(false);
     await tick();
     loadUI(0.9, 'Compiling shaders…');
     // pre-compile to avoid hitches on first frames
@@ -8559,11 +8629,21 @@ G.main = (function () {
     renderer.setAnimationLoop(loop);
   };
   const tick = () => new Promise(r => setTimeout(r, 0));
+  let lastCanvasW = -1, lastCanvasH = -1, lastCanvasPR = -1;
   function onResize() {
     const w = innerWidth, h = innerHeight;
-    renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
-    const pr = renderer.getPixelRatio();
-    G.post.resize(Math.floor(w * pr * resScale), Math.floor(h * pr * resScale));
+    // Low Chromebook mode uses a fixed render scale. Reallocating the WebGL
+    // drawing buffer repeatedly can stall or briefly clear the canvas on
+    // integrated GPUs, so only resize when the viewport/scale really changes.
+    const directLow = G.post && !G.post.enabled;
+    const pr = basePixelRatio * (directLow ? resScale : 1);
+    if (w !== lastCanvasW || h !== lastCanvasH || Math.abs(pr - lastCanvasPR) > 0.0001) {
+      renderer.setPixelRatio(pr);
+      renderer.setSize(w, h);
+      lastCanvasW = w; lastCanvasH = h; lastCanvasPR = pr;
+    }
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (!directLow) G.post.resize(Math.floor(w * renderer.getPixelRatio() * resScale), Math.floor(h * renderer.getPixelRatio() * resScale));
   }
 
   /* ----------------------------- states ----------------------------- */
@@ -8669,6 +8749,14 @@ G.main = (function () {
   /* ----------------------------- loop ----------------------------- */
   const NOINPUT = { down: () => false, hit: () => false, mdown: () => false, mhit: () => false, mouse: { dx: 0, dy: 0, wheel: 0, buttons: [false, false, false], hits: [false, false, false] }, keys: {} };
   function loop() {
+    // A steady 30fps cap reduces sustained GPU/CPU pressure on Chromebook
+    // integrated graphics and avoids running expensive simulation work at
+    // 60Hz when the device cannot maintain it.
+    if (G.lowPerfMode) {
+      const now = performance.now();
+      if (now - lowFrameLast < 33.2) return;
+      lowFrameLast = now;
+    }
     const rawDt = clock.getDelta();
     const dt = Math.min(rawDt, 0.05);
     G.time.dt = dt; G.time.elapsed += dt; G.time.frame++;
@@ -8721,21 +8809,34 @@ G.main = (function () {
   function cull(dt) {
     cullT -= dt; if (cullT > 0) return; cullT = 0.25;
     const c = camera.position;
+    const lowQuality = G.store.settings.quality === 0;
     G.inst.cull(c);
-    for (const m of G.world.batches || []) { const s = m.geometry.boundingSphere; m.visible = c.distanceTo(s.center) - s.radius < 320; }
-    for (const p of G.cut.pieces) if (!p.held) p.mesh.visible = p.mesh.position.distanceTo(c) < 150;
-    for (const o of G.cut.objects) if (o.mesh && o.promotedOrMesh) o.mesh.visible = o.mesh.position.distanceTo(c) < 160;
+    for (const m of G.world.batches || []) { const s = m.geometry.boundingSphere; m.visible = c.distanceTo(s.center) - s.radius < (lowQuality ? (G.lowPerfMode ? 220 : 265) : 320); }
+    for (const p of G.cut.pieces) if (!p.held) p.mesh.visible = p.mesh.position.distanceTo(c) < (lowQuality ? 118 : 150);
+    for (const o of G.cut.objects) if (o.mesh && o.promotedOrMesh) o.mesh.visible = o.mesh.position.distanceTo(c) < (lowQuality ? 128 : 160);
   }
   /* adaptive resolution keeps the frame rate smooth on weaker GPUs */
   let adaptT = 0;
   function adapt(rawDt) {
-    frameAvg = frameAvg * 0.95 + rawDt * 1000 * 0.05;
-    adaptT += rawDt; if (adaptT < 2) return; adaptT = 0;
-    if (!G.post.enabled) return;
+    // Chromebook Low uses a stable 0.50 render scale. Frequent adaptive
+    // setSize() calls caused visible black flashes and extra GPU stalls.
+    if (G.lowPerfMode) return;
+    frameAvg = frameAvg * 0.94 + rawDt * 1000 * 0.06;
+    adaptT += rawDt;
+    const q = G.store.settings.quality;
+    const lowPower = q === 0 && G.lowPerfMode;
+    if (adaptT < (lowPower ? 1.0 : 2.0)) return;
+    adaptT = 0;
+    const minScale = q === 0 ? (lowPower ? 0.40 : 0.52) : q === 1 ? 0.72 : 0.8;
+    const maxScale = q === 0 ? (lowPower ? 0.70 : 0.84) : 1;
+    const slowMs = q === 0 ? (lowPower ? 34 : 29) : 24;
+    const smoothMs = q === 0 ? (lowPower ? 26 : 23) : 14;
+    const downStep = lowPower ? 0.08 : q === 0 ? 0.06 : 0.08;
+    const upStep = lowPower ? 0.025 : q === 0 ? 0.04 : 0.08;
     let ns = resScale;
-    if (frameAvg > 24 && resScale > 0.6) ns = Math.max(0.6, resScale - 0.1);
-    else if (frameAvg < 14 && resScale < 1) ns = Math.min(1, resScale + 0.1);
-    if (ns !== resScale) { resScale = ns; onResize(); }
+    if (frameAvg > slowMs && resScale > minScale) ns = Math.max(minScale, resScale - downStep);
+    else if (frameAvg < smoothMs && resScale < maxScale) ns = Math.min(maxScale, resScale + upStep);
+    if (Math.abs(ns - resScale) > 0.001) { resScale = ns; onResize(); }
   }
   return Mn;
 })();
@@ -9383,7 +9484,7 @@ G.net = (function () {
 /* ---------------- live 3D character preview (Settings ? outfit) ---------------- */
 (function () {
   const UI = G.ui;
-  let pv = null;
+  let pv = null, pvRenderAccum = 0;
   function init() {
     const cv = document.getElementById('charPreview');
     const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
@@ -9411,6 +9512,11 @@ G.net = (function () {
     if (!pv.drag) pv.yaw += dt * 0.5;
     pv.ch.root.rotation.y = pv.yaw;
     pv.ch.update(dt, { speed: 0, grounded: true });
+    if (G.lowPerfMode) {
+      pvRenderAccum += dt;
+      if (pvRenderAccum < 0.1) return;
+      pvRenderAccum = 0;
+    }
     pv.r.render(pv.scene, pv.cam);
   };
 })();
