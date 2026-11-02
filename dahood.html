@@ -2828,7 +2828,8 @@ G.cut = (function () {
   /* Place a sliceable static prop. Creates collider(s) and an instance. */
   C.place = function (type, x, y, z, rotY = 0, opts = {}) {
     const m = G.geo.M(x, y, z, 0, rotY, 0);
-    const obj = { type, kind: C.kindOf[type] || 'wood', label: C.labelOf[type] || 'Prop', static: true, baseY: y, rotY, id: C.objects.length, uid: 'o' + C.objects.length, lampIndex: opts.lampIndex ?? -1 };
+    const rootUid = 'o' + C.objects.length;
+    const obj = { type, kind: C.kindOf[type] || 'wood', label: C.labelOf[type] || 'Prop', static: true, baseY: y, rotY, id: C.objects.length, uid: rootUid, netUid: rootUid, lampIndex: opts.lampIndex ?? -1 };
     if (opts.mesh) {   // standalone (street signs)
       obj.mesh = opts.mesh; obj.mesh.position.set(x, y, z); obj.mesh.rotation.y = rotY; obj.mesh.castShadow = true; obj.mesh.receiveShadow = true; G.scene.add(obj.mesh);
       obj.mesh.updateMatrixWorld(true);
@@ -2906,7 +2907,7 @@ G.cut = (function () {
    * (world space). `push` = world impulse direction (axe swing).
    * Returns true if the object was really split.
    */
-  C.cutObject = function (obj, pointW, normalW, push, strength = 1, cause = 'axe') {
+  C.cutObject = function (obj, pointW, normalW, push, strength = 1, cause = 'axe', netSync = true) {
     if (obj.dead) return false;
     const mesh = meshOf(obj);
     mesh.updateMatrixWorld(true);
@@ -2941,8 +2942,10 @@ G.cut = (function () {
     const parentVel = obj.body ? obj.body.vel.clone() : new THREE.Vector3();
     const parentAng = obj.body ? obj.body.ang.clone() : new THREE.Vector3();
 
-    // multiplayer: replicate cuts of rooted world objects (their uids are deterministic)
-    if (G.net && G.net.active && cause !== 'remote' && obj.static && obj.uid) G.net.cut(obj.uid, pointW, normalW, push, strength);
+    // Multiplayer: every sliceable object has a stable identity, including loose
+    // pieces. Include its current transform so all peers slice the same geometry.
+    const parentNetUid = obj.netUid || obj.uid || null;
+    if (G.net && G.net.active && netSync && cause !== 'remote' && parentNetUid) G.net.cut(parentNetUid, pointW, normalW, push, strength, mesh, obj.body);
     // retire the original
     killObject(obj, true);
     C.totalCuts++; G.store.bump('totalCuts', 1, 'add');
@@ -2954,13 +2957,14 @@ G.cut = (function () {
       nm.position.copy(p.worldC); nm.quaternion.copy(wq);
       nm.castShadow = true; nm.receiveShadow = true;
       G.scene.add(nm);
-      const piece = { type: obj.type, kind: obj.kind, label: obj.label, mesh: nm, geometry: p.g, materials: mats, baseY: obj.baseY, lampIndex: -1, volume: p.mp.volume, size: p.mp.size.clone() };
+      const pieceUid = parentNetUid ? parentNetUid + '#' + i : null;
+      const piece = { type: obj.type, kind: obj.kind, label: obj.label, mesh: nm, geometry: p.g, materials: mats, baseY: obj.baseY, lampIndex: -1, volume: p.mp.volume, size: p.mp.size.clone(), netUid: pieceUid, uid: pieceUid };
       // lamp: does this half still carry the glowing lens?
       const lensGroup = obj.type === 'lamp' ? p.g.groups.find(gr => gr.materialIndex === 1) : null;
       if (obj.lampIndex >= 0 && lensGroup) piece.lampIndex = obj.lampIndex;
       const rooted = rootedCount === 1 && touches[i];
       if (rooted) {
-        piece.static = true; piece.uid = (obj.uid || 'x') + 'r';
+        piece.static = true;
         nm.updateMatrixWorld(true);
         piece.matrix = nm.matrixWorld.clone(); piece.promotedOrMesh = true;
         makeStaticColliders(piece);
@@ -3022,34 +3026,38 @@ G.cut = (function () {
 
   /* Knock an intact rooted prop over (car impacts): we slice it at the
      actual bumper contact point with a plane tilted along the hit. */
-  C.impactSnap = function (obj, pointW, dirW, speed) {
+  C.impactSnap = function (obj, pointW, dirW, speed, netSync = false) {
     const n = new THREE.Vector3().crossVectors(dirW, new THREE.Vector3(0, 1, 0)).normalize();
     // plane mostly horizontal, tilted toward the travel direction
     const normal = new THREE.Vector3(0, 1, 0).addScaledVector(dirW, 0.35).addScaledVector(n, U.rand(-0.15, 0.15)).normalize();
     const p = pointW.clone(); p.y = U.clamp(p.y, obj.baseY + 0.25, obj.baseY + 0.9);
-    return C.cutObject(obj, p, normal, dirW.clone().multiplyScalar(1.2).setY(0.3), U.clamp(speed / 8, 0.6, 2.5), 'car');
+    return C.cutObject(obj, p, normal, dirW.clone().multiplyScalar(1.2).setY(0.3), U.clamp(speed / 8, 0.6, 2.5), 'car', netSync);
   };
 
   /* Bullets: holes + sparks; heavy damage on a thin wooden post snaps it */
-  C.bulletHit = function (obj, point, dir, dmg) {
+  C.bulletHit = function (obj, point, dir, dmg, cause = 'player') {
     if (obj.kind === 'metal') G.fx.sparks(point, dir.clone().negate(), 8); else G.fx.debris(point, 4, 0xc8a070, 0.025, dir);
     G.audio.impact(point, obj.kind === 'metal' ? 'metal' : 'wood');
     if (obj.body) { G.phys.applyImpulse(obj.body, dir.clone().multiplyScalar(dmg * 0.08), point); return; }
     obj.hp = (obj.hp ?? (obj.kind === 'wood' ? 70 : 220)) - dmg;
     if (obj.hp <= 0 && (obj.type.startsWith('tree') || obj.type.startsWith('palm') || obj.type === 'picket' || obj.type === 'mailbox')) {
-      const normal = new THREE.Vector3(0, 1, 0).addScaledVector(dir, 0.2).normalize();
-      C.cutObject(obj, point, normal, dir, 0.8, 'bullet');
+      const authoritative = !G.net || !G.net.active || cause === 'player';
+      if (authoritative) {
+        const normal = new THREE.Vector3(0, 1, 0).addScaledVector(dir, 0.2).normalize();
+        C.cutObject(obj, point, normal, dir, 0.8, 'bullet', cause === 'player');
+      }
     }
   };
   /* Explosions shear everything nearby */
-  C.blast = function (pos, radius) {
+  C.blast = function (pos, radius, cause = 'player') {
     for (const obj of C.objects.slice()) {
       if (!obj.static || obj.dead || !obj.colRay) continue;
       const c = obj.colRay, dx = c.cx - pos.x, dz = c.cz - pos.z, d = Math.sqrt(dx * dx + dz * dz);
       if (d > radius * 0.8) continue;
       const dir = new THREE.Vector3(dx, 0, dz).normalize();
       const p = new THREE.Vector3(c.cx, obj.baseY + U.rand(0.3, 1.0), c.cz);
-      C.cutObject(obj, p, new THREE.Vector3(U.rand(-.3, .3), 1, U.rand(-.3, .3)).normalize(), dir.setY(0.5), 2.5, 'blast');
+      const authoritative = !G.net || !G.net.active || cause === 'player';
+      if (authoritative) C.cutObject(obj, p, new THREE.Vector3(U.rand(-.3, .3), 1, U.rand(-.3, .3)).normalize(), dir.setY(0.5), 2.5, 'blast', cause === 'player');
     }
   };
 
@@ -3130,13 +3138,71 @@ G.cut = (function () {
     holder.parent.remove(holder); holder.remove(piece.mesh);
     piece.mesh.position.copy(wp); piece.mesh.quaternion.copy(wq);
     G.scene.add(piece.mesh);
-    piece.held = false; piece.body.held = false; piece.holder = null;
+    piece.held = false; piece.body.held = false; piece.holder = null; piece.holderRoot = null;
     // keep it out of the player's face
     if (piece.mesh.position.y < 0.3) piece.mesh.position.y = 0.3;
+    wp.copy(piece.mesh.position);
+    piece.netOwner = G.net && G.net.active && G.net.id ? G.net.id() : piece.netOwner;
     piece.body.vel.copy(vel || new THREE.Vector3()); piece.body.ang.set(U.rand(-2, 2), U.rand(-2, 2), U.rand(-2, 2));
     G.phys.wake(piece.body);
+    if (G.net && G.net.active && piece.netUid) G.net.drop(piece.netUid, wp, wq, piece.body.vel, piece.body.ang);
   };
-  C.byUid = function (uid) { return C.objects.find(o => o.uid === uid && !o.dead); };
+  C.byUid = function (uid) {
+    if (!uid) return null;
+    return C.objects.concat(C.pieces).find(o => !o.dead && (o.netUid === uid || o.uid === uid)) || null;
+  };
+  C.applyNetworkPose = function (obj, pose) {
+    if (!obj || !pose || !pose.p || !pose.q) return;
+    const mesh = meshOf(obj);
+    mesh.position.fromArray(pose.p); mesh.quaternion.fromArray(pose.q);
+    if (pose.s) mesh.scale.fromArray(pose.s);
+    mesh.updateMatrixWorld(true);
+    if (obj.static) { obj.matrix = mesh.matrixWorld.clone(); obj.promotedOrMesh = true; }
+    if (obj.body) {
+      if (pose.v) obj.body.vel.fromArray(pose.v);
+      if (pose.a) obj.body.ang.fromArray(pose.a);
+      G.phys.wake(obj.body);
+    }
+  };
+  C.attachRemote = function (piece, char) {
+    if (!piece || !char || piece.dead || piece.held || !piece.mesh) return false;
+    piece.held = true; if (piece.body) piece.body.held = true;
+    const grip = C.gripFor(piece); piece.grip = grip;
+    G.scene.remove(piece.mesh);
+    const q = new THREE.Quaternion().setFromUnitVectors(grip.towardHead, new THREE.Vector3(0, -1, 0));
+    piece.mesh.quaternion.copy(q);
+    piece.mesh.position.copy(grip.gripLocal).applyQuaternion(q).negate();
+    const holder = new THREE.Group(); holder.add(piece.mesh);
+    const pivot = new THREE.Group(); pivot.add(holder);
+    pivot.userData = { gripR: new THREE.Vector3(0, 0, 0.12), gripL: new THREE.Vector3(0, 0, -0.08) };
+    holder.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 1));
+    holder.position.set(0, 0, -0.1);
+    piece.holder = holder; piece.holderRoot = pivot;
+    char.setWeapon('carry', pivot);
+    return true;
+  };
+  C.applyNetworkDrop = function (uid, data) {
+    const piece = C.byUid(uid); if (!piece || !piece.mesh) return false;
+    if (piece.holder) {
+      const holder = piece.holder;
+      if (holder.parent) holder.parent.remove(holder);
+      if (piece.mesh.parent === holder) holder.remove(piece.mesh);
+    } else if (piece.mesh.parent && piece.mesh.parent !== G.scene) {
+      piece.mesh.parent.remove(piece.mesh);
+    }
+    piece.held = false; if (piece.body) piece.body.held = false;
+    piece.holder = null; piece.holderRoot = null;
+    G.scene.add(piece.mesh);
+    if (data && data.p) piece.mesh.position.fromArray(data.p);
+    if (data && data.q) piece.mesh.quaternion.fromArray(data.q);
+    piece.mesh.updateMatrixWorld(true);
+    if (piece.body) {
+      if (data && data.v) piece.body.vel.fromArray(data.v); else piece.body.vel.set(0, 0, 0);
+      if (data && data.a) piece.body.ang.fromArray(data.a); else piece.body.ang.set(0, 0, 0);
+      G.phys.wake(piece.body);
+    }
+    return true;
+  };
   C.update = function (dt) {
     // fade-out cleanup of pieces that fell out of the world
     for (const p of C.pieces) if (!p.held && p.mesh.position.y < -5) p.dead = true;
@@ -5899,7 +5965,7 @@ G.combat = (function () {
         res.npc = true; res.kill = h.npc.dead; break;
       }
       case 'player': G.player.damage(dmg, dir, cause); break;
-      case 'cut': G.cut.bulletHit(h.obj, h.point, dir, dmg); break;
+      case 'cut': G.cut.bulletHit(h.obj, h.point, dir, dmg, cause); break;
       case 'prop': {
         const pr = h.col.ref; G.props.damage(pr, dmg, h.point, dir, cause);
         G.fx.impact(h.point, h.normal, h.surf); G.audio.impact(h.point, h.surf);
@@ -5954,7 +6020,7 @@ G.combat = (function () {
       else if (pr.def.explosive) G.props.damage(pr, dmg * (1 - d / radius) + 30, new THREE.Vector3(pr.x, pr.y, pr.z), dir, 'chain');
       else if (!pr.def.heavy) G.props.loosen(pr, dir.multiplyScalar(pr.def.mass * 10 * (1 - d / radius)), null);
     }
-    G.cut.blast(pos, radius);
+    G.cut.blast(pos, radius, cause);
     G.phys.blast(pos, radius * 1.5, 14);
     if (cause === 'player') G.police.crime('explosion', pos, 1.5);
     G.npcs.alertNear(pos, 60, 'explosion');
@@ -6263,7 +6329,8 @@ G.player = (function () {
     holder.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 1));
     holder.position.set(0, 0, -0.1);
     P.char.setWeapon('carry', g);
-    piece.holder = holder;
+    piece.holder = holder; piece.holderRoot = g;
+    if (G.net && G.net.active && piece.netUid) G.net.hold(piece.netUid);
     G.ui.toast(`Improvised weapon: ${piece.label} piece`, 'gold');
     G.ui.weaponChanged();
   };
@@ -6703,9 +6770,9 @@ G.vehicles = (function () {
         if (c.kind === 'prop' && c.ref && (c.solid || c.surf === 'glass')) {
           if (v === G.player.vehicle && G.net && G.net.active) G.net.prop(c.ref.idx, 'car', v.speedAbs, pt, v.vel.clone());
           if (G.props.carHit(c.ref, v.vel.clone(), pt, d.mass)) { v.vel.multiplyScalar(c.ref.def.heavy ? 0.6 : 0.93); G.audio.carHit(pt, v.speedAbs * 0.4); if (v === G.player.vehicle) G.cam.shake(0.15); }
-        } else if (c.kind === 'cut' && c.solid && c.ref && c.ref.static && v.speedAbs > 4.5) {
+        } else if (c.kind === 'cut' && c.solid && c.ref && c.ref.static && v.speedAbs > 4.5 && (!G.net || !G.net.active || v === G.player.vehicle)) {
           const dir = v.vel.clone().normalize();
-          if (G.cut.impactSnap(c.ref, pt, dir, v.speedAbs)) { v.vel.multiplyScalar(0.84); v.hp -= 2; G.audio.carHit(pt, v.speedAbs * 0.5); if (v === G.player.vehicle) { G.cam.shake(0.3); G.police.crime('vandal', pt, 0.2); } }
+          if (G.cut.impactSnap(c.ref, pt, dir, v.speedAbs, v === G.player.vehicle)) { v.vel.multiplyScalar(0.84); v.hp -= 2; G.audio.carHit(pt, v.speedAbs * 0.5); if (v === G.player.vehicle) { G.cam.shake(0.3); G.police.crime('vandal', pt, 0.2); } }
         }
       });
     }
@@ -6813,6 +6880,19 @@ G.vehicles = (function () {
      edges) and lands with a thud instead of teleporting. */
   function syncModel(v, dt) {
     const d = v.def, f = fwdOf(v.heading, new THREE.Vector3()), r = rightOf(v.heading, new THREE.Vector3());
+    if (v.remote) {
+      v.pos.y = v.y;
+      const m = v.model;
+      m.root.position.set(v.pos.x, v.y, v.pos.z);
+      m.root.rotation.set(v.slopeP || 0, v.heading, v.slopeR || 0, 'YXZ');
+      m.body.rotation.set(v.pitch || 0, 0, v.roll || 0);
+      m.body.position.y = 0;
+      const spin = v.forwardSpeed / 0.36 * (dt || 0);
+      for (const w of m.wheels) { w.spin.rotation.x += spin; if (w.front) w.pivot.rotation.y = v.steer * v.def.steer * 0.8; }
+      v.col.cx = v.pos.x; v.col.cz = v.pos.z; v.col.cy = v.y + v.def.roof / 2; v.col.rot = v.heading;
+      G.phys.update(v.col);
+      return;
+    }
     const yq = v.y + 0.7;
     // the bridge deck is a continuous analytic surface: always follow it, however fast the car climbs
     const gAt = (x, z) => { let g0 = G.phys.groundAt(x, z, yq, 0.3); const by = G.world.bridgeAt(x, z, 0.4); if (by != null && by <= v.y + 3 && by > g0) g0 = by; return g0; };
@@ -9000,7 +9080,7 @@ G.net = (function () {
       const id = c.peer;
       conns.set(id, c);
       const pl = addPlayer({ id, name: clean(meta.name || 'Player'), outfit: meta.outfit | 0 });
-      c.send({ t: 'welcome', you: id, opts: G.room.opts, started: N.started, hour: G.env ? G.env.hour : 18, players: [me(), ...[...N.players.values()].map(p => ({ id: p.id, name: p.name, outfit: p.outfit }))], code: N.code, pub: N.pub, cuts: N.cutLog.slice(-400) });
+      c.send({ t: 'welcome', you: id, opts: G.room.opts, started: N.started, hour: G.env ? G.env.hour : 18, players: [me(), ...[...N.players.values()].map(p => ({ id: p.id, name: p.name, outfit: p.outfit }))], code: N.code, pub: N.pub, cuts: N.cutLog.slice(-2048) });
       relay({ t: 'join', id, name: pl.name, outfit: pl.outfit }, id);
       sysMsg(`${pl.name} joined`);
     });
@@ -9051,6 +9131,7 @@ G.net = (function () {
     if (N.isHost) relay(m); else sendToHost(m);
   }
   N.emit = emit;
+  N.id = () => myId;
   N.cutLog = [];
   function onData(d, src) {
     if (!d || typeof d !== 'object') return;
@@ -9076,7 +9157,22 @@ G.net = (function () {
       case 'shot': { const o = new THREE.Vector3().fromArray(d.o), dir = new THREE.Vector3().fromArray(d.d), wd = G.weapons.byId[d.w] || G.weapons.byId.pistol;
         G.bullets.spawn(o, dir, wd.speed || 240, wd.dmg || 20, 'remote', { remote: d.from, range: wd.range || 100 });
         G.fx.muzzle(o, dir, 0.7, true); G.audio.shot(wd.sound || 'npc', o); break; }
-      case 'cut': { N.cutLog.push(d); const obj = G.cut.byUid(d.uid); if (obj) G.cut.cutObject(obj, new THREE.Vector3().fromArray(d.p), new THREE.Vector3().fromArray(d.n), new THREE.Vector3().fromArray(d.push), d.s || 1, 'remote'); break; }
+      case 'cut': {
+        N.cutLog.push(d); if (N.cutLog.length > 2048) N.cutLog.splice(0, N.cutLog.length - 2048);
+        const obj = G.cut.byUid(d.uid);
+        if (obj) { if (d.x) G.cut.applyNetworkPose(obj, d.x); G.cut.cutObject(obj, new THREE.Vector3().fromArray(d.p), new THREE.Vector3().fromArray(d.n), new THREE.Vector3().fromArray(d.push), d.s || 1, 'remote'); }
+        break;
+      }
+      case 'hold': {
+        const pl = N.players.get(d.from); if (pl) { pl.heldOverrideSet = true; pl.heldOverride = d.uid || null; pl.heldOverrideAt = performance.now(); }
+        break;
+      }
+      case 'drop': {
+        const dropped = G.cut.byUid(d.uid); if (dropped) dropped.netOwner = d.from;
+        G.cut.applyNetworkDrop(d.uid, d);
+        const pl = N.players.get(d.from); if (pl) { pl.heldOverrideSet = true; pl.heldOverride = null; pl.heldOverrideAt = performance.now(); }
+        break;
+      }
       case 'prop': { const pr = G.props.list[d.i]; if (!pr) break; const pt = new THREE.Vector3().fromArray(d.p), v = new THREE.Vector3().fromArray(d.v);
         if (d.k === 'car') G.props.carHit(pr, v, pt, 1500); else G.props.damage(pr, d.a, pt, v.normalize(), 'remote'); break; }
       case 'melee': if (d.to === myId && G.room.opts.pvp && G.state === 'playing') G.player.damage(d.dmg, new THREE.Vector3().fromArray(d.dir), 'remote:' + d.from); break;
@@ -9091,13 +9187,17 @@ G.net = (function () {
   /* ----------------------------- players ----------------------------- */
   function addPlayer(p) {
     if (N.players.has(p.id)) return N.players.get(p.id);
-    const pl = { id: p.id, name: clean(p.name), outfit: p.outfit | 0, buf: [], avatar: null, car: null, weapon: null, last: null };
+    const pl = { id: p.id, name: clean(p.name), outfit: p.outfit | 0, buf: [], avatar: null, car: null, weapon: null, last: null, heldUid: null, heldObj: null, heldOverrideSet: false, heldOverride: null, heldOverrideAt: 0 };
     N.players.set(p.id, pl);
     if (G.ui.lobbyRefresh) G.ui.lobbyRefresh();
     return pl;
   }
   function removePlayer(id) {
     const p = N.players.get(id); if (!p) return;
+    if (p.heldObj && p.heldObj.held) {
+      const at = p.pos || new THREE.Vector3();
+      G.cut.applyNetworkDrop(p.heldUid, { p: [at.x, at.y + 0.4, at.z], q: [0, 0, 0, 1], v: [0, 0, 0], a: [0, 0, 0] });
+    }
     if (p.avatar) G.scene.remove(p.avatar.root);
     if (p.car) G.vehicles.despawn(p.car);
     G.ui.nameTag(id, null);
@@ -9110,8 +9210,9 @@ G.net = (function () {
     const r = (n) => Math.round(n * 100) / 100;
     return {
       p: [r(P.pos.x), r(P.pos.y), r(P.pos.z)], f: r(P.facing), pt: r(G.cam.pitch), sp: r(P.speed), g: P.grounded ? 1 : 0, sw: P.swimming ? 1 : 0,
-      w: W.held ? 'held' : W.cur, a: P.aiming ? 1 : 0, d: P.dead ? 1 : 0, hp: Math.round(P.health), o: G.store.settings.outfit, k: G.store.settings.skin, hr: G.store.settings.hair, bd: G.store.settings.beard, n: G.store.settings.name,
-      v: v ? { ty: v.type, c: v.model.paintMat.color.getHex(), p: [r(v.pos.x), r(v.y), r(v.pos.z)], h: r(v.heading), st: r(v.steer), sp: r(v.forwardSpeed), si: v.siren ? 1 : 0 } : null,
+      w: W.held ? 'fists' : W.cur, h: W.held && W.held.netUid ? W.held.netUid : null,
+      a: P.aiming ? 1 : 0, d: P.dead ? 1 : 0, hp: Math.round(P.health), o: G.store.settings.outfit, k: G.store.settings.skin, hr: G.store.settings.hair, bd: G.store.settings.beard, n: G.store.settings.name,
+      v: v ? { ty: v.type, c: v.model.paintMat.color.getHex(), p: [r(v.pos.x), r(v.y), r(v.pos.z)], h: r(v.heading), st: r(v.steer), sp: r(v.forwardSpeed), si: v.siren ? 1 : 0, hp: r(v.hp), wk: v.wrecked ? 1 : 0, pi: r(v.pitch || 0), ro: r(v.roll || 0), slp: r(v.slopeP || 0), slr: r(v.slopeR || 0) } : null,
       sw2: W.swing ? r(W.swing.t) : -1,
     };
   }
@@ -9120,7 +9221,7 @@ G.net = (function () {
     if (!N.active) return;
     sendT -= dt;
     if (sendT <= 0) {
-      sendT = 0.1;
+      sendT = 0.05;
       const s = myState();
       if (N.isHost) {
         // relay a snapshot to each client (only players within 280 m of them)
@@ -9154,19 +9255,45 @@ G.net = (function () {
     p.pos = pos;
     // vehicle proxy
     if (sb.v) {
-      if (!p.car || p.car.type !== sb.v.ty) { if (p.car) G.vehicles.despawn(p.car); p.car = G.vehicles.spawn(sb.v.ty, sb.v.p[0], sb.v.p[2], sb.v.h, { paint: sb.v.c }); p.car.remote = p.id; p.car.parked = false; }
+      if (!p.car || p.car.type !== sb.v.ty) {
+        if (p.car) G.vehicles.despawn(p.car);
+        p.car = G.vehicles.spawn(sb.v.ty, sb.v.p[0], sb.v.p[2], sb.v.h, { paint: sb.v.c });
+        p.car.remote = p.id; p.car.parked = false;
+      }
       const va = sa.v || sb.v;
-      p.car.netPos = new THREE.Vector3(U.lerp(va.p[0], sb.v.p[0], k), sb.v.p[1], U.lerp(va.p[2], sb.v.p[2], k));
-      p.car.netHeading = va.h + U.wrapAngle(sb.v.h - va.h) * k; p.car.netSteer = sb.v.st; p.car.netSpeed = sb.v.sp; p.car.siren = !!sb.v.si;
+      p.car.netPos = new THREE.Vector3(U.lerp(va.p[0], sb.v.p[0], k), U.lerp(va.p[1], sb.v.p[1], k), U.lerp(va.p[2], sb.v.p[2], k));
+      p.car.netHeading = va.h + U.wrapAngle(sb.v.h - va.h) * k;
+      p.car.netSteer = sb.v.st; p.car.netSpeed = sb.v.sp; p.car.netSiren = !!sb.v.si;
+      p.car.netPaint = sb.v.c; p.car.netHp = sb.v.hp; p.car.netWrecked = !!sb.v.wk;
+      p.car.netPitch = sb.v.pi || 0; p.car.netRoll = sb.v.ro || 0; p.car.netSlopeP = sb.v.slp || 0; p.car.netSlopeR = sb.v.slr || 0;
       ch.root.visible = false; G.ui.nameTag(p.id, p.name, p.car.pos.clone().setY(p.car.y + 2.4));
       return;
     } else if (p.car) { G.vehicles.despawn(p.car); p.car = null; }
     ch.root.visible = pos.distanceTo(G.camera.position) < 200;
+    // Held loose pieces are replicated by stable cut-piece UID, not a generic weapon label.
+    let heldUid = sb.h || null;
+    if (p.heldOverrideSet) {
+      if (performance.now() - p.heldOverrideAt < 750) heldUid = p.heldOverride;
+      else p.heldOverrideSet = false;
+    }
+    if (heldUid !== p.heldUid) {
+      if (p.heldObj && p.heldObj.held) G.cut.applyNetworkDrop(p.heldUid, { p: [pos.x, pos.y + 0.4, pos.z], q: [0, 0, 0, 1], v: [0, 0, 0], a: [0, 0, 0] });
+      p.heldObj = null; p.heldUid = heldUid;
+      if (heldUid) {
+        const piece = G.cut.byUid(heldUid);
+        if (piece && G.cut.attachRemote(piece, ch)) p.heldObj = piece;
+      }
+    } else if (heldUid && !p.heldObj) {
+      const piece = G.cut.byUid(heldUid);
+      if (piece && G.cut.attachRemote(piece, ch)) p.heldObj = piece;
+    }
+    if (!heldUid && sb.w === 'fists' && ch.weaponType === 'carry') ch.setWeapon('none', null);
     // weapon model
     const wid = sb.w;
     if (p.weapon !== wid) {
       p.weapon = wid; const wd = G.weapons.byId[wid];
-      if (wd && wd.model) ch.setWeapon(wd.pose, G.chars.weaponModel(wd.model)); else ch.setWeapon('none', null);
+      if (p.heldObj) { /* the held prop is already attached to the carry pivot */ }
+      else if (wd && wd.model) ch.setWeapon(wd.pose, G.chars.weaponModel(wd.model)); else ch.setWeapon('none', null);
     }
     if (sb.d && !ch.dead) ch.die(new THREE.Vector3(Math.sin(sb.f), 0, Math.cos(sb.f)));
     if (!sb.d && ch.dead) ch.revive();
@@ -9174,7 +9301,7 @@ G.net = (function () {
     else ch.root.position.set(pos.x, pos.y + (ch.deathLift || 0), pos.z);
     const wd = G.weapons.byId[wid];
     let swing = null;
-    if (sb.sw2 >= 0 && (wid === 'axe' || wid === 'held')) {
+    if (sb.sw2 >= 0 && (wid === 'axe' || wid === 'held' || !!p.heldObj)) {
       const f = new THREE.Vector3(Math.sin(sb.f), 0, Math.cos(sb.f)), m = new THREE.Vector3(-Math.cos(sb.f), 0, Math.sin(sb.f)).negate();
       swing = { t: sb.sw2, f, m, n: new THREE.Vector3().crossVectors(m, f).normalize() };
     }
@@ -9184,8 +9311,16 @@ G.net = (function () {
   /* remote vehicles glide to their network pose */
   N.driveRemote = function (v, dt) {
     if (!v.netPos) return;
-    v.pos.x = U.damp(v.pos.x, v.netPos.x, 14, dt); v.pos.z = U.damp(v.pos.z, v.netPos.z, 14, dt);
-    v.heading = U.dampAngle(v.heading, v.netHeading, 14, dt); v.steer = v.netSteer || 0; v.forwardSpeed = v.netSpeed || 0;
+    v.pos.x = U.damp(v.pos.x, v.netPos.x, 18, dt); v.pos.z = U.damp(v.pos.z, v.netPos.z, 18, dt);
+    v.y = U.damp(v.y, v.netPos.y, 18, dt); v.pos.y = v.y;
+    v.heading = U.dampAngle(v.heading, v.netHeading, 18, dt);
+    v.steer = v.netSteer || 0; v.forwardSpeed = v.netSpeed || 0;
+    v.pitch = U.damp(v.pitch || 0, v.netPitch || 0, 12, dt); v.roll = U.damp(v.roll || 0, v.netRoll || 0, 12, dt);
+    v.slopeP = U.damp(v.slopeP || 0, v.netSlopeP || 0, 12, dt); v.slopeR = U.damp(v.slopeR || 0, v.netSlopeR || 0, 12, dt);
+    v.siren = !!v.netSiren;
+    if (v.netPaint != null && v.model.paintMat.color.getHex() !== v.netPaint) v.model.paintMat.color.setHex(v.netPaint);
+    if (v.netHp != null) v.hp = v.netHp;
+    if (v.netWrecked != null && v.wrecked !== v.netWrecked) { v.wrecked = v.netWrecked; if (v.wrecked) v.model.glass.visible = false; }
     v.speedAbs = Math.abs(v.forwardSpeed); v.vel.set(Math.sin(v.heading) * v.forwardSpeed, 0, Math.cos(v.heading) * v.forwardSpeed);
   };
   N.raycastRemote = function (o, d, maxT, ignore) {
@@ -9215,7 +9350,18 @@ G.net = (function () {
   /* ----------------------------- events out ----------------------------- */
   const A = (v) => [Math.round(v.x * 100) / 100, Math.round(v.y * 100) / 100, Math.round(v.z * 100) / 100];
   N.shot = (o, d, w) => emit({ t: 'shot', o: A(o), d: [d.x, d.y, d.z], w });
-  N.cut = (uid, p, n, push, s) => { const m = { t: 'cut', uid, p: A(p), n: [n.x, n.y, n.z], push: [push.x, push.y, push.z], s }; N.cutLog.push(m); emit(m); };
+  N.cut = (uid, p, n, push, s, mesh, body) => {
+    let x = null;
+    if (mesh) {
+      mesh.updateMatrixWorld(true);
+      x = { p: A(mesh.getWorldPosition(new THREE.Vector3())), q: mesh.getWorldQuaternion(new THREE.Quaternion()).toArray().map(v => Math.round(v * 10000) / 10000), s: A(mesh.getWorldScale(new THREE.Vector3())) };
+      if (body) { x.v = A(body.vel); x.a = A(body.ang); }
+    }
+    const m = { t: 'cut', uid, p: A(p), n: [n.x, n.y, n.z], push: [push.x, push.y, push.z], s, x };
+    N.cutLog.push(m); if (N.cutLog.length > 2048) N.cutLog.splice(0, N.cutLog.length - 2048); emit(m);
+  };
+  N.hold = (uid) => emit({ t: 'hold', uid });
+  N.drop = (uid, pos, quat, vel, ang) => emit({ t: 'drop', uid, p: A(pos), q: quat.toArray(), v: A(vel), a: A(ang) });
   N.prop = (i, k, a, p, v) => emit({ t: 'prop', i, k, a, p: A(p || new THREE.Vector3()), v: A(v || new THREE.Vector3(0, 0, 1)) });
   N.melee = (to, dmg, dir) => emit({ t: 'melee', to, dmg, dir: A(dir) });
   N.died = (cause) => { const by = String(cause || '').startsWith('remote:') ? cause.slice(7) : null; emit({ t: 'died', by, how: by ? 'pvp' : cause }); G.ui.killFeed(by && N.players.get(by) ? N.players.get(by).name : null, G.store.settings.name, by ? 'pvp' : cause); };
@@ -9223,7 +9369,10 @@ G.net = (function () {
   N.startGame = () => { N.started = true; if (N.isHost) relay({ t: 'start' }); };
   N.applyPending = function () {
     if (N.pendingHour != null && G.env) { G.env.hour = N.pendingHour; G.env.apply(true); }
-    for (const d of N.pendingCuts || []) { const obj = G.cut.byUid(d.uid); if (obj) G.cut.cutObject(obj, new THREE.Vector3().fromArray(d.p), new THREE.Vector3().fromArray(d.n), new THREE.Vector3().fromArray(d.push), d.s || 1, 'remote'); }
+    for (const d of N.pendingCuts || []) {
+      const obj = G.cut.byUid(d.uid);
+      if (obj) { if (d.x) G.cut.applyNetworkPose(obj, d.x); G.cut.cutObject(obj, new THREE.Vector3().fromArray(d.p), new THREE.Vector3().fromArray(d.n), new THREE.Vector3().fromArray(d.push), d.s || 1, 'remote'); }
+    }
     N.pendingCuts = null;
   };
 
