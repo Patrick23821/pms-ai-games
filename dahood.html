@@ -8189,7 +8189,22 @@ G.ui = (function () {
     return [
       held(G.items.byId.hotdog),
       { glyph: '🥤', name: 'Fizzo energy drink', sub: 'Refills stamina', price: 8, buy: () => { P.stamina = 1; return true; } },
-      { glyph: '🎟', name: 'Scratch ticket', sub: '1 in 8 chance of $150', price: 10, buy: () => { if (Math.random() < 0.125) { P.money += 150; UI.toast('WINNER! +$150', 'gold'); G.audio.cash(); } else UI.toast('No luck. The house always wins.'); return true; } },
+      { glyph: '🎟', name: 'Scratch ticket', sub: 'Win: $30 (1/25) · $60 (1/50) · $1,000 (1/100) · $2,000 (1/200) · $10,000 (1/1,000)', price: 20, buy: () => {
+        // Mutually exclusive prize bands preserve each advertised probability.
+        const r = Math.random();
+        const prizes = [
+          { odds: 1 / 25, amount: 30 },
+          { odds: 1 / 50, amount: 60 },
+          { odds: 1 / 100, amount: 1000 },
+          { odds: 1 / 200, amount: 2000 },
+          { odds: 1 / 1000, amount: 10000 },
+        ];
+        let edge = 0, won = 0;
+        for (const prize of prizes) { edge += prize.odds; if (r < edge) { won = prize.amount; break; } }
+        if (won) { P.money += won; UI.toast('WINNER! +$' + U.fmt(won), 'gold'); G.audio.cash(); }
+        else UI.toast('No luck. The house always wins.');
+        return true;
+      } },
     ];
   }
   UI.openShop = function () {
@@ -8198,7 +8213,7 @@ G.ui = (function () {
   function renderShop() {
     const P = G.player;
     $('shopWallet').textContent = '$' + U.fmt(P.money);
-    $('shopTabs').innerHTML = ['Weapons', 'Ammo', 'Gear', 'Snacks'].map(t => `<button class="stab ${t === shopTab ? 'on' : ''}" data-t="${t}">${t}</button>`).join('');
+    $('shopTabs').innerHTML = ['Weapons', 'Ammo', 'Gear', 'Other'].map(t => `<button class="stab ${t === shopTab ? 'on' : ''}" data-t="${t}">${t}</button>`).join('');
     $('shopTabs').querySelectorAll('.stab').forEach(b => b.onclick = () => { shopTab = b.dataset.t; G.audio.ui('click'); renderShop(); });
     const items = shopItems();
     if (!items.length) { $('shopItems').innerHTML = `<p class="dim">You don't own any guns yet — check the Weapons tab.</p>`; return; }
