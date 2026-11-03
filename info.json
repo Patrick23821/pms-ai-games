@@ -18,6 +18,14 @@
       "hidden": false
     },
     {
+      "file": "doomspire.html",
+      "title": "Doomspire Brickbattle",
+      "tagline": "Based off the Doomspire Brickbattle game on Roblox.",
+      "tags": ["multiplayer", "party"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/doomspire.webp",
+      "hidden": false
+    },
+    {
       "file": "hyperrooms.html",
       "title": "HyperRooms (4D)",
       "tagline": "4D escape room by Gemini + Grok",
