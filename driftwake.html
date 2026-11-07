@@ -32406,7 +32406,7 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
     adsShoulder: 0.42,
     height: 1.62,
     fov: 74,
-    minPitch: -1.2,
+    minPitch: -1.02,
     maxPitch: 1.05,
     sensitivity: 0.0022,
     adsInTime: 0.17,
@@ -33165,6 +33165,79 @@ const xt = { half: 1280, islandRadius: 1200, waterLevel: -0.6, cell: 4, navCell:
       adsSpeed: 0.7,
       idealRange: [2, 28],
       recoil: 0.025,
+    },
+    harpoon: {
+      id: "harpoon",
+      name: "Abyssal Harpoon Rifle",
+      archetype: "sniper",
+      ammoType: "heavy",
+      damage: 92,
+      pellets: 1,
+      fireInterval: 0.95,
+      magSize: 4,
+      reloadTime: 2.35,
+      spread: 2.4,
+      adsSpread: 0.12,
+      bloomPerShot: 0,
+      range: 190,
+      maxRange: 420,
+      headshotMult: 2.05,
+      auto: !1,
+      zoomFov: 28,
+      scope: !0,
+      color: "#00d4aa",
+      adsSpeed: 1.25,
+      idealRange: [25, 160],
+      recoil: 0.072,
+    },
+    voltstorm: {
+      id: "voltstorm",
+      name: "Voltstorm Coil SMG",
+      archetype: "smg",
+      ammoType: "light",
+      damage: 13,
+      pellets: 1,
+      fireInterval: 0.048,
+      magSize: 38,
+      reloadTime: 1.85,
+      spread: 2.8,
+      adsSpread: 1.35,
+      bloomPerShot: 0.16,
+      range: 32,
+      maxRange: 115,
+      headshotMult: 1.48,
+      auto: !0,
+      zoomFov: 61,
+      scope: !1,
+      color: "#7df9ff",
+      adsSpeed: 0.72,
+      idealRange: [2, 26],
+      recoil: 0.022,
+    },
+    mortar: {
+      id: "mortar",
+      name: "Tidefall Mortar",
+      archetype: "rocket",
+      ammoType: "rockets",
+      damage: 110,
+      pellets: 1,
+      fireInterval: 1.45,
+      magSize: 3,
+      reloadTime: 3.2,
+      spread: 2.8,
+      adsSpread: 0.9,
+      bloomPerShot: 0,
+      range: 95,
+      maxRange: 180,
+      headshotMult: 1,
+      auto: !1,
+      zoomFov: 58,
+      scope: !1,
+      color: "#ff6b35",
+      adsSpeed: 1.5,
+      idealRange: [20, 90],
+      projectile: { speed: 38, gravity: 14, radius: 7.2, structureDamage: 580 },
+      recoil: 0.11,
     },
   },
   e0 = {
@@ -34611,12 +34684,135 @@ class eR {
     return (
       a !== this.dmgLevel &&
         ((this.dmgLevel = a),
-        this.mesh.traverse((o) => {
-          o instanceof je && (o.material === QC || PROP_DMG.includes(o.material)) && (o.material = a ? PROP_DMG[a] : QC);
-        })),
+        this.vegInst
+          ? this.system.tintVeg(this)
+          : this.mesh.traverse((o) => {
+              o instanceof je && (o.material === QC || PROP_DMG.includes(o.material)) && (o.material = a ? PROP_DMG[a] : QC);
+            })),
       !1
     );
   }
+}
+const sceneVisFrustum = new w0(),
+  sceneVisProj = new hn(),
+  sceneVisSphere = new jo(),
+  sceneVisCam = new H(),
+  sceneVisFwd = new H(),
+  sceneVisDir = new H(),
+  sceneVisPt = new H();
+let sceneVisPrepFrame = -1,
+  sceneVisOccLeft = 0;
+function sceneVisMaxDistSq(e, t) {
+  const y = e.y;
+  let n = y > 65 ? (t ? 340 : 440) : t ? 220 : 280;
+  if (y > 180) n = Math.min(n, t ? 260 : 320);
+  if (y > 420) n = Math.min(n, t ? 190 : 240);
+  return n * n;
+}
+function sceneVisStaticMaxSq(e, t) {
+  const y = e.y;
+  if (y > 450) return (t ? 175 : 235) ** 2;
+  if (y > 200) return (t ? 230 : 300) ** 2;
+  if (y > 90) return (t ? 290 : 380) ** 2;
+  return sceneVisMaxDistSq(e, t);
+}
+function sceneVisDistSq(x, y, z) {
+  const dx = x - sceneVisCam.x,
+    dz = z - sceneVisCam.z;
+  if (sceneVisCam.y > 110) return dx * dx + dz * dz;
+  const dy = y - sceneVisCam.y;
+  return dx * dx + dy * dy + dz * dz;
+}
+function sceneVisTurnBoost() {
+  return GAME?.camTurnFast ? 1.14 : 1;
+}
+function sceneVisPrep(e) {
+  (e.updateMatrixWorld(!1),
+    sceneVisProj.multiplyMatrices(e.projectionMatrix, e.matrixWorldInverse),
+    sceneVisFrustum.setFromProjectionMatrix(sceneVisProj),
+    e.getWorldPosition(sceneVisCam),
+    e.getWorldDirection(sceneVisFwd));
+}
+function sceneVisEnsure(e, t) {
+  t !== sceneVisPrepFrame && (sceneVisPrep(e), (sceneVisPrepFrame = t), (sceneVisOccLeft = t % 2 ? 6 : 12));
+}
+function sceneVisRadius(e, t) {
+  return Math.min(t ? 72 : 120, 3.5 + e * 0.07);
+}
+function sceneVisNearKeep(e, t, n, a) {
+  const horiz = Math.hypot(e, n);
+  return a <= 36 && horiz <= 26 && t >= -18;
+}
+function sceneVisPoint(e, t, n, a, o, c, h) {
+  const f = e - sceneVisCam.x,
+    d = t - sceneVisCam.y,
+    m = n - sceneVisCam.z,
+    g = sceneVisDistSq(e, t, n);
+  if (g > a) return !1;
+  const v = Math.sqrt(g);
+  if (v < 0.45) return !0;
+  if (sceneVisNearKeep(f, d, m, v)) return !0;
+  sceneVisDir.set(f / v, d / v, m / v);
+  if (sceneVisDir.dot(sceneVisFwd) < -0.08) return !1;
+  sceneVisPt.set(e, t, n);
+  sceneVisSphere.center.copy(sceneVisPt);
+  sceneVisSphere.radius = sceneVisRadius(v, o);
+  if (!sceneVisFrustum.intersectsSphere(sceneVisSphere)) {
+    if (sceneVisNearKeep(f, d, m, v)) return !0;
+    return !1;
+  }
+  if (c && h && sceneVisOccLeft > 0 && v > 8) {
+    const y = c.raycast(sceneVisCam, sceneVisDir, Math.max(0.5, v - sceneVisSphere.radius * 0.4), null, null, !0);
+    if (y && y.dist < v - sceneVisSphere.radius * 0.25) return (sceneVisOccLeft--, !1);
+  }
+  return !0;
+}
+function sceneVisObject(e, t, n, a, o, c, h, f = 1) {
+  return (
+    sceneVisEnsure(t, h),
+    e.getWorldPosition(sceneVisPt),
+    sceneVisPoint(sceneVisPt.x, sceneVisPt.y, sceneVisPt.z, n * f * f, a, o, c)
+  );
+}
+function sceneVisApplyMesh(e, t) {
+  if (!e || !e.isMesh) return;
+  if (t) {
+    e.visible = !0;
+    e.userData.sceneVisCast != null && (e.castShadow = e.userData.sceneVisCast);
+  } else {
+    e.userData.sceneVisCast == null && (e.userData.sceneVisCast = e.castShadow);
+    e.visible = !1;
+    e.castShadow = !1;
+  }
+}
+function sceneVisApplyRoot(e, t) {
+  if (!e) return;
+  e.traverse((n) => {
+    n.isMesh && sceneVisApplyMesh(n, t);
+  });
+}
+function sceneVisBoundsExt(e, t, n, a, o, c, h, f, d, m, g, v) {
+  const y = (e + t) * 0.5,
+    b = (n + a) * 0.5,
+    A = (o + c) * 0.5,
+    S = Math.hypot(t - e, a - n, c - o) * 0.5,
+    T = d * m * m * sceneVisTurnBoost(),
+    R = Math.sqrt(T),
+    dx = y - sceneVisCam.x,
+    dy = b - sceneVisCam.y,
+    dz = A - sceneVisCam.z,
+    dist = sceneVisCam.y > 110 ? Math.hypot(dx, dz) : Math.sqrt(dx * dx + dy * dy + dz * dz);
+  if (dist - S > R + 8) return !1;
+  if (dist + S < 0.45) return !0;
+  sceneVisEnsure(f, v);
+  sceneVisPt.set(y, b, A);
+  sceneVisSphere.center.copy(sceneVisPt);
+  sceneVisSphere.radius = S + sceneVisRadius(Math.max(0, dist - S), h);
+  if (!sceneVisFrustum.intersectsSphere(sceneVisSphere)) {
+    if (sceneVisNearKeep(dx, dy, dz, dist)) return !0;
+    return !1;
+  }
+  return sceneVisPoint(y, b, A, T, h, g, !1);
 }
 class tR {
   constructor(e, t, n) {
@@ -34630,6 +34826,103 @@ class tR {
   nidSeq = 0;
   windTrees = [];
   cullTimer = 0;
+  _treeN = 0;
+  _rockN = 0;
+  _bushN = 0;
+  vegLow() {
+    return !!(GAME && GAME.lowPerf);
+  }
+  ensureVeg() {
+    if (this._vegGeo) return;
+    this._vegChunks = new Map();
+    this._vegList = [];
+    this._vegDummy = new Nn();
+    this._vegWhite = new nt(1, 1, 1);
+    this._vegTint = new nt();
+    const take = (b) => b.build().geometry;
+    const pine = new An();
+    (pine.cyl(0.28, 0.38, 2.15, "#8a5a35", 0, 1.05, 0, 5),
+      pine.cone(1.75, 2.45, "#2f8f4e", 0, 2.3, 0, 6),
+      pine.cone(1.15, 2.05, "#3aa35b", 0, 3.25, 0, 5));
+    const round = new An();
+    (round.cyl(0.24, 0.32, 1.7, "#7a4d2b", 0, 0.85, 0, 5),
+      round.sphere(1.35, "#58c04f", 0, 2.35, 0, 2),
+      round.sphere(0.85, "#7ccc5a", 0.7, 2.05, 0.35, 2));
+    const bush = new An();
+    bush.sphere(0.62, "#ffffff", 0, 0.42, 0, 1);
+    this._vegGeo = { pine: take(pine), round: take(round), bush: take(bush) };
+  }
+  vegMakeChunk(kind, gx, gz) {
+    const cap = kind === "bush" ? 40 : 32,
+      mesh = new o_(this._vegGeo[kind], QC, cap);
+    ((mesh.castShadow = !1),
+      (mesh.receiveShadow = !1),
+      (mesh.frustumCulled = !1),
+      (mesh.count = 0),
+      mesh.position.set((gx + 0.5) * 220, 0, (gz + 0.5) * 220),
+      (mesh.userData.vegChunk = !0),
+      (mesh.userData.reach = 150),
+      this.root.add(mesh),
+      this._vegList.push(mesh));
+    return mesh;
+  }
+  vegAlloc(kind, x, y, z, rot, scale, tint) {
+    const gx = Math.floor(x / 220),
+      gz = Math.floor(z / 220),
+      cap = kind === "bush" ? 40 : 32;
+    let slot = 0,
+      mesh = null;
+    for (;;) {
+      const key = kind + ":" + gx + ":" + gz + ":" + slot,
+        cur = this._vegChunks.get(key);
+      if (!cur || cur.count < cap) {
+        mesh = cur || this.vegMakeChunk(kind, gx, gz);
+        cur || this._vegChunks.set(key, mesh);
+        break;
+      }
+      slot++;
+    }
+    const i = mesh.count;
+    (this._vegDummy.position.set(x - mesh.position.x, y, z - mesh.position.z),
+      this._vegDummy.rotation.set(0, rot, 0),
+      this._vegDummy.scale.set(scale, scale, scale),
+      this._vegDummy.updateMatrix(),
+      mesh.setMatrixAt(i, this._vegDummy.matrix),
+      mesh.setColorAt(i, tint || this._vegWhite),
+      (mesh.count = i + 1),
+      (mesh.instanceMatrix.needsUpdate = !0),
+      mesh.instanceColor && (mesh.instanceColor.needsUpdate = !0));
+    return { mesh, i, tint: tint || this._vegWhite };
+  }
+  tintVeg(prop) {
+    const inst = prop.vegInst;
+    if (!inst) return;
+    const k = 0.4 + 0.6 * Math.max(0, prop.hp / prop.maxHp),
+      tint = inst.tint;
+    (this._vegTint.setRGB(tint.r * k, tint.g * k, tint.b * k),
+      inst.mesh.setColorAt(inst.i, this._vegTint),
+      inst.mesh.instanceColor && (inst.mesh.instanceColor.needsUpdate = !0));
+  }
+  cullVeg(cam, low) {
+    if (!this._vegList || !this._vegList.length) return;
+    const frame = GAME?.frame ?? 0;
+    sceneVisEnsure(cam, frame);
+    const maxD = Math.sqrt(sceneVisMaxDistSq(cam.position, low)),
+      high = cam.position.y > 140,
+      extra = high ? 48 : 150;
+    for (let i = 0; i < this._vegList.length; i++) {
+      const chunk = this._vegList[i],
+        dx = chunk.position.x - cam.position.x,
+        dz = chunk.position.z - cam.position.z,
+        dist = high ? Math.hypot(dx, dz) : Math.hypot(dx, cam.position.y, dz);
+      let show = dist < maxD + extra;
+      if (show) {
+        (sceneVisSphere.center.set(chunk.position.x, high ? 4 : 8, chunk.position.z), (sceneVisSphere.radius = extra + 8));
+        show = sceneVisFrustum.intersectsSphere(sceneVisSphere);
+      }
+      chunk.visible !== show && (chunk.visible = show);
+    }
+  }
   add(e, t) {
     const n = new eR(e, t.material, t.hp, t.yield, t.label, this);
     ((n.nid = this.nidSeq++), this.byId.set(n.nid, n), this.props.add(n), this.root.add(e));
@@ -34646,28 +34939,45 @@ class tR {
   decor(e) {
     this.root.add(e);
   }
-  update(e, t, n) {
+  update(e, t, n, a = !1) {
     if (((this.cullTimer -= n), this.cullTimer <= 0)) {
-      this.cullTimer = 0.3;
-      const a = t.y > 65 ? 560 : 300,
-        o = a * a;
-      for (const c of this.root.children) {
-        const h = c.position.x - t.x,
-          f = c.position.z - t.z;
-        c.visible = h * h + f * f <= o;
+      this.cullTimer = a ? 0.42 : 0.28;
+      const o = sceneVisMaxDistSq(t.position, a),
+        c = GAME?.physics,
+        h = GAME?.frame ?? 0;
+      sceneVisEnsure(t, h);
+      for (const f of this.root.children) {
+        if (f.userData?.vegChunk) continue;
+        const d = !!f.userData?.sceneVisOn,
+          m = (d ? 1.32 : 1.06) * sceneVisTurnBoost(),
+          g = sceneVisObject(f, t, o, a, a || d ? null : c, !a && !d, h, m);
+        if (g !== d) {
+          f.userData.sceneVisOn = g;
+          sceneVisApplyRoot(f, g);
+        }
       }
     }
-    for (let i = 0; i < this.windTrees.length; i++) {
-      const a = this.windTrees[i];
-      if (a.mesh.parent && a.mesh.visible) {
-        a.mesh.rotation.z = Math.sin(e * 0.72 + a.phase) * 0.018;
-        a.mesh.rotation.x = Math.cos(e * 0.58 + a.phase * 1.7) * 0.012;
+    this.cullVeg(t, a);
+    if (!a)
+      for (let i = 0; i < this.windTrees.length; i++) {
+        const w = this.windTrees[i];
+        if (w.mesh.parent && w.mesh.visible) {
+          w.mesh.rotation.z = Math.sin(e * 0.72 + w.phase) * 0.018;
+          w.mesh.rotation.x = Math.cos(e * 0.58 + w.phase * 1.7) * 0.012;
+        }
       }
-    }
   }
   remove(e) {
     if (!this.props.has(e)) return;
-    (this.props.delete(e), this.root.remove(e.mesh));
+    if ((this.props.delete(e), e.vegInst)) {
+      const m = e.vegInst.mesh;
+      (this._vegDummy.position.set(0, -40, 0),
+        this._vegDummy.rotation.set(0, 0, 0),
+        this._vegDummy.scale.set(0.0001, 0.0001, 0.0001),
+        this._vegDummy.updateMatrix(),
+        m.setMatrixAt(e.vegInst.i, this._vegDummy.matrix),
+        (m.instanceMatrix.needsUpdate = !0));
+    } else this.root.remove(e.mesh);
     let t = null;
     for (const n of e.colliders)
       (this.physics.removeCollider(n),
@@ -34684,46 +34994,47 @@ class tR {
     ((e.colliders.length = 0), t && this.onChanged(t));
   }
   dispose() {
+    const seen = new Set();
     this.root.traverse((e) => {
-      e instanceof je && e.geometry.dispose();
+      e instanceof je && e.geometry && !seen.has(e.geometry) && (seen.add(e.geometry), e.geometry.dispose());
     });
   }
   tree(e, t, n, a, o) {
-    const c = new An(),
-      h = a.range(3.5, 5.5),
-      f = ["#8a5a35", "#7a4d2b", "#9a6a3f"][a.int(0, 2)];
-    if ((c.cyl(0.22, 0.32, h * 0.55, f, 0, h * 0.27, 0, 6), o)) {
-      const v = ["#2f8f4e", "#3aa35b", "#277a45"][a.int(0, 2)];
-      (c.cone(1.9, 2.4, v, 0, h * 0.45, 0, 7),
-        c.cone(1.5, 2.2, v, 0, h * 0.65, 0, 7),
-        c.cone(1, 2, v, 0, h * 0.85, 0, 7));
-    } else {
-      const v = ["#58c04f", "#7ccc5a", "#46a84a", "#9bd35f"][a.int(0, 3)];
-      (c.sphere(1.7, v, 0, h * 0.72, 0, 1),
-        c.sphere(1.1, v, 0.9, h * 0.6, 0.4, 1),
-        c.sphere(1, v, -0.8, h * 0.66, -0.5, 1));
-    }
-    const d = c.build();
-    (d.position.set(e, t, n), (d.rotation.y = a.range(0, Math.PI * 2)));
-    const m = this.add(d, {
-      material: "wood",
-      hp: 150,
-      yield: 15,
-      label: "Tree",
-      boxes: [ii(e, t + h * 0.3, n, 0.7, h * 0.6, 0.7)],
+    if ((this.ensureVeg(), this._treeN >= (this.vegLow() ? 780 : 1500))) return null;
+    this._treeN++;
+    const s = a.range(0.86, 1.16),
+      inst = this.vegAlloc(o ? "pine" : "round", e, t, n, a.range(0, Math.PI * 2), s, this._vegWhite),
+      prop = this.add(inst.mesh, {
+        material: "wood",
+        hp: 150,
+        yield: 15,
+        label: "Tree",
+        boxes: [ii(e, t + 1.25 * s, n, 0.75, 1.6 * s, 0.75)],
+      });
+    return ((prop.vegInst = inst), prop);
+  }
+  ensureRocks() {
+    if (this._rockGeo) return;
+    this._rockGeo = [0, 1].map((i) => {
+      const c = new An();
+      return (
+        c.rock(1, i ? "#7d7f8a" : "#8d8f99", 0, 0.55, 0, 1, 0.75, 1.08),
+        i && c.rock(0.55, "#6f7280", 0.72, 0.28, 0.25, 1, 0.7, 1),
+        c.build().geometry
+      );
     });
-    return (this.windTrees.push({ mesh: d, phase: a.range(0, Math.PI * 2) }), m);
   }
   rock(e, t, n, a, o = !1) {
-    const c = new An(),
-      h = o ? a.range(1.6, 2.4) : a.range(0.7, 1.2),
-      f = ["#8d8f99", "#7d7f8a", "#9c9ea8", "#6f7280"];
-    (c.rock(h, f[a.int(0, 3)], 0, h * 0.55, 0, 1, 0.75, 1.1),
-      o && c.rock(h * 0.6, f[a.int(0, 3)], h * 0.8, h * 0.3, 0.3, 1, 0.7, 1));
-    const d = c.build();
+    if ((this.ensureRocks(), this._rockN >= (this.vegLow() ? 340 : 620))) return null;
+    this._rockN++;
+    const h = o ? a.range(1.6, 2.4) : a.range(0.7, 1.2),
+      d = new je(this._rockGeo[o ? 1 : 0], QC);
     return (
       d.position.set(e, t, n),
       (d.rotation.y = a.range(0, Math.PI * 2)),
+      d.scale.set(h * a.range(0.9, 1.15), h, h * a.range(0.85, 1.1)),
+      (d.castShadow = !1),
+      (d.receiveShadow = !1),
       this.add(d, {
         material: "stone",
         hp: o ? 320 : 200,
@@ -34837,11 +35148,10 @@ class tR {
     });
   }
   bush(e, t, n, a) {
-    const o = new An(),
-      c = ["#5cc05a", "#79cf62", "#4caf50"][a.int(0, 2)];
-    (o.sphere(0.7, c, 0, 0.5, 0, 0), o.sphere(0.5, c, 0.5, 0.4, 0.2, 0));
-    const h = o.build();
-    (h.position.set(e, t, n), (h.castShadow = !1), this.decor(h));
+    if ((this.ensureVeg(), this._bushN >= (this.vegLow() ? 420 : 850))) return;
+    (this._bushN++,
+      this._vegTint.setHSL(a.range(0.28, 0.36), a.range(0.45, 0.72), a.range(0.28, 0.48)),
+      this.vegAlloc("bush", e, t + 0.15, n, a.range(0, Math.PI * 2), a.range(0.8, 1.35), this._vegTint));
   }
   fence(e, t, n, a, o) {
     const c = new An(),
@@ -35127,6 +35437,24 @@ function dS(r) {
     case "compactpdw": {
       e.add(Rt(0.065, 0.12, 0.14, "#db2777", 0, -0.08, 0.2));
       e.add(Rt(0.07, 0.05, 0.22, "#831843", 0, 0.09, 0.08));
+      break;
+    }
+    case "harpoon": {
+      const a = Ar(0.04, 0.04, 0.72, "#00d4aa", 8);
+      ((a.rotation.x = Math.PI / 2), a.position.set(0, 0.06, 0.38), e.add(a));
+      e.add(Rt(0.07, 0.09, 0.22, "#0f3d34", 0, 0.05, 0.12));
+      break;
+    }
+    case "voltstorm": {
+      e.add(Rt(0.06, 0.09, 0.38, "#0c4a6e", 0, 0.04, 0.1));
+      const a = Ar(0.11, 0.11, 0.06, "#7df9ff", 10);
+      ((a.rotation.z = Math.PI / 2), a.position.set(0.04, -0.08, 0.16), e.add(a));
+      break;
+    }
+    case "mortar": {
+      const a = Ar(0.16, 0.16, 0.34, "#ff6b35", 10);
+      ((a.rotation.x = -Math.PI / 2.8), a.position.set(0, 0.12, 0.22), e.add(a));
+      e.add(Rt(0.12, 0.08, 0.28, "#2b1408", 0, -0.04, 0.08));
       break;
     }
   }
@@ -35677,6 +36005,39 @@ class dR {
       ((e.colliders.length = 0), this.bulk || this.onChanged(this.boundsOf(e.spec)), a && this.checkFrom(a));
     }
   }
+  cullTimer = 0;
+  cullVisibility(e, t, n = !1) {
+    if (((this.cullTimer -= t), this.cullTimer > 0)) return;
+    this.cullTimer = n ? 0.44 : 0.3;
+    const a = sceneVisMaxDistSq(e.position, n),
+      o = GAME?.physics,
+      c = GAME?.frame ?? 0,
+      pitchUp = (GAME?.controller?.pitch ?? 0) > 0.28;
+    sceneVisEnsure(e, c);
+    for (const h of this.map.values()) {
+      if (!h.mesh) continue;
+      const f = !!h._sceneVis;
+      if (pitchUp) {
+        h.mesh.getWorldPosition(sceneVisPt);
+        const dx = sceneVisPt.x - e.position.x,
+          dz = sceneVisPt.z - e.position.z,
+          dy = sceneVisPt.y - e.position.y;
+        if (sceneVisNearKeep(dx, dy, dz, Math.hypot(dx, dy, dz))) {
+          if (!f) {
+            h._sceneVis = !0;
+            sceneVisApplyMesh(h.mesh, !0);
+          }
+          continue;
+        }
+      }
+      const d = (f ? 1.34 : 1.05) * sceneVisTurnBoost(),
+        m = sceneVisObject(h.mesh, e, a, n, n || f || pitchUp ? null : o, !n && !f && !pitchUp, c, d);
+      if (m !== f) {
+        h._sceneVis = m;
+        sceneVisApplyMesh(h.mesh, m);
+      }
+    }
+  }
   update(e) {
     this.updateCollapse(e);
     for (let t = this.animating.length - 1; t >= 0; t--) {
@@ -36031,23 +36392,25 @@ class xR {
       }));
   }
   cullTimer = 0;
-  update(e, t = 0.016) {
+  update(e, t = 0.016, n = !1) {
     if ((this.updateCollapse(t), this.dirty.size)) {
-      for (const n of this.dirty) ((n.vis = void 0), n.refresh(this.root));
+      for (const a of this.dirty) ((a.vis = void 0), a.refresh(this.root));
       this.dirty.clear();
     }
-    if (e && ((this.cullTimer -= t), this.cullTimer <= 0)) {
-      this.cullTimer = 0.35;
-      const n = e.y > 80 ? 1500 : 520,
-        a = n * n;
-      for (const o of this.buildings) {
-        o.cx === void 0 && ((o.cx = (o.bounds.minX + o.bounds.maxX) / 2), (o.cz = (o.bounds.minZ + o.bounds.maxZ) / 2));
-        const c = o.cx - e.x,
-          h = o.cz - e.z,
-          f = c * c + h * h <= a;
-        if (f !== o.vis) {
-          o.vis = f;
-          for (const d of o.meshes) d.visible = f;
+    if (e && e.isCamera && ((this.cullTimer -= t), this.cullTimer <= 0)) {
+      this.cullTimer = n ? 0.52 : 0.36;
+      const c = sceneVisStaticMaxSq(e.position, n),
+        h = GAME?.physics,
+        f = GAME?.frame ?? 0;
+      sceneVisEnsure(e, f);
+      for (const d of this.buildings) {
+        const b = d.bounds,
+          v = !!d.vis,
+          y = (v ? 1.38 : 1.08) * sceneVisTurnBoost();
+        const m = sceneVisBoundsExt(b.minX, b.maxX, b.minY, b.maxY, b.minZ, b.maxZ, n, e, c, y, v ? null : n ? null : h, GAME?.frame ?? 0);
+        if (m !== d.vis) {
+          d.vis = m;
+          for (const g of d.meshes) sceneVisApplyMesh(g, m);
         }
       }
     }
@@ -36626,22 +36989,23 @@ class _R {
       n
     );
   }
-  update(e, t, n) {
+  update(e, t, n, a = !1) {
     const phys = this.physics || GAME?.physics;
+    const cam = t?.isCamera ? t : GAME?.camera;
+    const camPos = cam ? cam.position : t;
     if (((this.cullTimer -= n), this.cullTimer <= 0)) {
-      this.cullTimer = 0.25;
-      const a = 34225;
-      for (const o of this.items) {
-        const c = o.pos.x - t.x,
-          h = o.pos.y - t.y,
-          f = o.pos.z - t.z;
-        o.group.visible = c * c + f * f + h * h < a;
-        if (!o.group.visible && phys) {
-          const floorY = Math.max(_t(o.pos.x, o.pos.z), phys.groundHeight(o.pos.x, o.pos.z, o.pos.y + 0.1));
-          if (o.pos.y > floorY + 0.05) {
-            o.pos.y = floorY;
-            o.velY = 0;
-            o.group.position.y = o.pos.y;
+      this.cullTimer = a ? 0.48 : 0.32;
+      const maxSq = sceneVisMaxDistSq(camPos, a),
+        frame = GAME?.frame ?? 0;
+      cam && sceneVisEnsure(cam, frame);
+      for (const it of this.items) {
+        it.group.visible = sceneVisPoint(it.pos.x, it.pos.y + 0.6, it.pos.z, maxSq, a, null, !1);
+        if (!it.group.visible && phys) {
+          const floorY = Math.max(_t(it.pos.x, it.pos.z), phys.groundHeight(it.pos.x, it.pos.z, it.pos.y + 0.1));
+          if (it.pos.y > floorY + 0.05) {
+            it.pos.y = floorY;
+            it.velY = 0;
+            it.group.position.y = it.pos.y;
           }
         }
       }
@@ -36741,6 +37105,9 @@ const bR = [
     ["blaster", 0.7],
     ["hyperburst", 7],
     ["compactpdw", 8],
+    ["harpoon", 5],
+    ["voltstorm", 7],
+    ["mortar", 0.55],
   ],
   SR = [
     ["bandage", 30],
@@ -37748,7 +38115,13 @@ void main(){
       this.spawnLoot());
   }
   update(e) {
-    if (((this.elapsed += e), this.cloudRoot))
+    if (
+      ((this.elapsed += e),
+      this.grass &&
+        GAME?.camera &&
+        (this.grass.visible = GAME.camera.position.y < (GAME.lowPerf ? 90 : 150)),
+      this.cloudRoot)
+    )
       for (const t of this.cloudRoot.children)
         ((t.position.x += e * 0.8), t.position.x > xt.half + 220 && (t.position.x = -(xt.half + 220)));
 
@@ -37973,6 +38346,25 @@ void main(){
             hpMult: f,
           }));
       if (R) break;
+    }
+    if (d >= 3 && this.rng.chance(0.42)) {
+      const T = b;
+      for (let D = 0; D < a; D++)
+        (v({ type: "wall", axis: "z", ix: t + D, iy: T, iz: n, variant: "solid", material: c, tint: h, hpMult: f * 1.15 }),
+          v({ type: "wall", axis: "z", ix: t + D, iy: T, iz: n + m, variant: "solid", material: c, tint: h, hpMult: f * 1.15 }));
+      for (let D = 0; D < m; D++)
+        (v({ type: "wall", axis: "x", ix: t, iy: T, iz: n + D, variant: "solid", material: c, tint: h, hpMult: f * 1.15 }),
+          v({ type: "wall", axis: "x", ix: t + a, iy: T, iz: n + D, variant: "solid", material: c, tint: h, hpMult: f * 1.15 }));
+    }
+    if (e.tower && d >= 5) {
+      const T = b - 1;
+      for (const [D, N] of [
+        [0, 0],
+        [a - 1, 0],
+        [0, m - 1],
+        [a - 1, m - 1],
+      ])
+        v({ type: "wall", axis: "x", ix: t + D, iy: T, iz: n + N, variant: "window", material: c, tint: h, hpMult: f * 1.2 });
     }
     this.statics.finalize(g);
     let spawnedLoot = 0;
@@ -38780,7 +39172,9 @@ void main(){
     const a = `${Math.floor(e / 3)}:${Math.floor(t / 3)}`;
     if (this.treeCells.has(a)) return !1;
     const o = _t(e, t);
-    return o < 0.8 ? !1 : (this.treeCells.add(a), this.props.tree(e, o - 0.1, t, this.rng, n), !0);
+    if (o < 0.8) return !1;
+    const made = this.props.tree(e, o - 0.1, t, this.rng, n);
+    return made ? (this.treeCells.add(a), !0) : !1;
   }
   scatterOutposts() {
     const e = this.rng;
@@ -38819,8 +39213,9 @@ void main(){
     }
   }
   scatterNature() {
-    const e = this.rng;
-    for (let t = 0; t < 17e3; t++) {
+    const e = this.rng,
+      tries = GAME && GAME.lowPerf ? 8000 : 12000;
+    for (let t = 0; t < tries; t++) {
       const n = e.range(0, Math.PI * 2),
         a = Math.sqrt(e.next()) * 1185,
         o = Math.cos(n) * a,
@@ -38857,7 +39252,7 @@ void main(){
         opacity: 0.82,
         flatShading: !0,
       });
-    for (let a = 0; a < 46; a++) {
+    for (let a = 0; a < (GAME && GAME.lowPerf ? 12 : 28); a++) {
       const o = new ut(),
         c = e.int(2, 4);
       for (let h = 0; h < c; h++) {
@@ -39065,15 +39460,16 @@ void main(){
     }
   }
   addGroundDetail() {
-    const t = new Wo(0.09, 0.7, 3, 1),
+    const cap = GAME && GAME.lowPerf ? 2800 : 7000,
+      t = new Wo(0.09, 0.7, 3, 1),
       n = new Wn({ color: 16777215, roughness: 1 }),
-      a = new o_(t, n, 16000);
-    ((a.name = "grass"), (a.castShadow = !1), (a.receiveShadow = !1));
+      a = new o_(t, n, cap);
+    ((a.name = "grass"), (a.castShadow = !1), (a.receiveShadow = !1), (a.frustumCulled = !1), (this.grass = a));
     const o = new Nn(),
       c = new nt();
     let h = 0,
       f = 0;
-    for (; h < 16000 && f++ < 48000;) {
+    for (; h < cap && f++ < cap * 3;) {
       const d = this.rng.range(0, Math.PI * 2),
         m = Math.sqrt(this.rng.next()) * 1170,
         g = Math.cos(d) * m,
@@ -39424,8 +39820,8 @@ class RR {
           : o < 4
             ? 1
             : Math.max(0, 1 - (o - 4) / 156) ** 1.6,
-      h = Math.cos(this.listenerYaw),
-      f = -Math.sin(this.listenerYaw),
+      h = -Math.cos(this.listenerYaw),
+      f = Math.sin(this.listenerYaw),
       d = o > 1 ? Math.max(-1, Math.min(1, (t * h + n * f) / o)) * 0.7 : 0;
     return { gain: c, pan: d, dist: o };
   }
@@ -40656,7 +41052,7 @@ class vS {
         n(this.shinR, 0.2, 0, 10)),
       t.holding)
     ) {
-      const y = -Math.PI / 2 - t.pitch,
+      const y = -Math.PI / 2 - Math.max(t.pitch, -0.95),
         b = t.swing > 0 ? Math.sin(t.swing * Math.PI) * 1.35 : 0,
         A = t.aiming ? 0.16 : 0;
       (n(this.armR, y + b + this.recoil * 0.5, 0.1 + A, 20),
@@ -40664,13 +41060,13 @@ class vS {
         n(this.forearmR, -0.16 - this.recoil * 0.5, 0, 18),
         n(this.forearmL, -0.2, 0, 18),
         (this.weaponHolder.rotation.x = Math.PI / 2),
-        (this.head.rotation.x = -t.pitch * 0.46));
+        (this.head.rotation.x = -Math.max(t.pitch, -0.95) * 0.46));
     } else
       (n(this.armR, -f * 0.72 - (t.grounded ? 0 : 0.55), 0.06, 12),
         n(this.armL, f * 0.72 - (t.grounded ? 0 : 0.55), -0.06, 12),
         n(this.forearmR, -0.3, 0, 12),
         n(this.forearmL, -0.3, 0, 12),
-        (this.head.rotation.x = -t.pitch * 0.42));
+        (this.head.rotation.x = -Math.max(t.pitch, -0.95) * 0.42));
     this.weaponMesh &&
       ((this.weaponMesh.position.z = -this.recoil * 0.38), (this.weaponMesh.rotation.x = -0.04 + this.recoil * 0.24));
   }
@@ -41879,6 +42275,35 @@ const im = new H(),
   Q_ = new H(),
   kR = new H(),
   BR = (r) => (r < 0.5 ? 2 * r * r : 1 - Math.pow(-2 * r + 2, 2) / 2);
+function interactPickupTarget(t, n, a, o) {
+  const c = 3.4;
+  let h = null,
+    f = 1e9;
+  const d = o.y < -0.45;
+  for (const m of t.pickups.items) {
+    if (!m.needsInteract || Math.abs(m.pos.y - n.pos.y) > 2.5) continue;
+    const g = m.pos.x - a.x,
+      v = m.pos.y + 0.55 - a.y,
+      y = m.pos.z - a.z,
+      b = Math.hypot(g, v, y);
+    if (b > c || b < 0.05) continue;
+    const A = (g * o.x + v * o.y + y * o.z) / b;
+    if (d) {
+      if (A < 0.05) continue;
+      const S = b * Math.sqrt(Math.max(0, 1 - A * A));
+      if (S > 1.35) continue;
+      const _ = S * S + b * 0.12;
+      _ < f && ((f = _), (h = m));
+    } else if (A > 0.4) {
+      const S = b + (1 - A) * 2.2;
+      S < f && ((f = S), (h = m));
+    }
+  }
+  return (
+    h ||
+    t.pickups.nearest(Q_.set(n.pos.x, n.pos.y + 0.5, n.pos.z), 2.8, (m) => m.needsInteract && Math.abs(m.pos.y - n.pos.y) < 2.5)
+  );
+}
 class FR {
   constructor(e, t, n, a) {
     ((this.ch = e), (this.camera = t), (this.input = n), (this.build = a));
@@ -42026,11 +42451,7 @@ class FR {
       const R = t.pickups.within(n.pos, 1.6);
       for (const D of R)
         D.needsInteract || D.lockFor === n || Math.abs(D.pos.y - n.pos.y) > 2 || (n.pickUp(D, t.ctx) && t.pickups.remove(D, n));
-      const w = t.pickups.nearest(
-        Q_.set(n.pos.x, n.pos.y + 0.5, n.pos.z),
-        2.8,
-        (D) => D.needsInteract && Math.abs(D.pos.y - n.pos.y) < 2.5,
-      );
+      const w = interactPickupTarget(t, n, this.aimOrigin, this.aimDir);
       w &&
         ((this.nearPickup = w),
         (this.prompt = w.payload.kind === "cache" ? `[E] Open ${w.label}` : `[E] Pick up ${w.label}`),
@@ -42081,15 +42502,28 @@ class FR {
     }
     const R = T < this.camDist ? Math.min(1, e * 22) : Math.min(1, e * 9);
     ((this.camDist += (this.targetCamDist - this.camDist) * R),
-      a.position.copy(g).addScaledVector(S, this.camDist),
-      a.lookAt(g.x + h.x * 40, g.y + h.y * 40, g.z + h.z * 40));
+      a.position.copy(g).addScaledVector(S, this.camDist));
+    const pit = It(this.pitch, _n.minPitch, _n.maxPitch),
+      cp = Math.cos(pit),
+      lx = Math.sin(this.yaw) * cp,
+      ly = Math.sin(pit),
+      lz = Math.cos(this.yaw) * cp;
+    a.up.set(0, 1, 0);
+    a.lookAt(a.position.x + lx, a.position.y + ly, a.position.z + lz);
+    a.updateMatrixWorld(!1);
     const w = n.inventory.activeWeapon,
       D = (w ? _n.fov + (w.def.zoomFov - _n.fov) * o : _n.fov) + (b > 0 ? 7 * (1 - o) : 0);
     ((this.fov += (D - this.fov) * Math.min(1, e * 18)),
       Math.abs(a.fov - this.fov) > 0.02 && ((a.fov = this.fov), a.updateProjectionMatrix()),
-      n.model.setActive(n.alive && this.camDist > 0.9 && (!w?.def?.scope || o <= 0.05)),
+      n.model.setActive(n.alive && (!w?.def?.scope || o <= 0.05)),
       t.ctx.audio.listenerPos.copy(a.position),
       (t.ctx.audio.listenerYaw = this.yaw));
+    const vy = this._visYaw ?? this.yaw;
+    let dyaw = this.yaw - vy;
+    dyaw > Math.PI && (dyaw -= Math.PI * 2);
+    dyaw < -Math.PI && (dyaw += Math.PI * 2);
+    GAME && (GAME.camTurnFast = Math.abs(dyaw) > 0.05);
+    this._visYaw = this.yaw;
   }
 }
 const yS = "driftwake.playerName",
@@ -42755,6 +43189,7 @@ class XR {
       (this.sun = new $m(16773590, 1.7)),
       this.sun.position.set(60, 90, 40),
       (this.lowPerf = !!n.lowPerf),
+      this.lowPerf && ((this.scene.fog.near = 120), (this.scene.fog.far = 720)),
       (this.sun.castShadow = n.shadows && !this.lowPerf),
       this.sun.shadow.mapSize.set(this.lowPerf ? 512 : 1024, this.lowPerf ? 512 : 1024),
       (this.sun.shadow.camera.near = 10),
@@ -42770,7 +43205,8 @@ class XR {
       (t.shadowMap.enabled = n.shadows),
       (this.sky = new SkyDome()),
       this.scene.add(this.sky.mesh),
-      this.scene.add(ZC()),
+      (this.terrain = ZC()),
+      this.scene.add(this.terrain),
       (this.water = $C()),
       this.scene.add(this.water),
       (this.nav = new NR(this.physics)),
@@ -43132,6 +43568,35 @@ class XR {
   postfx;
   hemi;
   envMap = null;
+  updateSteepViewVisuals() {
+    const pitch = this.controller.pitch;
+    const steep = pitch < -0.55;
+    const high = this.camera.position.y > 55;
+    if (this.terrain) {
+      const recv = !(steep && high);
+      if (recv !== this._terrainRecvShadow) {
+        this._terrainRecvShadow = recv;
+        this.terrain.traverse((ch) => {
+          ch.isMesh && (ch.receiveShadow = recv);
+        });
+      }
+    }
+    if (this.water) this.water.receiveShadow = !(steep && high);
+    const baseNear = 0.35;
+    const alt = Math.max(0, this.camera.position.y - 35);
+    const near = steep && high ? Math.min(1.25, baseNear + alt * 0.004) : baseNear;
+    if (Math.abs(this.camera.near - near) > 0.06) {
+      this.camera.near = near;
+      this.camera.updateProjectionMatrix();
+    }
+    if (steep && high) {
+      this.sun.shadow.bias = -0.0032;
+      this.sun.shadow.normalBias = 0.055;
+    } else {
+      this.sun.shadow.bias = -0.0015;
+      this.sun.shadow.normalBias = 0.03;
+    }
+  }
   applyVisualMode(e) {
     if (((this.rtx = e), !this.envMap))
       try {
@@ -44371,11 +44836,13 @@ class XR {
       this.build.update(this.player, this.characters),
       this.structures.update(e),
       this.controller.updateCamera(e, this.playerWorld),
-      this.statics.update(this.camera.position, e),
+      this.updateSteepViewVisuals(),
+      this.statics.update(this.camera, e, this.lowPerf),
+      this.structures.cullVisibility(this.camera, e, this.lowPerf),
       (!this.lowPerf || this.frame % 2 === 0) && this.mapGen.update(e),
-      (!this.lowPerf || this.frame % 2 === 0) && this.props.update(this.time, this.camera.position, e),
+      (!this.lowPerf || this.frame % 2 === 0) && this.props.update(this.time, this.camera, e, this.lowPerf),
       (this.water.position.y = xt.waterLevel + Math.sin(this.time * 0.8) * 0.045),
-      this.pickups.update(this.time, this.camera.position, e),
+      this.pickups.update(this.time, this.camera, e, this.lowPerf),
       this.effects.update(e, this.camera.position),
       this.sun.position.copy((!this.player.alive && this.controller.spectate) ? this.controller.spectate.pos : this.player.pos).addScaledVector(SUN_DIR, 150),
       this.sun.target.position.copy((!this.player.alive && this.controller.spectate) ? this.controller.spectate.pos : this.player.pos),
@@ -44394,8 +44861,10 @@ class XR {
       this.build.update(this.player, this.characters),
       this.structures.update(e),
       this.controller.updateCamera(e, this.playerWorld),
-      this.statics.update(this.camera.position, e),
-      this.pickups.update(this.time, this.camera.position, e),
+      this.updateSteepViewVisuals(),
+      this.statics.update(this.camera, e, this.lowPerf),
+      this.structures.cullVisibility(this.camera, e, this.lowPerf),
+      this.pickups.update(this.time, this.camera, e, this.lowPerf),
       this.effects.update(e, this.camera.position),
       this.player.pos.y < as.center.y - 40 &&
         this.spawnIsland &&
@@ -45220,6 +45689,18 @@ class XR {
               dirToSafe: f,
             },
         prompt: isSpec ? null : this.controller.prompt,
+        promptPos: (() => {
+          if (isSpec || !this.controller.prompt || !this.controller.nearPickup) return null;
+          this.tmpV.set(this.controller.nearPickup.pos.x, this.controller.nearPickup.pos.y + 0.78, this.controller.nearPickup.pos.z);
+          this.tmpV.project(this.camera);
+          if (this.tmpV.z < -1 || this.tmpV.z > 1) return null;
+          const cw = this.canvas.clientWidth || 1,
+            ch = this.canvas.clientHeight || 1;
+          const px = (this.tmpV.x * 0.5 + 0.5) * cw,
+            py = (-this.tmpV.y * 0.5 + 0.5) * ch;
+          if (px < -40 || py < -40 || px > cw + 40 || py > ch + 40) return null;
+          return { x: px, y: py };
+        })(),
         reload: e.reload ? 1 - e.reload.t / e.reload.total : null,
         using: e.using
           ? { name: t.slots[e.using.slot]?.def.name ?? "Item", progress: 1 - e.using.t / e.using.total }
@@ -50912,10 +51393,22 @@ function TD({ hud: r, mapImage: e, pois: t, network: n }) {
           ],
         }),
       f &&
+        r.prompt &&
+        r.promptPos &&
+        z.jsx("div", {
+          className: "pointer-events-none absolute z-20 text-center",
+          style: { left: r.promptPos.x, top: r.promptPos.y, transform: "translate(-50%, calc(-100% - 10px))" },
+          children: z.jsx("div", {
+            className: "rounded-lg bg-black/60 px-3 py-1.5 text-sm font-bold backdrop-blur",
+            children: r.prompt,
+          }),
+        }),
+      f &&
         z.jsxs("div", {
-          className: "absolute left-1/2 top-[58%] -translate-x-1/2 text-center",
+          className: "absolute left-1/2 top-[58%] -translate-x-1/2 text-center pointer-events-none",
           children: [
             r.prompt &&
+              !r.promptPos &&
               z.jsx("div", {
                 className: "rounded-lg bg-black/60 px-3 py-1.5 text-sm font-bold backdrop-blur",
                 children: r.prompt,
