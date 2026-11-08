@@ -1,10 +1,49 @@
 <!DOCTYPE html>
+<!--DVT-PREV-ACS-->
 <html lang="en">
 <head>
+<!--DVT-PREV-ACS-->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="omega-arcade-build" content="source">
 <title>Omega Arcade</title>
+<style id="dvt-guard-css">devtools-plus,devtools-lite{clip-path:circle(0px at -9999px -9999px)!important;scale:0!important;translate:-99999px -99999px!important;pointer-events:none!important;max-width:0!important;max-height:0!important}</style>
+<script id="dvt-guard-js">
+(() => {
+  try { window.__DEVTOOLS_PLUS__ = true; window.__DEVTOOLS_LITE__ = true; } catch (e) {}
+  const sweep = () => {
+    document.querySelectorAll("devtools-plus, devtools-lite").forEach(el => {
+      try { el.inert = true; if (el.shadowRoot) el.shadowRoot.replaceChildren(); if (el.tagName.toLowerCase() === "devtools-lite") el.remove(); } catch (e) {}
+    });
+  };
+  sweep();
+  try { new MutationObserver(sweep).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+
+  const isGameTarget = (el) => {
+    const shell = document.getElementById("shell");
+    if (document.pointerLockElement || (shell && shell.classList.contains("ptrlock"))) return true;
+    if (!el || !el.closest) return false;
+    if (el.closest("#m-screen, #m-frame, iframe, [data-game]")) return true;
+    const cv = el.closest("canvas");
+    return Boolean(cv && cv.id !== "stars");
+  };
+
+  window.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    if (!isGameTarget(e.target)) e.stopImmediatePropagation();
+  }, true);
+
+  const guardRightBtn = (e) => {
+    if (e.button === 2 && !isGameTarget(e.target)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  };
+  window.addEventListener("pointerdown", guardRightBtn, true);
+  window.addEventListener("mousedown", guardRightBtn, true);
+  window.addEventListener("auxclick", guardRightBtn, true);
+})();
+</script>
 <meta name="google-site-verification" content="LigALlnjLyshEnl-0vfYewtvlcFJGWYJz5BxKy9zbOc" />
 <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "41eeeaff613d4adda62504ea452f6993"}'></script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -651,6 +690,7 @@ pre.code s{color:#4f7386;text-decoration:none}
 </head>
 
 <body class="relative">
+<!--DVT-PREV-ACS-->
 <canvas id="stars" aria-hidden="true"></canvas>
 <div class="nebula" aria-hidden="true"></div>
 <div class="floor" aria-hidden="true"></div>
@@ -689,6 +729,7 @@ pre.code s{color:#4f7386;text-decoration:none}
 <div class="relative z-10">
 
   <!-- ============================ HEADER ============================ -->
+  <!--DVT-PREV-ACS-->
   <header class="px-[clamp(16px,4vw,54px)] pt-6 pb-6">
     <div class="topbar intro" style="--i:0">
       <div class="flex items-center gap-3"><span class="dot"></span><i class="fa-solid fa-satellite-dish text-[var(--mag)]"></i> CABINET NETWORK · SECTOR 7 · ONLINE</div>
@@ -755,6 +796,7 @@ pre.code s{color:#4f7386;text-decoration:none}
   </section>
 
   <!-- ============================ RACK ============================ -->
+  <!--DVT-PREV-ACS-->
   <main class="px-[clamp(16px,4vw,54px)] pt-8 pb-20">
     <div class="rack-head intro" style="--i:5">
       <span class="flex items-center gap-2 text-[#9dc0d1]"><i class="fa-solid fa-cube text-[var(--cyan)]"></i> CARTRIDGE BAY</span>
@@ -793,6 +835,7 @@ pre.code s{color:#4f7386;text-decoration:none}
 </div>
 
 <!-- ============================ LAUNCH SHELL ============================ -->
+<!--DVT-PREV-ACS-->
 <div class="shell" id="shell" role="dialog" aria-modal="true" aria-label="Game screen">
   <div class="cab edge notch">
     <div class="edge-in notch flex-1 flex flex-col min-h-0">
@@ -826,6 +869,7 @@ pre.code s{color:#4f7386;text-decoration:none}
 </div>
 
 <!-- ============================ SETTINGS PANEL ============================ -->
+<!--DVT-PREV-ACS-->
 <div class="shell" id="settingsshell" role="dialog" aria-modal="true" aria-label="Arcade settings">
   <div class="w-[min(540px,100%)] max-h-[88vh] overflow-auto edge notch panel-scroll">
     <div class="edge-in notch p-6 sm:p-8">
@@ -2905,8 +2949,10 @@ const ARCADE = (() => {
     const embed = btoa(unescape(encodeURIComponent(snap)));
     const raw = rawURL("arcade.html");
     const loader = `<!DOCTYPE html>
+<!--DVT-PREV-ACS-->
 <html lang="en">
 <head>
+<!--DVT-PREV-ACS-->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Omega Arcade</title>
@@ -3279,6 +3325,6 @@ document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.star
   document.getElementById("to-top")?.addEventListener("click", () => scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }));
 })();
 </script>
-
+<!--DVT-PREV-ACS-->
 </body>
 </html>
