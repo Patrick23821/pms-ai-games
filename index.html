@@ -3096,8 +3096,9 @@ body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;
         m.setAttribute("name","omega-arcade-offline");
         m.setAttribute("content","1");
         head.insertBefore(m,head.firstChild);
+        head.insertBefore(d.createComment("DVT-PREV-ACS"),head.firstChild);
       }
-      return "<!DOCTYPE html>\\n"+d.documentElement.outerHTML;
+      return "<!DOCTYPE html>\\n<!--DVT-PREV-ACS-->\\n"+d.documentElement.outerHTML;
     }catch(e){
       return h;
     }
