@@ -26,6 +26,15 @@
       "hidden": false
     },
     {
+      "file": "canmatch.html",
+      "title": "Can Match",
+      "tagline": "Not too interesting but works for killing time.",
+      "tags": ["casual"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/canmatch.webp",
+      "hidden": false
+      "models": ["Claude Opus 5.5", "Gemini 4 Argon"]
+    },
+    {
       "file": "hyperrooms.html",
       "title": "HyperRooms (4D)",
       "tagline": "4D escape room by Gemini + Grok",
