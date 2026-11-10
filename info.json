@@ -156,7 +156,7 @@
       "tags": ["fun", "multiplayer"],
       "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/minesweeper_island.webp",
       "hidden": false
-      "models": ["Claude Opus 5.5", "Cursor Composer 2.5"]
+      "models": ["Claude Opus 5.5", "Cursor Composer 2.5", "Gemini 3.8 flash"]
     },
     {
       "file": "hideandseek.html",
