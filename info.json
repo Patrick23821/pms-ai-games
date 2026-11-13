@@ -35,6 +35,15 @@
       "models": ["Claude Opus 5.5", "Gemini 4 Argon"]
     },
     {
+      "file": "timelapse.html",
+      "title": "Timelapse",
+      "tagline": "Game of time.",
+      "tags": ["casual", "multiplayer", "party"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/timelapse.webp",
+      "hidden": false
+      "models": ["Claude Fable 5.1", "Gemini 4 Carbon"]
+    },
+    {
       "file": "hyperrooms.html",
       "title": "HyperRooms (4D)",
       "tagline": "4D escape room by Gemini + Grok",
