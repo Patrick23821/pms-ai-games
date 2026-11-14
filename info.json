@@ -62,6 +62,15 @@
       "models": ["Claude Opus 5.5", "Gemini 4 Argon"]
     },
     {
+      "file": "reeloverboard.html",
+      "title": "Reel Overboard",
+      "tagline": "LETS GO GAMBLING!!! Warning: may contain inconvenient bugs",
+      "tags": ["multiplayer"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/partygameofluck.webp",
+      "hidden": false
+      "models": ["Claude Opus 5.5"]
+    },
+    {
       "file": "nocontext.html",
       "title": "No Context",
       "tagline": "Answer a question, but the impostor cannot see it.",
