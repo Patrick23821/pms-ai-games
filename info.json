@@ -61,6 +61,15 @@
       "hidden": false
       "models": ["Claude Opus 5.5", "Gemini 4 Argon"]
     },
+      {
+      "file": "noodlehooligans.html",
+      "title": "Noodle Hooligans",
+      "tagline": "Quit Noodling Around! This is a Gang beast inspired game. Note: Expect bugs as this game isn't even polished yet.",
+      "tags": ["multiplayer", "casual"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/noodlehooligans.webp",
+      "hidden": false
+      "models": ["Claude Opus 5.5", "Gemini 4 Carbon"]
+    },
     {
       "file": "reeloverboard.html",
       "title": "Reel Overboard",
