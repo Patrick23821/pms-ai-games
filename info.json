@@ -125,6 +125,15 @@
       "models": ["Claude Opus 5.5"]
     },
     {
+      "file": "guesshowmany.html",
+      "title": "Flood Escape",
+      "tagline": "Guess how many objects are in the Jar, where closer is better. Based off of Guess How Many on Roblox.",
+      "tags": ["multiplayer", "fun"],
+      "thumb": "https://Patrick23821.github.io/pms-ai-games/thumbnails/guesshowmany.webp",
+      "hidden": false
+      "models": ["Claude Opus 5.5"]
+    },
+    {
       "file": "murdermayhem.html",
       "title": "Murder Mayhem",
       "tagline": "A game of social deduction.",
