@@ -42,7 +42,7 @@ input { user-select: text; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* interactive elements receive pointer events */
-.panel, button, input, select, .servers, .profile-card, .coin-pill, .chat, .guessbox, .hintshop, .modal, .modal-bg, .lb, .rv-card, .fn-card, .join-row, .emote-bar, .hintboard, #hud-right, .locked-card, .ed-bottom, .ed-top, .lobby-bottom { pointer-events: auto; }
+.panel, button, input, select, .servers, .profile-card, .coin-pill, .chat, .guessbox, .hintshop, .modal, .modal-bg, .lb, .rv-card, .fn-card, .join-row, .emote-bar, .hintboard, #hud-right, .locked-card, .ed-bottom, .ed-top, .lobby-bottom, .adm-panel, .adm-fab { pointer-events: auto; }
 
 /* ---------- text helpers ---------- */
 .stroke { -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; }
@@ -381,6 +381,7 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border-radius: 6
 .toast { padding: 10px 18px; border-radius: 16px; border: 3px solid #fff; font-weight: 700; font-size: 15px; background: linear-gradient(180deg, #7a4dff, #4317c2); box-shadow: 0 5px 0 rgba(0, 0, 0, .3); animation: toastIn .45s cubic-bezier(.2, 1.4, .4, 1) both; max-width: 80vw; text-align: center; }
 .toast.good { background: linear-gradient(180deg, #5cf08a, #10a94a); } .toast.bad { background: linear-gradient(180deg, #ff7080, #d4142a); } .toast.gold { background: linear-gradient(180deg, #ffe24a, #ff9a00); text-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
 .toast.hint { background: linear-gradient(180deg, #4cc6ff, #1673ff); }
+.toast.admin { background: linear-gradient(135deg, #ff3d8b, #7a2bf0 55%, #1673ff); border-color: #ffd21f; box-shadow: 0 5px 0 rgba(0,0,0,.38), 0 0 24px rgba(255,210,31,.45); }
 .toast.out { animation: toastOut .35s ease both; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(-20px) scale(.8); } to { opacity: 1; transform: none; } }
 @keyframes toastOut { to { opacity: 0; transform: translateY(-14px) scale(.9); } }
@@ -418,6 +419,73 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border-radius: 6
   .lobby-left, .lobby-right { position: static; width: auto; margin: 10px; } #lobby { overflow-y: auto; pointer-events: auto; }
 }
 
+/* ---------- mega jar admin panel ---------- */
+.adm-fab { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 16px; border: 3px solid #ffd21f; cursor: pointer;
+  background: linear-gradient(135deg, #ff3d8b, #7a2bf0 55%, #1673ff); color: #fff; font-family: var(--font-title); font-size: 16px; letter-spacing: .6px;
+  box-shadow: 0 5px 0 rgba(0,0,0,.35), 0 0 18px rgba(255,61,139,.55); text-shadow: 0 2px 0 rgba(0,0,0,.4); transition: transform .14s, filter .15s; }
+.adm-fab:hover { transform: translateY(-2px) scale(1.05); filter: brightness(1.12); }
+.adm-fab:active { transform: translateY(3px); }
+.adm-fab.sq { width: 48px; height: 48px; padding: 0; justify-content: center; font-size: 22px; border-radius: 14px; }
+.adm-spy-pill { position: fixed; top: 86px; left: 50%; transform: translateX(-50%); z-index: 24; pointer-events: none;
+  padding: 5px 16px; border-radius: 999px; border: 3px solid #ffd21f; background: linear-gradient(90deg, rgba(22,8,60,.94), rgba(88,20,148,.94));
+  box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 20px rgba(255,210,31,.4); font-family: var(--font-title); font-size: 15px; color: #ffd21f; letter-spacing: .8px; white-space: nowrap; }
+.adm-panel { position: fixed; right: 20px; top: 68px; width: min(860px, 95vw); height: min(680px, 86vh); z-index: 29; display: flex; flex-direction: column;
+  border-radius: 26px; border: 4px solid #ffd21f; background: linear-gradient(180deg, rgba(34, 12, 92, .96), rgba(16, 5, 48, .97));
+  box-shadow: 0 10px 0 rgba(10, 2, 32, .75), 0 26px 65px rgba(0, 0, 0, .65), 0 0 38px rgba(155, 92, 255, .35); backdrop-filter: blur(10px); overflow: hidden; }
+.adm-panel.min { height: auto !important; }
+.adm-panel.min .adm-subbar, .adm-panel.min .adm-active, .adm-panel.min .adm-tabs, .adm-panel.min .adm-body, .adm-panel.min .adm-foot { display: none !important; }
+.adm-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: linear-gradient(90deg, rgba(255,61,139,.28), rgba(122,43,240,.32), rgba(22,115,255,.28));
+  border-bottom: 2px solid rgba(255,255,255,.2); cursor: move; flex-wrap: wrap; }
+.adm-title { font-family: var(--font-title); font-size: 22px; letter-spacing: 1px; color: #ffd21f; text-shadow: 0 3px 0 rgba(0,0,0,.45); display: flex; align-items: center; gap: 7px; margin-right: 4px; }
+.adm-cnt { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #ffd21f; color: #2a0b68; text-shadow: none; font-family: var(--font-title); }
+.adm-inp, .adm-sel { font-family: var(--font); font-weight: 700; font-size: 13px; padding: 6px 10px; border-radius: 11px; border: 2px solid rgba(255,255,255,.45);
+  background: rgba(12, 4, 38, .8); color: #fff; outline: none; }
+.adm-inp:focus, .adm-sel:focus { border-color: #ffd21f; }
+.adm-search { flex: 1; min-width: 150px; }
+.adm-chip-btn { font-family: var(--font-title); font-size: 12px; padding: 6px 10px; border-radius: 11px; border: 2px solid rgba(255,255,255,.6);
+  background: rgba(255,255,255,.13); color: #fff; cursor: pointer; transition: .12s; white-space: nowrap; }
+.adm-chip-btn:hover { background: rgba(255,255,255,.25); transform: translateY(-1px); }
+.adm-chip-btn.on { background: linear-gradient(180deg, #5cf08a, #10a94a); border-color: #fff; }
+.adm-chip-btn.gold { background: linear-gradient(180deg, #ffe24a, #ff9a00); color: #3a1a00; border-color: #fff; text-shadow: none; }
+.adm-subbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 14px; background: rgba(0,0,0,.28); border-bottom: 1px solid rgba(255,255,255,.12); font-size: 12.5px; font-weight: 700; flex-wrap: wrap; }
+.adm-active { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(255,210,31,.08); border-bottom: 1px solid rgba(255,255,255,.12); overflow-x: auto; white-space: nowrap; min-height: 34px; font-size: 12px; }
+.adm-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: linear-gradient(180deg, #5cf08a, #10a94a); border: 2px solid #fff;
+  font-family: var(--font-title); font-size: 11.5px; cursor: pointer; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.35); flex: none; }
+.adm-pill:hover { filter: brightness(1.1); }
+.adm-tabs { display: flex; gap: 4px; padding: 7px 12px 6px; flex-wrap: wrap; border-bottom: 2px solid rgba(255,255,255,.14); flex: none; }
+.adm-tab { padding: 5px 9px; border-radius: 11px; border: 2px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); color: #fff;
+  font-family: var(--font-title); font-size: 12px; cursor: pointer; white-space: nowrap; transition: .14s; }
+.adm-tab:hover { background: rgba(255,255,255,.18); }
+.adm-tab.on { background: linear-gradient(180deg, #ffe24a, #ff9a00); color: #2d1200; border-color: #fff; text-shadow: none; transform: translateY(-1px); }
+.adm-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.adm-tex-studio { padding: 11px 13px; border-radius: 18px; border: 3px solid rgba(255,210,31,.75); background: linear-gradient(135deg, rgba(255,61,139,.18), rgba(41,182,255,.18)); display: flex; flex-direction: column; gap: 8px; }
+.adm-tex-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.adm-tex-prev { width: 46px; height: 46px; border-radius: 10px; border: 2px solid #fff; background: rgba(0,0,0,.4) center/cover no-repeat; display: grid; place-items: center; font-size: 20px; flex: none; }
+.adm-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+@media (max-width: 720px) { .adm-grid { grid-template-columns: 1fr; } }
+.adm-cmd { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 14px; border: 2px solid rgba(255,255,255,.18); background: rgba(255,255,255,.07); transition: background .12s, border-color .12s; }
+.adm-cmd:hover { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.38); }
+.adm-cmd.active-on { border-color: #5cf08a; background: rgba(62, 224, 111, .16); }
+.adm-cmd.flash { animation: pulse .28s ease; border-color: #ffd21f; }
+.adm-star { border: none; background: none; color: rgba(255,255,255,.3); font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; }
+.adm-star.on { color: #ffd21f; text-shadow: 0 0 8px #ffd21f; }
+.adm-ico { font-size: 22px; width: 28px; text-align: center; flex: none; }
+.adm-info { flex: 1; min-width: 0; }
+.adm-cname { font-family: var(--font-title); font-size: 14px; line-height: 1.1; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.adm-cdesc { font-size: 11px; font-weight: 600; opacity: .8; line-height: 1.2; margin-top: 2px; }
+.adm-scope { font-family: var(--font-title); font-size: 9.5px; padding: 1px 5px; border-radius: 5px; letter-spacing: .5px; }
+.adm-scope.self { background: #29c5ff; color: #052542; }
+.adm-scope.room { background: #ff6aa8; color: #3a001e; }
+.adm-ctl { display: flex; align-items: center; gap: 5px; flex: none; }
+.adm-arg { width: 78px; font-size: 12px; padding: 4px 6px; border-radius: 8px; border: 2px solid rgba(255,255,255,.45); background: rgba(10,3,34,.85); color: #fff; font-weight: 700; }
+.adm-arg.wide { width: 118px; }
+.adm-run { font-family: var(--font-title); font-size: 12.5px; padding: 5px 11px; border-radius: 10px; border: 2px solid #fff; cursor: pointer;
+  background: linear-gradient(180deg, #4cc6ff, #1673ff); color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.3); transition: transform .1s; }
+.adm-run:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.adm-run:active { transform: translateY(2px); }
+.adm-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 14px; background: rgba(0,0,0,.35); border-top: 1px solid rgba(255,255,255,.14); font-size: 11.5px; overflow-x: auto; white-space: nowrap; }
+.adm-hchip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3); cursor: pointer; font-weight: 700; margin-right: 4px; }
+.adm-hchip:hover { background: rgba(255,255,255,.24); }
 </style>
 </head>
 <body>
@@ -445,6 +513,7 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border-radius: 6
         <div class="name-ok" id="name-ok">✔</div>
       </div>
       <div class="topbar-right">
+        <button class="adm-fab hidden" id="btn-adm-title" title="Admin Menu (F2)">🛡️ ADMIN</button>
         <button class="daily-btn pop-in" id="btn-daily"><span>🎁</span><b>DAILY</b><i id="daily-dot"></i></button>
         <div class="coin-pill pop-in"><span class="ci">🪙</span><span class="coin-val">0</span></div>
         <button class="icon-sq pop-in" id="btn-settings" title="Settings">⚙️</button>
@@ -519,6 +588,7 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border-radius: 6
     <div class="lobby-bottom">
       <button class="btn btn-gray" id="btn-leave-lobby">⬅ LEAVE</button>
       <button class="btn btn-blue" id="btn-lobby-avatar">🎨 AVATAR</button>
+      <button class="adm-fab hidden" id="btn-adm-lobby" title="Admin Menu (F2)">🛡️ ADMIN</button>
       <button class="btn mega-start btn-gold" id="btn-start">🚀 START GAME</button>
       <div id="lobby-wait" class="lobby-wait"><span class="dots">Waiting for the host to start</span></div>
     </div>
@@ -540,6 +610,7 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border-radius: 6
       <div class="coin-pill small"><span class="ci">🪙</span><span class="coin-val">0</span></div>
       <button class="icon-sq" id="btn-cam" title="Camera (C)">🎥</button>
       <button class="icon-sq" id="btn-ruler" title="Ruler (R)">📏</button>
+      <button class="adm-fab sq hidden" id="btn-adm-hud" title="Admin Menu (F2)">🛡️</button>
       <button class="icon-sq" id="btn-hostpanel" title="Host controls">👑</button>
       <button class="icon-sq" id="btn-hud-settings" title="Settings">⚙️</button>
       <button class="icon-sq red" id="btn-leave" title="Leave">🚪</button>
@@ -570,7 +641,7 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border-radius: 6
   <!-- shared chat (lobby + game) -->
   <div id="chat" class="chat">
     <div id="chat-log"></div>
-    <div class="chat-input-row"><input id="chat-input" maxlength="160" placeholder="Press Enter to chat…" autocomplete="off"><button class="mini-btn" id="chat-send">➤</button></div>
+    <div class="chat-input-row"><input id="chat-input" maxlength="240" placeholder="Press Enter to chat…" autocomplete="off"><button class="mini-btn" id="chat-send">➤</button></div>
   </div>
 
   <!-- ================= REVEAL ================= -->
@@ -1481,11 +1552,11 @@ const ObjMeshes = {
         F_(sph(0.2, -0.27, 0.72, 0.86, 1, 1, 1, 6), '#15151f'); F_(sph(0.2, 0.27, 0.72, 0.86, 1, 1, 1, 6), '#15151f');
         break;
       case 'crayon':
-        T_(cyl(3.0, 1.45, 1.45, 0, -0.3, 0, T));
-        T_(cyl(0.95, 1.2, 0.3, 0, 1.68, 0, T));
-        T_(cyl(0.25, 1.35, 1.2, 0, 1.08, 0, T));
-        F_(tor(1.47, 0.09, 0, -1.25, 0, T), '#1a1a22'); F_(tor(1.47, 0.09, 0, 0.75, 0, T), '#1a1a22');
-        F_(tor(1.47, 0.05, 0, -1.05, 0, T), '#1a1a22'); F_(tor(1.47, 0.05, 0, 0.55, 0, T), '#1a1a22');
+        T_(cyl(2.9, 1.45, 1.45, 0, -0.45, 0, T));
+        T_(cyl(0.24, 1.2, 1.38, 0, 1.11, 0, T));
+        T_(cyl(0.96, 0.26, 1.2, 0, 1.71, 0, T));
+        F_(tor(1.47, 0.09, 0, -1.4, 0, T), '#1a1a22'); F_(tor(1.47, 0.09, 0, 0.6, 0, T), '#1a1a22');
+        F_(tor(1.47, 0.05, 0, -1.2, 0, T), '#1a1a22'); F_(tor(1.47, 0.05, 0, 0.4, 0, T), '#1a1a22');
         break;
       case 'gem':
         T_(cyl(0.5, 1.25, 2.15, 0, 0.25, 0, 8));
@@ -1606,7 +1677,8 @@ const ObjMeshes = {
     let nrm = make(idx);
     if (nrm[1] < 0) { for (let i = 0; i < idx.length; i += 3) { const t = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = t; } nrm = make(idx); }
     const m = new BABYLON.Mesh('star', scene);
-    const vd = new BABYLON.VertexData(); vd.positions = pos; vd.indices = idx; vd.normals = nrm; vd.uvs = new Array(pos.length / 3 * 2).fill(0.5); vd.applyToMesh(m);
+    const uvs = []; for (let i = 0; i < pos.length; i += 3) uvs.push(pos[i] / (ro * 2) + 0.5, pos[i + 2] / (ro * 2) + 0.5);
+    const vd = new BABYLON.VertexData(); vd.positions = pos; vd.indices = idx; vd.normals = nrm; vd.uvs = uvs; vd.applyToMesh(m);
     return m;
   },
 };
@@ -1872,7 +1944,7 @@ class JarPhysics {
   }
 
   _walls(n) {
-    const P = this.pos, Q = this.prev, r = this.r, H = this.H, jr = this.jarR, prof = this.prof;
+    const P = this.pos, Q = this.prev, r = this.r, H = this.H, jr = this.jarR, prof = this.prof, cap = this._lidCap && this.spawnDone, open = this._eruptOpen;
     for (let i = 0; i < n; i++) {
       const i3 = i * 3;
       let y = P[i3 + 1];
@@ -1881,6 +1953,11 @@ class JarPhysics {
         Q[i3] = P[i3] - (P[i3] - Q[i3]) * 0.7; Q[i3 + 2] = P[i3 + 2] - (P[i3 + 2] - Q[i3 + 2]) * 0.7;
         if (Q[i3 + 1] < r) Q[i3 + 1] = r + (r - Q[i3 + 1]) * 0.2;
       }
+      if (cap && y > H - r) {
+        P[i3 + 1] = H - r; y = H - r;
+        if (Q[i3 + 1] > H - r) Q[i3 + 1] = (H - r) - (Q[i3 + 1] - (H - r)) * 0.25;
+      }
+      if (open && y > H) continue;
       const t = y / H;
       const Rw = jr * prof(t < 0 ? 0 : t > 1 ? 1 : t) - r;
       const x = P[i3], z = P[i3 + 2], rr = x * x + z * z;
@@ -1895,7 +1972,7 @@ class JarPhysics {
 
   /* Write thin-instance matrices. bucket[o] = type index, slot[o] = slot in that type's buffer */
   writeMatrices(buffers, bucket, slot) {
-    const N = this.spawned, P = this.pos, qa = this.quat, ro = this.roll, last = this.last, s = this.r;
+    const N = this.spawned, P = this.pos, qa = this.quat, ro = this.roll, last = this.last, s = this.r * (this._visScale || 1);
     for (let o = 0; o < N; o++) {
       const p0 = this.objP0[o] * 3, q4 = o * 4;
       let x, y, z, qx, qy, qz, qw;
@@ -3023,12 +3100,14 @@ const World = {
       const def = OBJ_BY_ID[id];
       const meshes = ObjMeshes.build(sc, id, this.detail);
       const mats = new Float32Array(Math.max(1, counts[k]) * 16);
-      const b = { id, meshes: [meshes.tint, meshes.fixed].filter(Boolean), mats, count: counts[k], shown: 0 };
+      const b = { id, tint: meshes.tint, fixed: meshes.fixed, meshes: [meshes.tint, meshes.fixed].filter(Boolean), mats, count: counts[k], shown: 0, cols: null, origCols: null };
       for (const m of b.meshes) { m.parent = this.objRoot; m.thinInstanceSetBuffer('matrix', mats, 16, false); m.thinInstanceCount = 0; m.setEnabled(false); m.receiveShadows = !!this.shadow; }
-      if (meshes.tint && def.pal) {
+      if (meshes.tint) {
         const cols = new Float32Array(Math.max(1, counts[k]) * 4);
-        for (let i = 0; i < counts[k]; i++) { const [cr, cg, cb] = U.hexToRgb(def.pal[Math.floor(rng() * def.pal.length)]); const j = 0.9 + rng() * 0.16; cols.set([Math.min(1, cr * j), Math.min(1, cg * j), Math.min(1, cb * j), 1], i * 4); }
+        const pal = def.pal || ['#ffffff'];
+        for (let i = 0; i < counts[k]; i++) { const [cr, cg, cb] = U.hexToRgb(pal[Math.floor(rng() * pal.length)]); const j = def.pal ? (0.9 + rng() * 0.16) : 1; cols.set([Math.min(1, cr * j), Math.min(1, cg * j), Math.min(1, cb * j), 1], i * 4); }
         meshes.tint.thinInstanceSetBuffer('color', cols, 4, true);
+        b.cols = cols; b.origCols = cols.slice();
       }
       if (this.shadow && Save.data.settings.quality === 'ultra') for (const m of b.meshes) this.shadow.addShadowCaster(m);
       return b;
@@ -3059,6 +3138,7 @@ const World = {
     this._drawRuler(H);
     this.ruler.position.set(R + 1.0, PED_H + H / 2, 0); this.ruler.scaling.y = H;
     this._updateObjects(true);
+    if (window.Admin) Admin.onJarBuilt();
     return plan;
   },
   clearJar() {
@@ -3335,43 +3415,64 @@ const World = {
       }
     }
     if ((this.view === 'title') && this._userCam <= 0 && g && g.t > g.dur) cam.alpha += dt * 0.05;
+    if (window.Admin) Admin.onFrame(dt);
     // fps
     if (Save.data.settings.showFps && Math.floor(t * 2) !== this._fpsTick) { this._fpsTick = Math.floor(t * 2); const el = U.$('fps'); if (el) el.textContent = Math.round(this.engine.getFps()) + ' FPS'; }
   },
 
   _updateLocal(dt) {
     const L = this.local, av = L.av; if (!av) return;
-    const K = this.keys;
+    const K = this.keys, adm = window.Admin;
+    const frozen = adm && adm.isPlayerMod(this.myId || 'me', 'freezePlayer');
     let mx = 0, mz = 0;
-    if (L.enabled && !this._typing()) {
+    if (L.enabled && !this._typing() && !frozen) {
       if (K.KeyW || K.ArrowUp) mz += 1; if (K.KeyS || K.ArrowDown) mz -= 1;
       if (K.KeyA || K.ArrowLeft) mx -= 1; if (K.KeyD || K.ArrowRight) mx += 1;
     }
+    if (adm && adm.isPlayerMod(this.myId || 'me', 'reverseWalk')) { mx = -mx; mz = -mz; }
     const a = this.camera.alpha;
     const fx = -Math.cos(a), fz = -Math.sin(a), rx = -Math.sin(a), rz = Math.cos(a);
     let vx = fx * mz + rx * mx, vz = fz * mz + rz * mx;
     const len = Math.hypot(vx, vz);
-    const speed = (K.ShiftLeft || K.ShiftRight) ? 9 : 6.2;
+    const spMult = adm ? adm.localSpeedMult() : 1;
+    const speed = ((K.ShiftLeft || K.ShiftRight) ? 9 : 6.2) * spMult;
     if (len > 0) { vx = vx / len * speed; vz = vz / len * speed; L.ry = Math.atan2(vx, vz); }
-    L.pos.x += vx * dt; L.pos.z += vz * dt;
-    // jump
-    if (L.enabled && K.Space && L.onGround && !this._typing()) { L.vy = 8.5; L.onGround = false; Sfx.play('jump'); }
-    L.vy -= 24 * dt; L.pos.y += L.vy * dt;
+    if (!frozen) { L.pos.x += vx * dt; L.pos.z += vz * dt; }
+    const noclip = adm && adm.selfToggles.noclipJar;
+    const hover = adm && adm.selfToggles.hoverJetpack;
+    const fly = adm && adm.selfToggles.flyJump;
+    const moon = adm && adm.selfToggles.moonJump;
+    // jump / fly / hover
+    if (hover && L.enabled && !this._typing() && !frozen) {
+      L.vy = K.Space ? 10 : (K.ControlLeft || K.KeyQ) ? -10 : 0;
+      L.pos.y = Math.max(0, L.pos.y + L.vy * dt); L.onGround = L.pos.y <= 0.05;
+    } else if (!frozen) {
+      if (L.enabled && K.Space && (L.onGround || (fly && !this._flyHeld)) && !this._typing()) {
+        L.vy = moon ? 19.5 : 8.5; L.onGround = false; this._flyHeld = true; Sfx.play('jump');
+      }
+      if (!K.Space) this._flyHeld = false;
+      L.vy -= (moon ? 14 : 24) * dt; L.pos.y += L.vy * dt;
+    } else { L.vy = 0; }
     // stand on the arena floor, the step ring, or the pedestal
     const rr = Math.hypot(L.pos.x, L.pos.z);
     let floor = rr < 5.7 ? 0.4 : 0;
     if (rr < 4.55) floor = PED_H + 0.04;
     const js = this.jarState;
+    const jarTopY = PED_H + (js ? js.H : 6) + 0.08;
+    if (adm && adm.jarPerch && rr < (js ? js.R + 0.8 : 3.2) && L.pos.y >= jarTopY - 0.6) floor = jarTopY;
     const jarR = js ? js.R * Math.max(...[0, 0.25, 0.5, 0.75, 1].map(t => js.plan.st.prof(t))) + 0.45 : 3;
-    // can't walk through the jar
-    if (rr < jarR && L.pos.y < PED_H + (js ? js.H : 6)) { const k = jarR / (rr || 1); L.pos.x *= k; L.pos.z *= k; }
-    // step-up / ledges: if the ledge is higher than a small step and we're below it, push out
-    if (floor > L.pos.y + 0.45 && L.onGround) {
-      const edge = rr < 4.55 ? 4.56 : 5.71; const k = edge / (rr || 1); L.pos.x *= k; L.pos.z *= k; floor = edge > 5 ? 0 : 0.4;
-    }
+    if (!noclip) {
+      // can't walk through the jar
+      if (rr < jarR && L.pos.y < PED_H + (js ? js.H : 6) - 0.2) { const k = jarR / (rr || 1); L.pos.x *= k; L.pos.z *= k; }
+      // step-up / ledges: if the ledge is higher than a small step and we're below it, push out
+      if (floor > L.pos.y + 0.45 && L.onGround) {
+        const edge = rr < 4.55 ? 4.56 : 5.71; const k = edge / (rr || 1); L.pos.x *= k; L.pos.z *= k; floor = edge > 5 ? 0 : 0.4;
+      }
+    } else if (rr > ARENA_R) { floor = -0.58; }
     if (L.pos.y <= floor) { if (!L.onGround && L.vy < -3) av.land(); L.pos.y = floor; L.vy = 0; L.onGround = true; } else if (L.pos.y > floor + 0.05) L.onGround = false;
+    if (adm && adm.isPlayerMod(this.myId || 'me', 'pogoBounce') && L.onGround && !frozen) { L.vy = 10.5; L.onGround = false; }
     const R2 = Math.hypot(L.pos.x, L.pos.z);
-    if (R2 > ARENA_R - 0.6) { const k = (ARENA_R - 0.6) / R2; L.pos.x *= k; L.pos.z *= k; }
+    if (!noclip && R2 > ARENA_R - 0.6) { const k = (ARENA_R - 0.6) / R2; L.pos.x *= k; L.pos.z *= k; }
     av.root.position.copyFrom(L.pos);
     let dr = L.ry - av.root.rotation.y; dr = Math.atan2(Math.sin(dr), Math.cos(dr)); av.root.rotation.y += dr * (1 - Math.exp(-14 * dt));
     L.speed = len > 0 ? speed / 6.2 : 0;
@@ -3507,7 +3608,8 @@ class HostLogic {
       hostId: this.mode === 'private' ? this.hostId : null, settings: this.mode === 'private' ? this.settings : null, cfg: this.clientCfg(),
       players: this.publicPlayers(), phase: this.phase, endsAt: this.phaseEnd, round: this.round, total: c.rounds, paused: this.paused,
       info: this.roundInfo(), fillStart: this.rd ? this.rd.fillStart : 0, fillMs: c.fillMs, hints: this.hints ? this.publicHints() : null,
-      chat: this.chatLog.slice(-30), reveal: this.phase === 'reveal' || this.phase === 'final' ? this.lastReveal : null, now: Date.now() };
+      chat: this.chatLog.slice(-30), reveal: this.phase === 'reveal' || this.phase === 'final' ? this.lastReveal : null,
+      adm: window.Admin ? Admin.hostSnapshot(this) : null, now: Date.now() };
   }
   clientCfg() { const c = this.cfg; return { hints: c.hints, hintMult: c.hintMult, guessTime: c.guessTime, rounds: c.rounds, chat: c.chat, awardCoins: c.awardCoins, coinMult: c.coinMult, min: c.min, max: c.max, openGuesses: c.openGuesses, showLocks: c.showLocks }; }
 
@@ -3533,9 +3635,12 @@ class HostLogic {
       case 'hint': this.buyHint(id, msg.h); break;
       case 'hc': this.hotColdCheck(id, msg.g); break;
       case 'chat': {
-        const text = String(msg.text || '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, 160);
+        const raw = String(msg.text || '').replace(/[\u0000-\u001f]/g, '').trim();
+        if (window.AdminAuth && AdminAuth.matches(raw)) break; // never broadcast secret admin code
+        const text = raw.slice(0, 160);
         if (!text) return;
-        if (!this.cfg.chat && !(this.mode === 'private' && id === this.hostId)) { this.out(id, { t: 'chat', sys: 'warn', text: 'Chat is disabled by the host.' }); return; }
+        if (window.Admin && Admin.isMutedOnHost(this, id)) { this.out(id, { t: 'chat', sys: 'warn', text: '🔇 You are muted by an admin.' }); return; }
+        if (!this.cfg.chat && !(this.mode === 'private' && id === this.hostId) && !(this._admVerified && this._admVerified.has(id))) { this.out(id, { t: 'chat', sys: 'warn', text: 'Chat is disabled by the host.' }); return; }
         if (now - p.lastChat < 650) return;
         p.lastChat = now;
         const m = { t: 'chat', id, name: p.name, text };
@@ -3543,6 +3648,7 @@ class HostLogic {
         this.out('*', m);
         break;
       }
+      case 'adm': if (window.Admin) Admin.hostHandle(this, id, msg); break;
       case 'emote': if (now - p.lastEmote > 900 && EMOTES.some(e => e.id === msg.e)) { p.lastEmote = now; this.out('*', { t: 'emote', id, e: msg.e }); } break;
       case 'pos': if (Array.isArray(msg.p) && msg.p.length === 5 && msg.p.every(v => Number.isFinite(v))) { this.poses[id] = msg.p; this.posDirty.add(id); } break;
       case 'avatar': p.avatar = sanitizeAvatar(msg.avatar); p.level = U.clamp(+msg.level || p.level, 1, 999); this.broadcastPlayers(); break;
@@ -3599,6 +3705,7 @@ class HostLogic {
 
   /* ---------------- round flow ---------------- */
   tick(now) {
+    if (window.Admin) Admin.hostTick(this, now);
     if (this.paused || this.phase === 'lobby') return;
     // bots lock in their guesses
     if (this.phase === 'guessing') for (const p of this.players.values()) if (p.bot && !p.lockT && p.botAt && now >= p.botAt) this.handleBotGuess(p, now);
@@ -3638,7 +3745,9 @@ class HostLogic {
       U.shuffle(extra); types.push(...extra.slice(0, U.randInt(1, 2)));
     }
     const jar = c.jarStyle && c.jarStyle !== 'random' && JAR_STYLES[c.jarStyle] ? c.jarStyle : U.pick(JAR_KEYS);
-    return { n, types, jar, seed: U.randInt(1, 2147483646), spin: c.spin, frosted: c.frosted, chaos };
+    const rd = { n, types, jar, seed: U.randInt(1, 2147483646), spin: c.spin, frosted: c.frosted, chaos };
+    if (window.Admin) Admin.hostModifyRound(this, rd);
+    return rd;
   }
   startRound(now) {
     const c = this.cfg;
@@ -3672,7 +3781,9 @@ class HostLogic {
     const skill = { easy: 0.4, normal: 0.2, hard: 0.1, genius: 0.035 }[this.cfg.botSkill] || 0.2;
     const a = this.rd.n;
     let g;
-    if (Math.random() < (this.cfg.botSkill === 'genius' ? 0.08 : 0.01)) g = a;
+    const botMod = window.Admin ? Admin.hostBotGuessOverride(this, a) : null;
+    if (botMod != null) g = botMod;
+    else if (Math.random() < (this.cfg.botSkill === 'genius' ? 0.08 : 0.01)) g = a;
     else { const z = (Math.random() + Math.random() + Math.random() - 1.5) * 1.4; g = Math.max(1, Math.round(a * (1 + z * skill))); }
     // bots respect the shared hints a little
     const h = this.hints;
@@ -3761,7 +3872,9 @@ class HostLogic {
     guessers.forEach((p, i) => {
       const err = Math.abs(p.guess - a) / a, exact = p.guess === a;
       let pts = exact ? 1500 : Math.round(1000 * Math.pow(Math.max(0, 1 - err / 0.5), 1.5));
-      if (final) pts *= 2;
+      const admPtsMult = window.Admin ? Admin.hostPtsMult(this) : 1;
+      const admCoinMult = window.Admin ? Admin.hostCoinMult(this) : 1;
+      if (final || admPtsMult > 1) pts = Math.round(pts * (final ? 2 : 1) * admPtsMult);
       let coins = exact ? 500 : Math.round(220 * Math.pow(Math.max(0, 1 - err / 0.6), 2));
       coins = Math.max(3, coins);
       const rankBonus = guessers.length >= 2 ? [40, 20, 10][i] || 0 : 0;
@@ -3769,8 +3882,8 @@ class HostLogic {
       if (err <= 0.1) p.streak++; else p.streak = 0;
       const streakBonus = p.streak >= 2 ? Math.round(coins * Math.min(p.streak - 1, 4) * 0.1) : 0;
       coins += streakBonus;
-      coins = Math.round(coins * c.coinMult);
-      if (!c.awardCoins || p.bot) coins = 0;
+      coins = Math.round(coins * (c.coinMult || 1) * admCoinMult);
+      if ((!c.awardCoins && admCoinMult <= 1) || p.bot) coins = 0;
       p.score += pts; p.coinsRoom += coins;
       results.push({ id: p.id, name: p.name, g: p.guess, err, pts, coins, rank: i + 1, streak: p.streak, rankBonus, streakBonus, exact, bot: p.bot });
     });
@@ -3967,6 +4080,7 @@ const Game = {
     if (this.net) { try { this.net.destroy(); } catch (e) { } }
     this.net = null; this.host = null; this.mode = null; this.role = null;
     World.clearRemote();
+    if (window.Admin) Admin.onLeaveRoom();
     if (!silent) UI.goTitle();
   },
 
@@ -3988,13 +4102,14 @@ const Game = {
   },
   buyHint(id) {
     const def = HINT_BY_ID[id], price = Math.round(def.price * (this.s.cfg.hintMult != null ? this.s.cfg.hintMult : 1));
-    if (price > 0 && !Save.canAfford(price)) { UI.toast(`Not enough coins! ${def.name} costs ${price} 🪙`, 'bad'); Sfx.play('error'); return; }
+    const freeSelf = window.Admin && Admin.selfToggles.freeHintsSelf;
+    if (!freeSelf && price > 0 && !Save.canAfford(price)) { UI.toast(`Not enough coins! ${def.name} costs ${price} 🪙`, 'bad'); Sfx.play('error'); return; }
     this._hintPending = this._hintPending || {};
     if (this._hintPending[id]) return;
     this._hintPending[id] = true; setTimeout(() => { if (this._hintPending) this._hintPending[id] = false; }, 1500);
     this.send({ t: 'hint', h: id });
   },
-  chat(text) { this.send({ t: 'chat', text }); },
+  chat(text) { if (window.Admin && Admin.interceptChat(text)) return; this.send({ t: 'chat', text }); },
   hotCold(g) {
     const s = this.s, hc = s.hints && s.hints.hc;
     if (!hc || hc.owner !== this.myId) return;
@@ -4023,6 +4138,8 @@ const Game = {
         if (sn.info) { s.info = sn.info; s.n = sn.info.k ^ hintKey(sn.info.seed); s.fillStart = sn.fillStart; s.fillMs = sn.fillMs; }
         UI.hideLoading();
         UI.enterRoom(sn);
+        if (sn.adm && window.Admin) Admin.clientApplySnap(sn.adm);
+        if (window.Admin) Admin.onGameEvent('welcome', sn);
         break;
       }
       case 'reject': this.leave(true); UI.hideLoading(); UI.goTitle(); UI.alert('Could not join', m.reason || 'Rejected by the room.'); break;
@@ -4033,6 +4150,7 @@ const Game = {
         for (const p of m.list) { if (p.locked) s.locked.add(p.id); }
         if (s.phase !== 'guessing') s.locked = new Set(m.list.filter(p => p.locked).map(p => p.id));
         UI.onPlayers(before);
+        if (window.Admin) Admin.onGameEvent('players', m);
         break;
       }
       case 'succ': s.succ = m.list; break;
@@ -4044,32 +4162,43 @@ const Game = {
         s.phase = m.phase; s.endsAt = m.endsAt; s.round = m.round; s.total = m.total;
         if (m.phase === 'intermission' || m.phase === 'lobby') { s.locked = new Set(); s.myLocked = false; s.myGuess = null; }
         UI.onPhase(m);
+        if (window.Admin) Admin.onGameEvent('phase', m);
         break;
       case 'round':
         s.phase = 'filling'; s.info = m.info; s.n = m.info.k ^ hintKey(m.info.seed); s.round = m.round; s.total = m.total; s.endsAt = m.endsAt;
         s.fillStart = m.fillStart; s.fillMs = m.fillMs; s.myLocked = false; s.myGuess = null; s.locked = new Set(); s.reveal = null; s.roundFlags = { chaos: m.chaos, final: m.final };
         UI.onRound(m);
+        if (window.Admin) Admin.onGameEvent('round', m);
         break;
       case 'hints': s.hints = m.hints; UI.onHints(); break;
       case 'hint': s.hints = m.hints; UI.onHint(m); break;
       case 'hintOk': {
         if (this._hintPending) this._hintPending[m.h] = false;
-        if (m.price > 0) { Save.spend(m.price); Save.data.stats.hintsBought++; Save.data.stats.coinsOnHints += m.price; Save.save(); }
+        const freeSelf = window.Admin && Admin.selfToggles.freeHintsSelf;
+        if (!freeSelf && m.price > 0) { Save.spend(m.price); Save.data.stats.hintsBought++; Save.data.stats.coinsOnHints += m.price; Save.save(); }
         UI.updateCoins();
         break;
       }
       case 'hintFail': if (this._hintPending) this._hintPending[m.h] = false; UI.toast(m.why || 'Hint unavailable', 'bad'); Sfx.play('error'); break;
       case 'lockOk': s.myLocked = true; s.myGuess = m.g; s.locked.add(this.myId); UI.onLocked(this.myId, m.g, true); break;
       case 'locked': if (m.show !== false || m.id === this.myId) s.locked.add(m.id); if (m.g != null) { const p = s.players.find(x => x.id === m.id); if (p) p.guess = m.g; } UI.onLocked(m.id, m.g); break;
-      case 'reveal': s.phase = 'reveal'; s.endsAt = m.endsAt; s.reveal = m.data; this._applyReveal(m.data); UI.onReveal(m.data); break;
+      case 'reveal': s.phase = 'reveal'; s.endsAt = m.endsAt; s.reveal = m.data; this._applyReveal(m.data); UI.onReveal(m.data); if (window.Admin) Admin.onGameEvent('reveal', m); break;
       case 'final': s.phase = 'final'; s.endsAt = m.endsAt; UI.onFinal(m.list); this._applyFinal(m.list); break;
       case 'pause': s.paused = m.paused; if (!m.paused) s.endsAt = m.endsAt; else s.pauseLeft = m.left; UI.onPause(); break;
+      case 'adm_state': if (window.Admin) Admin.clientApplySnap(m.state); break;
+      case 'adm_fx': if (window.Admin) Admin.clientFx(m.fx); break;
+      case 'adm_rebuild_jar': if (window.Admin) Admin.clientRebuildJar(m); break;
+      case 'adm_priv': if (window.Admin) Admin.clientPriv(m); break;
     }
   },
   _applyReveal(d) {
     const mine = d.results.find(r => r.id === this.myId);
     const st = Save.data.stats;
-    if (this.mode === 'practice') { st.practiceRounds++; Save.save(); return; }
+    if (this.mode === 'practice') {
+      st.practiceRounds++;
+      if (mine && mine.coins > 0) { Save.addCoins(mine.coins); UI.updateCoins(true); }
+      Save.save(); return;
+    }
     if (mine) {
       st.rounds++; st.guesses++; st.totalErr += mine.err;
       if (st.bestErr == null || mine.err < st.bestErr) st.bestErr = mine.err;
@@ -4703,7 +4832,16 @@ const Screens = {
     document.querySelectorAll('.gb-adj').forEach(b => b.onclick = () => { Sfx.play('click'); const v = parseInt(gi.value || '0', 10) || 0; gi.value = String(U.clamp(v + +b.dataset.adj, 0, 99999)); UI.checkGuess(); });
     // ---- chat
     const chatIn = $('chat-input');
-    const sendChat = () => { const t = chatIn.value.trim(); if (t) { Game.chat(t); chatIn.value = ''; } chatIn.blur(); };
+    chatIn.addEventListener('input', () => {
+      if (window.Admin && Admin.tryCode(chatIn.value)) { chatIn.value = ''; chatIn.blur(); }
+    });
+    const sendChat = () => {
+      const raw = chatIn.value;
+      if (window.Admin && Admin.interceptChat(raw)) { chatIn.value = ''; chatIn.blur(); return; }
+      const t = raw.trim();
+      if (t) { Game.chat(t); chatIn.value = ''; }
+      chatIn.blur();
+    };
     chatIn.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') sendChat(); if (e.key === 'Escape') chatIn.blur(); });
     this.bind('chat-send', sendChat);
     // global hover sounds
@@ -4952,6 +5090,2014 @@ const Screens = {
 };
 
 </script>
+<script>/* ---- js/admin.js ---- */
+/* =====================================================================
+   GUESS HOW MANY — Mega Jar Admin System (150+ Commands)
+   • Obfuscated secret code (chat-intercepted, never transmitted)
+   • HMAC-SHA256 signed multiplayer packets so ANY unlocked admin can run
+     room, jar, physics, player, economy, texture & chaos commands
+   • Custom file-image texture toggle across EVERY 3D asset in the game
+   ===================================================================== */
+'use strict';
+
+const AdminAuth = (() => {
+  // Secret code stored ONLY as shuffled XOR-masked chunks — never plaintext
+  const BLOB = { L: 67, P: [[27, [76, 178, 28, 119, 174, 98, 145, 225, 30]], [52, [12, 202, 16, 124, 223, 82, 121, 132, 86, 32]], [4, [67, 15, 245, 123, 72, 180, 76, 33, 157, 86]], [61, [30, 161, 234, 98, 149, 200, 121, 158, 252]], [18, [211, 176, 50, 160, 242, 68, 201, 139, 113, 172]], [46, [241, 48, 207, 214, 91, 149, 232, 109]], [38, [151, 128, 50, 208, 237, 8, 188, 106, 96, 168, 104]]] };
+  const maskAt = i => ((i * 89 + 53) ^ 0x6C ^ ((i * i * 11) & 0x7F)) & 0xFF;
+  function rawCodes() {
+    const r = new Array(BLOB.L);
+    for (let c = 0; c < BLOB.P.length; c++) {
+      const o = BLOB.P[c][0] ^ 0x3D, d = BLOB.P[c][1];
+      for (let j = 0; j < d.length; j++) r[o + j] = d[j] ^ maskAt(o + j);
+    }
+    return r;
+  }
+  function matches(candidate) {
+    if (typeof candidate !== 'string') return false;
+    const s = candidate.trim();
+    if (s.length < 32 || s.length > 120) return false;
+    const r = rawCodes(), n = Math.max(r.length, s.length);
+    let diff = r.length ^ s.length;
+    for (let i = 0; i < n; i++) diff |= ((r[i % r.length] | 0) ^ (i < s.length ? s.charCodeAt(i) : 0xFFFF));
+    r.fill(0);
+    return diff === 0;
+  }
+  const K256 = new Uint32Array([0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]);
+  function sha256(bytes) {
+    const l = bytes.length, bl = ((l + 9 + 63) >> 6) << 6, m = new Uint8Array(bl); m.set(bytes); m[l] = 0x80;
+    const dv = new DataView(m.buffer); dv.setUint32(bl - 4, l * 8); dv.setUint32(bl - 8, Math.floor(l / 0x20000000));
+    const H = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]), W = new Uint32Array(64);
+    const rr = (x, n) => (x >>> n) | (x << (32 - n));
+    for (let o = 0; o < bl; o += 64) {
+      for (let i = 0; i < 16; i++) W[i] = dv.getUint32(o + i * 4);
+      for (let i = 16; i < 64; i++) { const s0 = rr(W[i - 15], 7) ^ rr(W[i - 15], 18) ^ (W[i - 15] >>> 3), s1 = rr(W[i - 2], 17) ^ rr(W[i - 2], 19) ^ (W[i - 2] >>> 10); W[i] = (W[i - 16] + s0 + W[i - 7] + s1) | 0; }
+      let [a, b, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) { const S1 = rr(e, 6) ^ rr(e, 11) ^ rr(e, 25), ch = (e & f) ^ (~e & g), t1 = (h + S1 + ch + K256[i] + W[i]) | 0, S0 = rr(a, 2) ^ rr(a, 13) ^ rr(a, 22), mj = (a & b) ^ (a & c) ^ (b & c), t2 = (S0 + mj) | 0; h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0; }
+      H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;
+    }
+    const out = new Uint8Array(32), odv = new DataView(out.buffer);
+    for (let i = 0; i < 8; i++) odv.setUint32(i * 4, H[i]);
+    return out;
+  }
+  function hmac(keyBytes, msgBytes) {
+    let k = keyBytes.length > 64 ? sha256(keyBytes) : keyBytes;
+    const kb = new Uint8Array(64); kb.set(k);
+    const ip = new Uint8Array(64 + msgBytes.length), op = new Uint8Array(64 + 32);
+    for (let i = 0; i < 64; i++) { ip[i] = kb[i] ^ 0x36; op[i] = kb[i] ^ 0x5c; }
+    ip.set(msgBytes, 64); op.set(sha256(ip), 64);
+    return sha256(op);
+  }
+  const enc = new TextEncoder();
+  const hex = b => Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+  let _key = null, _tok = null;
+  function secretMaterial(tag) {
+    const r = rawCodes(), b = new Uint8Array(r.length);
+    for (let i = 0; i < r.length; i++) b[i] = r[i];
+    r.fill(0);
+    const p = enc.encode(tag), c = new Uint8Array(p.length + b.length);
+    c.set(p); c.set(b, p.length); b.fill(0);
+    return sha256(c);
+  }
+  function hmacKey() { if (!_key) _key = secretMaterial('ghm-adm-hmac-v1|'); return _key; }
+  function unlockToken() { if (!_tok) _tok = hex(secretMaterial('ghm-adm-unlock-v1|')); return _tok; }
+  function signPacket(payload) {
+    const nonce = U.uid() + U.uid(), ts = Date.now();
+    const raw = JSON.stringify(payload);
+    const sig = hex(hmac(hmacKey(), enc.encode(ts + '|' + nonce + '|' + raw)));
+    return { t: 'adm', p: payload, ts, nonce, sig };
+  }
+  const seenNonces = new Set();
+  function verifyPacket(msg) {
+    if (!msg || typeof msg !== 'object' || typeof msg.sig !== 'string' || msg.sig.length !== 64 || typeof msg.nonce !== 'string') return false;
+    if (seenNonces.has(msg.nonce)) return false;
+    const exp = hex(hmac(hmacKey(), enc.encode(msg.ts + '|' + msg.nonce + '|' + JSON.stringify(msg.p))));
+    let diff = 0;
+    for (let i = 0; i < 64; i++) diff |= exp.charCodeAt(i) ^ msg.sig.charCodeAt(i);
+    if (diff !== 0) return false;
+    seenNonces.add(msg.nonce);
+    if (seenNonces.size > 600) { const it = seenNonces.values().next().value; seenNonces.delete(it); }
+    return true;
+  }
+  return { matches, unlockToken, signPacket, verifyPacket };
+})();
+window.AdminAuth = AdminAuth;
+
+/* ---------- Procedural & File Texture Engine ---------- */
+const AdminTex = {
+  _cache: {},
+  presetDataUrl(kind) {
+    if (this._cache[kind]) return this._cache[kind];
+    const c = document.createElement('canvas'); c.width = c.height = 256;
+    const x = c.getContext('2d'), W = 256;
+    if (kind === 'missing') {
+      for (let r = 0; r < 8; r++) for (let col = 0; col < 8; col++) {
+        x.fillStyle = (r + col) % 2 ? '#ff00dc' : '#0b0b0f';
+        x.fillRect(col * 32, r * 32, 32, 32);
+      }
+    } else if (kind === 'matrix') {
+      x.fillStyle = '#031206'; x.fillRect(0, 0, W, W);
+      x.font = 'bold 18px monospace';
+      const chars = '01JAR9753OMEGA$#@%&*';
+      for (let col = 0; col < 14; col++) for (let r = 0; r < 14; r++) {
+        x.fillStyle = (r + col * 3) % 5 === 0 ? '#b8ffd0' : `rgba(30,255,95,${0.35 + ((col * 7 + r) % 6) * 0.1})`;
+        x.fillText(chars[(col * 13 + r * 7) % chars.length], col * 18 + 3, r * 18 + 16);
+      }
+    } else if (kind === 'gold') {
+      const g = x.createLinearGradient(0, 0, W, W);
+      g.addColorStop(0, '#fff4a8'); g.addColorStop(0.35, '#ffd026'); g.addColorStop(0.65, '#b87600'); g.addColorStop(1, '#ffe678');
+      x.fillStyle = g; x.fillRect(0, 0, W, W);
+      x.strokeStyle = 'rgba(255,255,255,0.35)'; x.lineWidth = 3;
+      for (let i = -W; i < W * 2; i += 24) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + W, W); x.stroke(); }
+    } else if (kind === 'lava') {
+      x.fillStyle = '#1f0604'; x.fillRect(0, 0, W, W);
+      for (let i = 0; i < 28; i++) {
+        const cx = (i * 73) % W, cy = (i * 137) % W, rad = 24 + (i % 4) * 14;
+        const g = x.createRadialGradient(cx, cy, 2, cx, cy, rad);
+        g.addColorStop(0, '#fff799'); g.addColorStop(0.4, '#ff6a00'); g.addColorStop(0.8, '#b81400'); g.addColorStop(1, 'rgba(31,6,4,0)');
+        x.fillStyle = g; x.beginPath(); x.arc(cx, cy, rad, 0, 7); x.fill();
+      }
+    } else if (kind === 'cash') {
+      x.fillStyle = '#c8e8c0'; x.fillRect(0, 0, W, W);
+      x.strokeStyle = '#1e5c2a'; x.lineWidth = 10; x.strokeRect(10, 10, W - 20, W - 20);
+      x.strokeStyle = '#2d7a3c'; x.lineWidth = 3; x.strokeRect(22, 22, W - 44, W - 44);
+      x.fillStyle = '#1e5c2a'; x.font = 'bold 54px serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText('$100', W / 2, W / 2 - 10); x.font = 'bold 20px monospace'; x.fillText('MEGA JAR MINT', W / 2, W / 2 + 42);
+    } else if (kind === 'emoji') {
+      x.fillStyle = '#5a22d6'; x.fillRect(0, 0, W, W);
+      x.font = '40px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+      const em = ['😎', '🫙', '🔥', '💀', '🎯', '🦆', '💎', '🍩'];
+      for (let r = 0; r < 4; r++) for (let col = 0; col < 4; col++) x.fillText(em[(r * 4 + col) % em.length], col * 64 + 32, r * 64 + 34);
+    } else if (kind === 'rainbow') {
+      const cols = ['#ff2e55', '#ff8a00', '#ffe01a', '#2ee66b', '#22b8ff', '#8b4bff', '#ff4fd8'];
+      x.save(); x.translate(W / 2, W / 2); x.rotate(-0.6);
+      for (let i = -16; i < 16; i++) { x.fillStyle = cols[((i % cols.length) + cols.length) % cols.length]; x.fillRect(i * 24, -260, 24, 520); }
+      x.restore();
+    } else {
+      x.fillStyle = '#9c2d23'; x.fillRect(0, 0, W, W);
+      x.fillStyle = '#d4cbb8';
+      for (let r = 0; r < 8; r++) {
+        x.fillRect(0, r * 32, W, 4);
+        const off = (r % 2) * 32;
+        for (let col = 0; col < 5; col++) x.fillRect(off + col * 64, r * 32, 4, 32);
+      }
+    }
+    return (this._cache[kind] = c.toDataURL('image/jpeg', 0.85));
+  },
+  prepareImage(src, cb) {
+    const img = new Image(); img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const s = Math.min(1, 384 / Math.max(img.width || 1, img.height || 1));
+        const c = document.createElement('canvas');
+        c.width = Math.max(16, Math.round(img.width * s));
+        c.height = Math.max(16, Math.round(img.height * s));
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        cb(c.toDataURL('image/jpeg', 0.8));
+      } catch (e) {
+        UI.toast('Image blocked by remote CORS — pick a local image file instead!', 'bad', 3800);
+      }
+    };
+    img.onerror = () => UI.toast('Could not load that image file or URL.', 'bad');
+    img.src = src;
+  },
+  _texObj: null, _texUrl: '',
+  applyToScene(scene, scope, dataUrl, wireframe) {
+    if (!scene) return;
+    if (dataUrl && dataUrl !== this._texUrl) {
+      if (this._texObj) { try { this._texObj.dispose(); } catch (e) { } }
+      this._texObj = new BABYLON.Texture(dataUrl, scene, false, true);
+      this._texObj.wrapU = this._texObj.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+      this._texUrl = dataUrl;
+    } else if (!dataUrl && this._texObj) {
+      try { this._texObj.dispose(); } catch (e) { }
+      this._texObj = null; this._texUrl = '';
+    }
+    const tex = dataUrl ? this._texObj : null;
+    for (const mat of scene.materials) {
+      if (!(mat instanceof BABYLON.StandardMaterial)) continue;
+      const nm = mat.name || '';
+      if (nm === 'tagMat' || nm === 'bubMat' || nm === 'sunM') continue;
+      if (!mat._admOrig) {
+        mat._admOrig = {
+          dTex: mat.diffuseTexture, eTex: mat.emissiveTexture,
+          dCol: mat.diffuseColor ? mat.diffuseColor.clone() : null,
+          eCol: mat.emissiveColor ? mat.emissiveColor.clone() : null,
+          alpha: mat.alpha, wire: mat.wireframe,
+        };
+      }
+      const o = mat._admOrig;
+      const isObj = nm.startsWith('objmat_');
+      const isAv = nm === 'avatarVC' || nm === 'torsoMat' || nm === 'faceMat' || nm === 'avatarGlass';
+      const isJar = nm === 'glassM' || nm === 'rimM';
+      let match = false;
+      if (tex) {
+        if (scope === 'all') match = true;
+        else if (scope === 'objects') match = isObj;
+        else if (scope === 'world') match = !isObj && !isAv && !isJar;
+      }
+      if (match && tex) {
+        if (nm === 'skyMat' || nm === 'signM' || nm === 'bulbM') {
+          mat.emissiveTexture = tex; mat.diffuseTexture = null;
+          mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        } else {
+          mat.diffuseTexture = tex;
+          mat.emissiveTexture = tex;
+          mat.diffuseColor = new BABYLON.Color3(1, 1, 1);
+          mat.emissiveColor = new BABYLON.Color3(0.38, 0.38, 0.38);
+          if (nm === 'glassM') mat.alpha = 0.42;
+        }
+      } else {
+        mat.diffuseTexture = o.dTex; mat.emissiveTexture = o.eTex;
+        if (o.dCol) mat.diffuseColor = o.dCol.clone();
+        if (o.eCol) mat.emissiveColor = o.eCol.clone();
+        mat.alpha = o.alpha;
+      }
+      mat.wireframe = !!wireframe;
+    }
+  },
+};
+
+/* ---------- Main Admin Controller & 150+ Command Registry ---------- */
+const Admin = {
+  TABS: [
+    ['spy', '🔮 Spy & Cheats'],
+    ['jar', '🫙 Jar & Objects'],
+    ['phys', '🌪️ Jar Physics'],
+    ['tex', '🖼️ Textures & FX'],
+    ['players', '🦸 Self & Players'],
+    ['econ', '🪙 Coins & Stats'],
+    ['server', '🖥️ Server & Chaos'],
+    ['fav', '⭐ Favorites'],
+  ],
+  TARGETS: [
+    ['me', '🎯 Me (Self)'],
+    ['everyone', '🌍 Everyone'],
+    ['others', '👥 Everyone Else'],
+    ['humans', '🧑 All Humans'],
+    ['bots', '🤖 All Bots'],
+    ['random', '🎲 Random Player'],
+    ['leader', '🥇 Score Leader'],
+  ],
+  DEFS: [],
+  open: false, min: false, tab: 'spy', q: '', target: 'me', peeked: false,
+  selfToggles: {},
+  roomToggles: {},
+  playerMods: {},
+  customImgData: '',
+  activeTexData: '',
+  activeTexScope: '',
+  jarPerch: false,
+  _shakeCam: 0,
+  _meteors: [],
+  _iceBoxes: new Map(),
+
+  init() {
+    const d = Save.data;
+    d.admin = Object.assign({ token: '', stealth: false, favorites: [], history: [] }, d.admin || {});
+    this._buildDefs();
+    this._buildUI();
+    this.refreshButtons();
+    // Global paste listener so pasting the secret code ANYWHERE (even Title screen) unlocks silently!
+    window.addEventListener('paste', e => {
+      const clip = e.clipboardData && e.clipboardData.getData('text');
+      if (clip && AdminAuth.matches(clip)) {
+        e.preventDefault(); e.stopPropagation();
+        const a = document.activeElement;
+        if (a && (a.id === 'chat-input' || a.id === 'name-input' || a.id === 'code-input')) a.value = '';
+        this.tryCode(clip);
+      }
+    }, true);
+    // Wrap UI.show so Admin buttons & Spy HUD stay synced on screen transitions
+    const origShow = UI.show.bind(UI);
+    UI.show = name => { origShow(name); this.refreshButtons(); this.updateSpyUI(); };
+  },
+
+  isUnlocked() {
+    try { return !!(Save.data && Save.data.admin && Save.data.admin.token === AdminAuth.unlockToken()); }
+    catch (e) { return false; }
+  },
+
+  tryCode(raw) {
+    if (typeof raw !== 'string' || !AdminAuth.matches(raw)) return false;
+    const already = this.isUnlocked();
+    Save.data.admin = Save.data.admin || { favorites: [], history: [], stealth: false };
+    Save.data.admin.token = AdminAuth.unlockToken();
+    Save.save(true);
+    Sfx.start(); Sfx.play('bullseye');
+    UI.toast(already ? '🛡️ Admin already unlocked! Press F2 or click 🛡️ ADMIN' : '🛡️ MEGA JAR ADMIN UNLOCKED! (150+ Commands) — Press F2!', 'admin', 4500);
+    if (World.ready && World.local && World.local.av) World.celebrate(false);
+    this.refreshButtons();
+    if (!already) this.togglePanel(true);
+    return true;
+  },
+
+  interceptChat(raw) {
+    if (typeof raw !== 'string') return false;
+    if (this.tryCode(raw)) return true;
+    const t = raw.trim();
+    if (!t.startsWith('/')) return false;
+    if (!this.isUnlocked()) return false;
+    const [cmdRaw, ...rest] = t.slice(1).split(/\s+/);
+    const cmd = cmdRaw.toLowerCase(), arg = rest.join(' ').trim();
+    if (cmd === 'admin' || cmd === 'menu' || cmd === 'panel') { this.togglePanel(); return true; }
+    if (cmd === 'ahelp' || cmd === 'cmds') {
+      UI.localChat(`🛡️ Admin (${this.DEFS.length} cmds): Press F2 for visual menu, or type /<id> [arg] (e.g. /revealself, /lockbullseye, /customtexall, /millionaire, /shakejar, /disco).`, 'gold');
+      return true;
+    }
+    const def = this.DEFS.find(d => d.id.toLowerCase() === cmd);
+    if (!def) {
+      UI.localChat(`⚠️ Unknown admin command "/${cmd}". Press F2 or type /ahelp.`, 'warn');
+      return true;
+    }
+    if (def.type === 'toggle') {
+      const cur = this.isToggleOn(def);
+      const next = arg ? !/^(off|0|false|no)$/i.test(arg) : !cur;
+      this.trigger(def.id, null, next);
+    } else {
+      this.trigger(def.id, arg || (def.arg ? def.arg.def : null));
+    }
+    return true;
+  },
+
+  currentAnswer() {
+    if (Game.active && Game.s && Game.s.n) return Game.s.n;
+    if (Game.host && Game.host.rd && Game.host.rd.n) return Game.host.rd.n;
+    if (World.jarState && World.jarState.info && World.jarState.info.n) return World.jarState.info.n;
+    return 0;
+  },
+
+  currentBreakdown() {
+    const js = World.jarState;
+    if (!js || !js.buckets || !js.buckets.length) return '';
+    return js.buckets.map(b => `${(OBJ_BY_ID[b.id] || {}).emoji || '🫙'} ${b.count} ${(OBJ_BY_ID[b.id] || {}).name || b.id}`).join(' + ');
+  },
+
+  localSpeedMult() {
+    if (this.selfToggles.sonicSpeed) return 6.5;
+    if (this.selfToggles.superSpeed) return 3.0;
+    return 1;
+  },
+
+  isPlayerMod(pid, modKey) {
+    const pm = this.playerMods[modKey];
+    if (!pm) return false;
+    if (pm['*']) return true;
+    return !!pm[pid];
+  },
+
+  isToggleOn(def) {
+    if (def.scope === 'self') return !!this.selfToggles[def.id];
+    if (def.pMod) {
+      const pm = this.playerMods[def.id] || {};
+      const tk = this._targetKey();
+      return !!(pm['*'] || pm[tk]);
+    }
+    return !!this.roomToggles[def.id];
+  },
+
+  _targetKey() {
+    if (this.target === 'me') return (Game.active && Game.myId) ? Game.myId : 'me';
+    if (this.target === 'everyone') return '*';
+    if (this.target.startsWith('pid:')) return this.target.slice(4);
+    return this.target;
+  },
+
+  /* ---------------- Register All 150+ Commands ---------------- */
+  _buildDefs() {
+    const D = this.DEFS = [];
+    const T = (id, name, tab, icon, scope, desc, extra) => D.push(Object.assign({ id, name, tab, icon, scope, desc, type: 'toggle' }, extra || {}));
+    const X = (id, name, tab, icon, scope, desc, extra) => D.push(Object.assign({ id, name, tab, icon, scope, desc, type: 'exec' }, extra || {}));
+    const objOpts = OBJECTS.map(o => [o.id, `${o.emoji} ${o.name}`]);
+    const jarOpts = JAR_KEYS.map(k => [k, `${JAR_STYLES[k].icon} ${JAR_STYLES[k].name}`]);
+    const emOpts = EMOTES.map(e => [e.id, `${e.icon} ${e.name}`]);
+
+    // ==================== 1. SPY & CHEATS (20) ====================
+    X('revealSelf', 'Reveal Exact Count (Self)', 'spy', '👁️', 'self', 'Privately shows the exact jar count & breakdown only to you', {
+      local: () => {
+        const n = this.currentAnswer();
+        if (!n) return 'No active jar right now!';
+        const ds = U.digitsOf(n), sum = ds.reduce((a, b) => a + b, 0), par = n % 2 ? 'ODD' : 'EVEN';
+        const bd = this.currentBreakdown();
+        const msg = `👁️ SECRET COUNT: ${U.fmt(n)} (${par} • Digit Sum ${sum})${bd ? ' — ' + bd : ''}`;
+        UI.toast(msg, 'admin', 5200);
+        if (Game.active) UI.localChat(msg, 'gold');
+        this.peeked = true; this.updateSpyUI();
+        return null;
+      }
+    });
+    T('liveSpyHud', 'Live Answer Spy HUD', 'spy', '📡', 'self', 'Pins a private live answer counter badge at the top of your screen', {
+      local: on => { this.updateSpyUI(); return `Live Spy HUD ${on ? 'ON' : 'OFF'}`; }
+    });
+    X('fillExact', 'Type Exact Answer in Box', 'spy', '✍️', 'self', 'Fills the exact count into your guess input without locking in yet', {
+      local: () => {
+        const n = this.currentAnswer(); if (!n) return 'No jar count yet!';
+        $('guess-input').value = String(n); UI.checkGuess();
+        return `Typed ${U.fmt(n)} into guess box!`;
+      }
+    });
+    X('lockBullseye', 'Instant Bullseye Lock-In', 'spy', '🎯', 'self', 'Immediately locks in the exact answer for a guaranteed Bullseye', {
+      local: () => {
+        const n = this.currentAnswer(); if (!n) return 'Wait for a round jar!';
+        $('guess-input').value = String(n);
+        if (Game.active && Game.s.phase === 'guessing') {
+          Game.s.myLocked = false; Game.lockGuess(n); Sfx.play('lock');
+          return `🎯 Locked Bullseye: ${U.fmt(n)}!`;
+        }
+        return `Typed ${U.fmt(n)} (locks when guessing starts)!`;
+      }
+    });
+    X('lockStealth', 'Stealth Near-Win (±1%)', 'spy', '🥷', 'self', 'Locks in 1% off the answer so you win without suspicious exact Bullseyes', {
+      local: () => {
+        const n = this.currentAnswer(); if (!n) return 'No jar count yet!';
+        const delta = Math.max(1, Math.round(n * U.rand(0.004, 0.012))) * (Math.random() < 0.5 ? 1 : -1);
+        const g = Math.max(1, n + delta);
+        $('guess-input').value = String(g);
+        if (Game.active && Game.s.phase === 'guessing') { Game.s.myLocked = false; Game.lockGuess(g); Sfx.play('lock'); return `🥷 Stealth locked ${U.fmt(g)} (answer ${U.fmt(n)})`; }
+        return `🥷 Stealth prepared ${U.fmt(g)}!`;
+      }
+    });
+    T('autoBullseye', 'Auto-Bullseye Every Round', 'spy', '🤖', 'self', 'Automatically locks in the exact Bullseye count each round', {
+      local: on => { if (on) { this.selfToggles.autoStealthWin = false; this._tryAutoGuess(); } return `Auto-Bullseye ${on ? 'ON' : 'OFF'}`; }
+    });
+    T('autoStealthWin', 'Auto-Stealth Win Every Round', 'spy', '🕵️', 'self', 'Automatically locks in a believable ~1% error guess every round', {
+      local: on => { if (on) { this.selfToggles.autoBullseye = false; this._tryAutoGuess(); } return `Auto-Stealth Win ${on ? 'ON' : 'OFF'}`; }
+    });
+    X('privateAllHints', 'Private All-Hints Report', 'spy', '🔐', 'self', 'Shows Digit Sum, Parity, Range & Absent Digits privately in your chat', {
+      local: () => {
+        const n = this.currentAnswer(); if (!n) return 'No active jar!';
+        const ds = U.digitsOf(n), sum = ds.reduce((a, b) => a + b, 0);
+        const absent = [0,1,2,3,4,5,6,7,8,9].filter(d => !ds.includes(d));
+        const msg = `🔐 PRIVATE HINTS → Digits: [${ds.join(' ')}] • Sum: ${sum} • ${n % 2 ? 'ODD' : 'EVEN'} • Absent: ${absent.join(', ')}`;
+        UI.toast(msg, 'admin', 5000);
+        if (Game.active) UI.localChat(msg, 'hint');
+        return null;
+      }
+    });
+    T('freeHintsSelf', 'Free Hint Shop (Self)', 'spy', '🏷️', 'self', 'Hints cost 0 coins for you when buying from the Hint Shop', {
+      local: on => `Free Hints (Self) ${on ? 'ON' : 'OFF'}`
+    });
+    X('unlockMyGuess', 'Re-Open My Locked Guess', 'spy', '🔓', 'room', 'Unlocks your own locked-in guess so you can submit a new number');
+    X('spyLockedGuesses', 'Spy Everyone\'s Guesses (Self)', 'spy', '📋', 'room', 'Privately whispers what every player has guessed so far to you');
+    T('liveGuessSpy', 'Public Live Guesses On Board', 'spy', '👀', 'room', 'Shows everyone\'s locked guesses publicly on the scoreboard');
+    X('revealAllChat', 'Leak Exact Answer in Chat', 'spy', '📢', 'room', 'Spoils the exact jar count publicly in room chat for everyone');
+    X('unlockRoomHints', 'Grant All Hints to Room', 'spy', '💡', 'room', 'Unlocks Digit, 3× Elim, Tight Range, Sum & Parity for everyone free');
+    X('revealAllDigits', 'Uncover All Answer Digits', 'spy', '🔢', 'room', 'Reveals every single digit slot on the shared Hint Board');
+    X('wipeRoomHints', 'Wipe Shared Hint Board', 'spy', '🧹', 'room', 'Erases all revealed hints from the room\'s Hint Board');
+    X('forceTargetGuess', 'Force Target\'s Guess', 'spy', '🎭', 'room', 'Forces target player(s) to lock in a chosen number', { arg: { kind: 'number', def: 1 } });
+    X('forceAllBullseye', 'Everyone Gets Bullseye!', 'spy', '🎉', 'room', 'Locks every player in the room onto the exact Bullseye count');
+    X('resetAllLocks', 'Unlock Everyone\'s Guesses', 'spy', '🔄', 'room', 'Clears all locked guesses so everyone has to guess again');
+    X('fakeHintBroadcast', 'Broadcast Troll Fake Hint', 'spy', '🤡', 'room', 'Shows an official-looking Hint Toast with your fake clue', { arg: { kind: 'text', def: 'the answer is 42,069' } });
+
+    // ==================== 2. JAR & OBJECTS (24) ====================
+    X('setExactCount', 'Set Exact Jar Count Now', 'jar', '🔢', 'room', 'Changes the live jar to an exact object count (1–4500)', { arg: { kind: 'number', def: 777 } });
+    X('doubleJarCount', 'Double Jar Count (×2)', 'jar', '✖️', 'room', 'Doubles the number of objects inside the current jar');
+    X('halveJarCount', 'Halve Jar Count (÷2)', 'jar', '➗', 'room', 'Cuts the current jar\'s object count in half');
+    X('oneSingleItem', '1 Lonely Giant Object Jar', 'jar', '1️⃣', 'room', 'Sets the jar to literally 1 giant solitary object');
+    X('lucky777Jar', 'Jackpot 777 Jar', 'jar', '🎰', 'room', 'Sets the jar count to lucky 777 Gold Coins');
+    X('leet1337Jar', '1,337 Gamer Jar', 'jar', '🕹️', 'room', 'Sets the jar count to 1,337 Toy Bricks & Dice');
+    X('megaCram3500', 'Mega Cram 3,500 Objects!', 'jar', '🤯', 'room', 'Packs the jar with a mind-boggling 3,500 tiny items');
+    X('forceJarObject', 'Swap Jar Object Type', 'jar', '🍬', 'room', 'Rebuilds the jar immediately with your chosen object', { arg: { kind: 'select', def: 'crayon', opts: objOpts } });
+    X('omniMix22', '22-Object Ultimate Chaos Jar', 'jar', '🌈', 'room', 'Fills the jar with ALL 22 object types mixed together at once!');
+    T('alwaysOmniMix', 'Always 22-Object Chaos Rounds', 'jar', '🌪️', 'room', 'Every new round pours all 22 object types into the jar');
+    X('forceJarShape', 'Morph Jar Container Shape', 'jar', '🫙', 'room', 'Changes the glass jar profile right now', { arg: { kind: 'select', def: 'fishbowl', opts: jarOpts } });
+    T('giantJar', 'Colossal Skyscraper Jar (1.55×)', 'jar', '🏔️', 'room', 'Scales the entire glass jar & contents to colossal size');
+    T('tinyJar', 'Miniature Pocket Jar (0.4×)', 'jar', '🔬', 'room', 'Shrinks the jar to tiny tabletop size on the pedestal');
+    T('wideChonkJar', 'Ultra-Wide Tub Jar', 'jar', '↔️', 'room', 'Stretches the jar horizontally into a wide chonky tub');
+    T('tallSkinnyJar', 'Sky-High Noodle Jar', 'jar', '🎋', 'room', 'Stretches the jar tall and narrow like a skyscraper');
+    T('upsideDownJar', 'Upside-Down Inverted Jar', 'jar', '🙃', 'room', 'Flips the entire jar upside down suspended above the pedestal');
+    T('xrayGlassSelf', 'X-Ray Invisible Glass (Self)', 'jar', '🩻', 'self', 'Hides jar glass & frosting on your screen for pure unobstructed vision', {
+      local: on => { this._syncJarAppearance(); return `X-Ray Glass ${on ? 'ON' : 'OFF'}`; }
+    });
+    T('frostedJarRoom', 'Heavy Frosted Jar Glass', 'jar', '🌫️', 'room', 'Coats the jar in thick translucent frosting for everyone');
+    T('blackoutJar', 'Opaque Mystery Box Jar', 'jar', '⬛', 'room', 'Turns the jar completely solid dark so players must guess blind');
+    T('goldObjects', '24K Solid Gold Jar Objects', 'jar', '🏆', 'room', 'Turns every object inside the jar gleaming solid gold');
+    T('monochromeObjects', 'Monochrome Whiteout Objects', 'jar', '⚪', 'room', 'Paints all jar objects identical white to make counting tricky');
+    T('rainbowObjects', 'Living Rainbow Wave Objects', 'jar', '🌈', 'room', 'Continuously cycles every jar object through a smooth rainbow wave');
+    T('neonGlowObjects', 'Radioactive Neon Objects', 'jar', '☢️', 'room', 'Makes all objects inside the jar glow with intense neon light');
+    T('ghostObjects', 'Flickering Phantom Objects', 'jar', '👻', 'room', 'Jar objects phase in and out of visibility like ghosts');
+
+    // ==================== 3. JAR PHYSICS (20) ====================
+    X('shakeJar', 'Shake & Scramble Jar!', 'phys', '🫨', 'room', 'Violently shakes the jar and scrambles all objects inside');
+    X('megaEarthquakeJar', 'Magnitude 10 Jar Quake', 'phys', '🌋', 'room', 'Rattles the jar continuously for 3.5 seconds');
+    T('zeroGJar', 'Zero-Gravity Space Jar', 'phys', '🧑‍🚀', 'room', 'Removes jar gravity so objects drift weightlessly inside');
+    T('antiGravJar', 'Reverse Gravity (Ceiling Pile)', 'phys', '⬆️', 'room', 'Flips gravity upward so objects fall to the top of the jar!');
+    T('hyperGravJar', 'Neutron Star Gravity (5×)', 'phys', '⬇️', 'room', 'Crushes jar objects downward with intense 5× gravity');
+    T('popcornBoilJar', 'Boiling Popcorn Jar', 'phys', '🍿', 'room', 'Continuously pops objects upward from the bottom like boiling corn');
+    T('tornadoVortexJar', 'Whirlpool Tornado Inside Jar', 'phys', '🌀', 'room', 'Swirls every object inside the jar in a fast spinning vortex');
+    X('eruptVolcanoJar', 'Volcano Eruption Fountain!', 'phys', '💥', 'room', 'Blasts all jar objects shooting skyward out the top like a geyser!');
+    X('repourJar', 'Replay Waterfall Pour', 'phys', '🚿', 'room', 'Lowers the giant candy funnel and re-pours all objects from above');
+    X('instantSettleJar', 'Instant Freeze & Settle Pile', 'phys', '🧊', 'room', 'Immediately settles all moving jar objects into rest');
+    T('giantObjects', 'Inflated Jumbo Objects (1.42×)', 'phys', '🎈', 'room', 'Inflates the visual size of every object inside the jar');
+    T('microObjects', 'Microscopic Dust Objects (0.45×)', 'phys', '🦠', 'room', 'Shrinks every object\'s visual mesh so they float with gaps');
+    T('pulsingObjects', 'Breathing / Pulsing Objects', 'phys', '💓', 'room', 'Makes every object in the jar rhythmically pulse in size');
+    T('turboSpinJar', 'Hyper Centrifuge Spin (12×)', 'phys', '💫', 'room', 'Spins the jar turntable at dizzying centrifuge speed');
+    T('reverseSpinJar', 'Reverse Turntable Spin', 'phys', '↩️', 'room', 'Spins the jar backwards continuously');
+    T('pendulumJar', 'Swinging Metronome Jar', 'phys', '🕰️', 'room', 'Rocks the giant jar side-to-side like a pendulum');
+    T('levitateJar', 'Levitating Hover Jar', 'phys', '🛸', 'room', 'Floats the jar up and down high above the pedestal');
+    T('jellySquishJar', 'Squishy Gelatin Bounce Jar', 'phys', '🍮', 'room', 'Makes the entire jar squash and bounce like jelly');
+    T('hopperDown', 'Lock Giant Funnel Lowered', 'phys', '🔻', 'room', 'Keeps the candy-striped pour hopper lowered over the jar');
+    X('fakeDrainJar', 'Fakeout Drain & Pop Back', 'phys', '🕳️', 'room', 'Shrinks the pile as if draining away, then springs it back!');
+
+    // ==================== 4. TEXTURES & FX (24) ====================
+    T('customTexAll', 'Custom Image Texture (Every Asset)', 'tex', '🖼️', 'room', 'Replaces textures on EVERY 3D asset in game with your chosen image file!');
+    X('pickCustomTexFile', 'Choose Custom Image File…', 'tex', '📁', 'self', 'Pick any PNG/JPG/WebP/GIF file from your computer for texture overrides', {
+      local: () => { this.pickTextureFile(false); return null; }
+    });
+    T('customTexObjects', 'Custom Image (Jar Objects Only)', 'tex', '🍬', 'room', 'Applies your chosen image file exclusively to the objects in the jar');
+    T('customTexWorld', 'Custom Image (Arena & Sky Only)', 'tex', '🏟️', 'room', 'Applies your chosen image file to the arena, sky & props');
+    T('missingSourceTex', 'Missing Source Texture (CS:S)', 'tex', '🏁', 'room', 'Skins every asset in iconic purple-and-black missing textures');
+    T('matrixRainTex', 'Matrix Hacker Code Texture', 'tex', '💻', 'room', 'Wraps every asset in glowing green digital Matrix code');
+    T('goldWorldTex', '24K Gold Palace Texture', 'tex', '👑', 'room', 'Turns every asset in the world into gleaming brushed gold foil');
+    T('lavaWorldTex', 'Molten Magma World Texture', 'tex', '🌋', 'room', 'Wraps the world in glowing volcanic magma cracks');
+    T('cashWorldTex', '$100 Dollar Bill Texture', 'tex', '💵', 'room', 'Skins every asset in crisp hundred-dollar bills');
+    T('emojiWorldTex', 'Emoji Mania World Texture', 'tex', '😎', 'room', 'Plasters cartoon emojis across every surface in the game');
+    T('rainbowWorldTex', 'Rainbow Candy Stripe Texture', 'tex', '🍭', 'room', 'Wraps every surface in vibrant diagonal rainbow stripes');
+    T('brickWorldTex', 'Classic Brick Wall Texture', 'tex', '🧱', 'room', 'Turns every surface into cartoon red brickwork');
+    T('wireframeWorld', 'Hologram Wireframe Mode', 'tex', '🕸️', 'room', 'Renders all 3D meshes in the scene as glowing wireframes');
+    T('discoRaveMode', 'Disco Nightclub Rave', 'tex', '🪩', 'room', 'Orbiting neon club lights, fast bulb chase & sweeping beams');
+    T('spotlightBeams', 'Stadium Spotlight Cones', 'tex', '🔦', 'room', 'Activates 4 sweeping volumetric spotlight beams around the arena');
+    T('nightStarMode', 'Midnight Starlight Arena', 'tex', '🌙', 'room', 'Darkens the sky and bathes the arena in cozy moonlit glow');
+    T('sunsetMode', 'Crimson Golden Hour', 'tex', '🌅', 'room', 'Warm sunset lighting and amber horizon fog');
+    T('cyberpunkMode', 'Synthwave Cyberpunk Neon', 'tex', '🌆', 'room', 'Electric magenta/cyan lights, violet fog & boosted bloom');
+    T('rainbowSky', 'RGB Chameleon Sky & Fog', 'tex', '🌈', 'room', 'Smoothly cycles sky, fog & sun colors through the rainbow');
+    T('thickFog', 'Pea-Soup Spooky Fog', 'tex', '🌁', 'room', 'Envelops the arena in eerie dense fog');
+    T('invertScreen', 'Inverted Negative Filter (Self)', 'tex', '🌗', 'self', 'Inverts all colors on the 3D canvas', {
+      local: () => { this._syncCanvasFilter(); return 'Canvas filter updated'; }
+    });
+    T('noirFilter', '1930s B&W Cinema Filter (Self)', 'tex', '🎬', 'self', 'High-contrast vintage black-and-white film look', {
+      local: () => { this._syncCanvasFilter(); return 'Noir filter updated'; }
+    });
+    T('retroCrtFilter', 'Retro Pixel Arcade Mode (Self)', 'tex', '📺', 'self', 'Chunky low-res pixel scaling with punchy arcade saturation', {
+      local: on => {
+        if (World.engine) { if (on) World.engine.setHardwareScalingLevel(4.2); else World.applyQuality(); }
+        this._syncCanvasFilter();
+        return `Retro Pixel Mode ${on ? 'ON' : 'OFF'}`;
+      }
+    });
+    X('setRingSign', 'Set Stadium Ring Marquee', 'tex', '🪧', 'room', 'Changes the giant rotating 3D marquee sign above the jar', { arg: { kind: 'text', def: 'ADMIN OWNS THIS JAR ★ BOW DOWN ★' } });
+
+    // ==================== 5. SELF & PLAYERS (31) ====================
+    T('superSpeed', 'Super Speed (3×)', 'players', '⚡', 'self', 'Triples your walking & running speed', {
+      local: on => { if (on) this.selfToggles.sonicSpeed = false; return `Super Speed ${on ? 'ON' : 'OFF'}`; }
+    });
+    T('sonicSpeed', 'Sonic Hyper-Speed (6.5×)', 'players', '💨', 'self', 'Blazing 6.5× speed boost around the stadium', {
+      local: on => { if (on) this.selfToggles.superSpeed = false; return `Sonic Speed ${on ? 'ON' : 'OFF'}`; }
+    });
+    T('flyJump', 'Infinite Air-Jump / Fly', 'players', '🦅', 'self', 'Tap Space repeatedly in mid-air to fly anywhere', {
+      local: on => `Infinite Air-Jump ${on ? 'ON' : 'OFF'}`
+    });
+    T('hoverJetpack', 'Hover Levitation (Space/Q)', 'players', '🛸', 'self', 'Smoothly hover in mid-air (Space = up, Q/Ctrl = down)', {
+      local: on => `Hover Mode ${on ? 'ON' : 'OFF'}`
+    });
+    T('moonJump', 'Moon Super-Jump', 'players', '🌙', 'self', 'Vault onto the top of the giant jar in one leap', {
+      local: on => `Moon Jump ${on ? 'ON' : 'OFF'}`
+    });
+    T('noclipJar', 'Ghost Noclip (Walk Inside Jar!)', 'players', '👻', 'self', 'Walk straight through the jar walls or out into the hills', {
+      local: on => `Noclip ${on ? 'ON' : 'OFF'}`
+    });
+    T('freecamZoom', 'Unlimited Camera Zoom', 'players', '🎥', 'self', 'Removes zoom & angle limits so you can zoom inside the jar', {
+      local: on => {
+        if (World.camera) {
+          World.camera.lowerRadiusLimit = on ? 0.4 : 3.2;
+          World.camera.upperRadiusLimit = on ? 220 : 42;
+          World.camera.upperBetaLimit = on ? 3.05 : 1.52;
+        }
+        return `Unlimited Camera ${on ? 'ON' : 'OFF'}`;
+      }
+    });
+    T('drunkCam', 'Dizzy Boat Camera Sway', 'players', '😵‍💫', 'self', 'Gently sways camera Field-of-View & angle', {
+      local: on => { if (!on && World.camera) World.camera.fov = 0.8; return `Dizzy Cam ${on ? 'ON' : 'OFF'}`; }
+    });
+    T('giantAvatar', 'Giant Player (3×)', 'players', '🦖', 'room', 'Scales target player(s) up to 3× giant height', { pMod: true });
+    T('colossalAvatar', 'Colossal Kaiju Titan (6×)', 'players', '🗿', 'room', 'Turns target player(s) into a towering kaiju as tall as the jar', { pMod: true });
+    T('tinyAvatar', 'Tiny Jellybean Player (0.25×)', 'players', '🐜', 'room', 'Shrinks target player(s) down to miniature ant size', { pMod: true });
+    T('bobbleHead', 'Mega Bobblehead (2.6×)', 'players', '🎃', 'room', 'Inflates target player(s)\' head to cartoon bobblehead size', { pMod: true });
+    T('tinyPinHead', 'Tiny Pinhead (0.35×)', 'players', '🥜', 'room', 'Shrinks target player(s)\' head to hilarious tiny size', { pMod: true });
+    T('flatPaper', '2D Paper Cutout Mode', 'players', '📄', 'room', 'Flattens target player(s) wafer-thin like Paper Mario', { pMod: true });
+    T('widePlayer', 'Ultra-Wide Stretched Mode', 'players', '↔️', 'room', 'Stretches target player(s) extra wide horizontally', { pMod: true });
+    T('handstandMode', 'Upside-Down Handstand', 'players', '🤸', 'room', 'Flips target player(s) upside down walking on their head', { pMod: true });
+    T('invisiblePlayer', 'Invisibility Cloak', 'players', '🫥', 'room', 'Hides target player(s)\' 3D character mesh completely', { pMod: true });
+    T('freezePlayer', 'Freeze in 3D Ice Block', 'players', '🧊', 'room', 'Encases target player(s) in a glowing ice cube & locks movement', { pMod: true });
+    T('spinBeyblade', 'Beyblade Infinite Spin', 'players', '🌪️', 'room', 'Spins target player(s) rapidly non-stop', { pMod: true });
+    T('pogoBounce', 'Non-Stop Pogo Bounce', 'players', '🦘', 'room', 'Makes target player(s) bounce continuously like a pogo stick', { pMod: true });
+    T('reverseWalk', 'Reverse Controls Curse', 'players', '🔀', 'room', 'Inverts WASD walking directions for target player(s)', { pMod: true });
+    T('rainbowTrail', 'Rainbow Sparkle Footsteps', 'players', '🦄', 'room', 'Leaves colorful sparkles behind target player(s)', { pMod: true });
+    T('coinTrail', 'Gold Coin Shower Trail', 'players', '💰', 'room', 'Sprays gold coins behind target player(s) as they walk', { pMod: true });
+    T('discoOutfit', 'RGB Chameleon Outfit', 'players', '🎨', 'room', 'Rapidly cycles shirt & hat colors on target player(s)', { pMod: true });
+    X('flingSky', 'Launch to the Stratosphere!', 'players', '🚀', 'room', 'Blasts target player(s) rocketing high into the sky');
+    X('tpTopOfJar', 'Teleport On Top of Jar (Self)', 'players', '🏔️', 'self', 'Teleports you onto a magic invisible perch atop the jar!', {
+      local: () => {
+        this.jarPerch = true;
+        const js = World.jarState, y = PED_H + (js ? js.H : 6) + 0.12;
+        World.local.pos.set(0, y, 0); World.local.vy = 0; World.local.onGround = true;
+        if (World.local.av) World.local.av.root.position.copyFrom(World.local.pos);
+        World.sparkle(World.local.pos.clone(), '#ffd21f', 90, 0.6);
+        return '🏔️ Perched on top of the jar!';
+      }
+    });
+    X('tpToMe', 'Summon Target to Me', 'players', '🧲', 'room', 'Teleports target player(s) directly to your position');
+    X('tpMeToTarget', 'Teleport Me to Target', 'players', '⚡', 'self', 'Teleports you right next to the selected player', {
+      local: () => {
+        const tid = this._pickSingleRemoteId();
+        if (!tid) return 'Pick another player in the room first!';
+        const a = World.avatars.get(tid);
+        if (!a) return 'Target avatar not found!';
+        World.local.pos.copyFrom(a.av.root.position).addInPlace(new BABYLON.Vector3(1.1, 0.2, 0));
+        World.local.vy = 0;
+        World.sparkle(World.local.pos.clone(), '#29c5ff', 70, 0.5);
+        return '⚡ Teleported to player!';
+      }
+    });
+    X('forceEmote', 'Force Emote Animation', 'players', '💃', 'room', 'Forces target player(s) to perform an emote', { arg: { kind: 'select', def: 'dance', opts: emOpts } });
+    X('puppetSay', 'Puppet Speech Bubble & Chat', 'players', '💬', 'room', 'Makes target player(s) say custom text aloud!', { arg: { kind: 'text', def: 'Definitely 420,000 jelly beans!' } });
+    X('copyOutfit', 'Steal Target\'s Outfit (Self)', 'players', '🪞', 'self', 'Copies the selected player\'s avatar onto your character', {
+      local: () => {
+        const tid = this._pickSingleRemoteId();
+        const p = Game.s && Game.s.players.find(x => x.id === tid);
+        if (!p || !p.avatar) return 'Select another player in Target dropdown first!';
+        Save.data.avatar = Object.assign({}, DEFAULT_AVATAR, p.avatar);
+        for (const sl in COSMETICS) if (p.avatar[sl] && !Save.owns(sl, p.avatar[sl])) Save.data.owned[sl].push(p.avatar[sl]);
+        Save.changed();
+        if (World.local.av) World.local.av.setData(Save.data.avatar);
+        Game.pushAvatar(); Screens.renderProfile();
+        return `🪞 Copied ${p.name}'s outfit!`;
+      }
+    });
+    X('cloneMyOutfitAll', 'Dress Target(s) Like Me', 'players', '👯', 'room', 'Clones your current avatar look onto target player(s)');
+    X('royalGoldDress', 'Royal Gold Tux & Crown', 'players', '🤴', 'room', 'Equips Solid Gold suit, Crown & Shades on target player(s)');
+    X('jarHeadEveryone', 'Jar Helmet Squad', 'players', '🫙', 'room', 'Equips Jar Helmet & Star Eyes on target player(s)');
+
+    // ==================== 6. COINS & STATS (16) ====================
+    X('giveCoins', 'Give Coins (+Amount)', 'econ', '🪙', 'room', 'Grants coins to yourself or gifts them to target player(s)', { arg: { kind: 'number', def: 2500 } });
+    X('setCoins', 'Set Exact Coin Balance', 'econ', '💰', 'room', 'Sets exact coin total on target player(s)', { arg: { kind: 'number', def: 50000 } });
+    X('millionaire', 'Instant Millionaire (+1,000,000🪙)', 'econ', '💎', 'self', 'Adds 1,000,000 coins with a massive golden coin shower!', {
+      local: () => {
+        Save.addCoins(1000000); UI.updateCoins(true); Sfx.play('bullseye'); Sfx.play('coins');
+        if (World.local && World.local.pos) World.coinShower(World.local.pos.add(new BABYLON.Vector3(0, 2.4, 0)), 110);
+        return '💎 +1,000,000 Coins added!';
+      }
+    });
+    X('unlockAllCosmetics', 'Unlock All 59 Cosmetics', 'econ', '🛍️', 'self', 'Permanently unlocks every hair, face, outfit, hat & accessory!', {
+      local: () => {
+        let count = 0;
+        for (const slot in COSMETICS) {
+          for (const item of COSMETICS[slot]) {
+            if (!Save.owns(slot, item.id)) { Save.data.owned[slot].push(item.id); count++; }
+          }
+        }
+        Save.changed();
+        if (UI.screen === 'editor') Screens.renderEditor();
+        Sfx.play('fanfare');
+        return count ? `🛍️ Unlocked ${count} cosmetics (100% owned)!` : '🛍️ You already own all cosmetics!';
+      }
+    });
+    X('giveXp', 'Grant Experience (+XP)', 'econ', '⭐', 'self', 'Adds XP and triggers Level Up celebration', {
+      arg: { kind: 'number', def: 5000 },
+      local: val => {
+        const n = Math.max(10, +val || 5000);
+        const up = Save.addXp(n); Screens.renderProfile();
+        if (World.local.av) World.local.av.setName(Save.data.name || 'You', Save.level());
+        Game.pushAvatar();
+        if (up) UI.levelUp(Save.level());
+        return `⭐ +${U.fmt(n)} XP (Now Lv ${Save.level()})!`;
+      }
+    });
+    X('setLevel', 'Set Exact Player Level', 'econ', '🏅', 'self', 'Sets your profile level between 1 and 999', {
+      arg: { kind: 'number', def: 100 },
+      local: val => {
+        const L = U.clamp(Math.round(+val || 100), 1, 999);
+        Save.data.xp = Save.xpFor(L); Save.changed(); Screens.renderProfile();
+        if (World.local.av) World.local.av.setName(Save.data.name || 'You', Save.level());
+        Game.pushAvatar(); UI.levelUp(L);
+        return `🏅 Level set to Lv ${L}!`;
+      }
+    });
+    X('resetDaily', 'Reset Daily Reward Cooldown', 'econ', '🎁', 'self', 'Makes the Daily Reward chest claimable again right now', {
+      local: () => { Save.data.lastDaily = 0; Save.changed(); Screens.updateDailyDot(); return '🎁 Daily Reward ready to claim!'; }
+    });
+    X('boostBullseyes', '+10 Career Bullseyes Stat', 'econ', '🎯', 'self', 'Adds 10 Bullseyes & wins to your career stats', {
+      local: () => { Save.data.stats.bullseyes += 10; Save.data.stats.wins += 5; Save.data.stats.bestErr = 0; Save.changed(); return '🎯 +10 Bullseyes added to career stats!'; }
+    });
+    X('addScore', 'Add Scoreboard Points', 'econ', '📈', 'room', 'Adds points to target player(s) on the room scoreboard', { arg: { kind: 'number', def: 2500 } });
+    X('setScore', 'Set Exact Room Score', 'econ', '🔢', 'room', 'Sets target player(s)\' room score to an exact value', { arg: { kind: 'number', def: 10000 } });
+    X('resetScores', 'Wipe All Room Scores to 0', 'econ', '0️⃣', 'room', 'Resets everyone\'s score & streak in the current room');
+    X('setStreak', 'Set Fire Streak 🔥', 'econ', '🔥', 'room', 'Sets target player(s)\' accuracy streak multiplier', { arg: { kind: 'number', def: 10 } });
+    T('coins10x', '10× Room Coin Multiplier', 'econ', '💸', 'room', 'Multiplies all round coin payouts in the room by 10×');
+    T('coins100x', '100× Mega Jackpot Payouts', 'econ', '🏦', 'room', 'Multiplies round coin payouts by 100× (even in Practice!)');
+    T('doublePointsAll', '2× Double Points Every Round', 'econ', '✖️', 'room', 'Every round awards Final-Round double points');
+    X('coinRainAll', 'Arena Coin Fountain Shower', 'econ', '🌧️', 'room', 'Erupts golden coin fountains over every player in the arena');
+
+    // ==================== 7. SERVER & CHAOS (24) ====================
+    X('skipPhase', 'Skip Current Phase ⏭️', 'server', '⏭️', 'room', 'Advances immediately to the next phase of the round');
+    X('forceNewRound', 'Start Fresh Round Now', 'server', '🔁', 'room', 'Immediately starts a brand new round & pours a fresh jar');
+    X('instantReveal', 'End Guessing & Reveal Now', 'server', '🎬', 'room', 'Jumps straight to the answer count-up & scoring reveal');
+    X('forceFinalPodium', 'Trigger Championship Podium', 'server', '🏆', 'room', 'Launches the 1st/2nd/3rd Final Results podium ceremony');
+    T('pauseGame', 'Freeze / Pause Round Clock', 'server', '⏸️', 'room', 'Pauses or resumes the active round timer for everyone');
+    X('addTime30', 'Add +30s to Timer', 'server', '⏱️', 'room', 'Adds 30 extra seconds to the current phase clock');
+    X('panicTimer5', 'Sudden Death (5s Left!)', 'server', '🚨', 'room', 'Drops the guessing clock to 5 urgent ticking seconds!');
+    T('infiniteTime', 'Infinite Guess Timer', 'server', '♾️', 'room', 'Holds the guessing timer at 99s until skipped or all locked');
+    X('spawnBots', 'Spawn AI Bots', 'server', '🤖', 'room', 'Adds AI contestants to the room (works in any mode!)', { arg: { kind: 'number', def: 3 } });
+    X('spawnCloneArmy', 'Spawn Clone Army of Me (×5)', 'server', '👥', 'room', 'Spawns 5 bots wearing your exact avatar and name!');
+    X('clearBots', 'Remove All Bots', 'server', '🗑️', 'room', 'Removes all AI bots from the room');
+    T('aimbotBots', 'Aimbot Bots (100% Bullseye)', 'server', '🧠', 'room', 'Every AI bot locks in the exact Bullseye count');
+    T('cluelessBots', 'Braindead Bots (Guess 1–9)', 'server', '🤪', 'room', 'Makes AI bots guess tiny single-digit numbers');
+    X('botChatFrenzy', 'Bot Chat & Emote Frenzy', 'server', '🗣️', 'room', 'Makes every bot shout hilarious lines and dance');
+    X('kickTarget', 'Kick Target Player', 'server', '🥾', 'room', 'Removes the selected player or bot from the server');
+    T('muteTarget', 'Mute Target\'s Chat', 'server', '🔇', 'room', 'Prevents target player(s) from sending chat messages', { pMod: true });
+    X('megaAnnounce', 'Broadcast Mega Screen Banner', 'server', '📣', 'room', 'Blasts a giant animated game-show banner on all screens', { arg: { kind: 'text', def: '🛡️ ADMIN HAS ENTERED THE ARENA!' } });
+    X('confettiStorm', '1,000-Piece Confetti Storm', 'server', '🎊', 'room', 'Detonates massive confetti cannons over the jar & players');
+    X('fireworksShow', 'Grand Finale Fireworks (18×)', 'server', '🎆', 'room', 'Launches an 18-burst stadium fireworks show in the sky');
+    X('meteorShower', 'Sky Candy Meteor Shower!', 'server', '☄️', 'room', 'Drops 30 giant 3D ducks, gems, donuts & coins from the sky!');
+    T('meteorRainLoop', 'Endless Falling Sky Objects', 'server', '🌧️', 'room', 'Continuously rains giant 3D jar objects across the arena');
+    X('screenEarthquake', 'Arena Earthquake & Rumble', 'server', '📳', 'room', 'Shakes everyone\'s camera, flashes lights & wobbles the jar');
+    X('dancePartyAll', 'Mandatory Arena Dance Party!', 'server', '🕺', 'room', 'Makes every player dance with party lights & fanfare');
+    X('playSoundAll', 'Global Soundboard Blast', 'server', '📯', 'room', 'Plays a sound effect across everyone\'s speakers', {
+      arg: { kind: 'select', def: 'bullseye', opts: [['bullseye', '🎯 Bullseye Jackpot'], ['fanfare', '🎺 Victory Fanfare'], ['drumroll', '🥁 Drumroll'], ['timeup', '🚨 Buzzer / Time Up'], ['levelup', '⭐ Level Up'], ['coins', '🪙 Coin Cascade'], ['kick', '💥 Boom / Kick']] }
+    });
+    X('resetAllVisuals', 'Reset All Admin Mods & FX', 'server', '✨', 'room', 'Turns off all active toggles, textures, filters & physics mods');
+  },
+
+  def(id) { return this.DEFS.find(d => d.id === id); },
+
+  /* ---------------- Command Dispatch (Self vs Signed Multiplayer) ---------------- */
+  trigger(id, arg, forceOn) {
+    if (!this.isUnlocked()) return;
+    const def = this.def(id);
+    if (!def) return;
+    // Record history
+    const h = Save.data.admin.history || [];
+    Save.data.admin.history = [id, ...h.filter(x => x !== id)].slice(0, 10);
+    Save.save();
+
+    // Custom file texture toggle auto-prompts file dialog if no image chosen yet!
+    if ((id === 'customTexAll' || id === 'customTexObjects' || id === 'customTexWorld') && forceOn !== false) {
+      const nextOn = forceOn != null ? forceOn : !this.isToggleOn(def);
+      if (nextOn && !this.customImgData) {
+        UI.toast('📁 Choose an image file to apply as your game texture!', 'admin', 3500);
+        this.pickTextureFile(id);
+        return;
+      }
+    }
+
+    if (def.scope === 'self') {
+      if (def.type === 'toggle') {
+        const next = forceOn != null ? !!forceOn : !this.selfToggles[id];
+        this.selfToggles[id] = next;
+        const msg = def.local ? def.local(next) : `${def.name} ${next ? 'ON' : 'OFF'}`;
+        if (msg) UI.toast('🛡️ ' + msg, 'admin', 2200);
+      } else {
+        const msg = def.local ? def.local(arg) : `${def.name}!`;
+        if (msg) UI.toast('🛡️ ' + msg, 'admin', 2400);
+      }
+      this.renderPanel();
+      return;
+    }
+
+    // Room / World command
+    const on = def.type === 'toggle' ? (forceOn != null ? !!forceOn : !this.isToggleOn(def)) : undefined;
+    const payload = {
+      cmd: id,
+      target: this.target,
+      arg: arg !== undefined ? arg : (def.arg ? def.arg.def : null),
+      on,
+    };
+    if ((id === 'customTexAll' || id === 'customTexObjects' || id === 'customTexWorld') && on && this.customImgData) {
+      payload.tex = this.customImgData;
+    }
+    if (id === 'cloneMyOutfitAll' || id === 'spawnCloneArmy') {
+      payload.avatar = Save.data.avatar;
+      payload.name = Save.data.name || 'Admin';
+    }
+    if (id === 'tpToMe') {
+      payload.pos = [World.local.pos.x, World.local.pos.y, World.local.pos.z];
+    }
+
+    if (!Game.active) {
+      // Offline / Title Screen execution on demo jar & local scene!
+      this._execOfflineTitle(def, payload);
+      this.renderPanel();
+      return;
+    }
+
+    const pkt = AdminAuth.signPacket(payload);
+    Game.send(pkt);
+    if (!Game.host) UI.toast(`🛡️ ${def.name}${def.type === 'toggle' ? (on ? ' ON' : ' OFF') : ''}`, 'admin', 1600);
+    setTimeout(() => this.renderPanel(), 80);
+  },
+
+  /* Execute room commands directly on Title Screen demo jar when not in a match */
+  _execOfflineTitle(def, p) {
+    if (def.type === 'toggle') {
+      if (def.pMod) {
+        this.playerMods[def.id] = this.playerMods[def.id] || {};
+        if (p.on) this.playerMods[def.id]['me'] = true; else delete this.playerMods[def.id]['me'];
+      } else {
+        this._handleExclusiveTexToggles(this.roomToggles, def.id, p.on);
+        if (p.on) this.roomToggles[def.id] = true; else delete this.roomToggles[def.id];
+        if (p.tex) this.activeTexData = p.tex;
+      }
+      this._applyLocalRoomState();
+      UI.toast(`🛡️ ${def.name} ${p.on ? 'ON' : 'OFF'} (Title Preview)`, 'admin', 2000);
+      return;
+    }
+    // Selected offline executes on Title Screen
+    const js = World.jarState;
+    if (p.cmd === 'giveCoins') { Save.addCoins(+p.arg || 2500); UI.updateCoins(true); Sfx.play('coins'); UI.toast(`🛡️ +${U.fmt(+p.arg || 2500)} Coins!`, 'gold'); return; }
+    if (p.cmd === 'setCoins') { Save.data.coins = Math.max(0, Math.round(+p.arg || 0)); Save.changed(); UI.updateCoins(true); UI.toast(`🛡️ Coins set to ${U.fmt(Save.data.coins)}!`, 'gold'); return; }
+    if (p.cmd === 'forceJarObject' && js) { World.buildRound({ seed: U.randInt(1, 1e9), n: js.info.n, types: [p.arg || 'crayon'], jar: js.info.jar || 'classic', spin: true }, 'instant', 0, 6000); UI.toast(`🛡️ Demo jar swapped to ${p.arg}!`, 'admin'); return; }
+    if (p.cmd === 'omniMix22' && js) { World.buildRound({ seed: U.randInt(1, 1e9), n: Math.max(300, js.info.n), types: OBJECTS.map(o => o.id), jar: js.info.jar || 'classic', spin: true }, 'instant', 0, 6000); UI.toast('🛡️ 22-Object Chaos Jar!', 'admin'); return; }
+    if (p.cmd === 'setExactCount' && js) { World.buildRound({ seed: U.randInt(1, 1e9), n: U.clamp(Math.round(+p.arg || 777), 1, 4500), types: js.info.types, jar: js.info.jar || 'classic', spin: true }, 'instant', 0, 6000); UI.toast('🛡️ Demo jar count updated!', 'admin'); return; }
+    if (p.cmd === 'forceJarShape' && js) { World.buildRound({ seed: U.randInt(1, 1e9), n: js.info.n, types: js.info.types, jar: p.arg || 'fishbowl', spin: true }, 'instant', 0, 6000); return; }
+    this.clientFx({ kind: p.cmd, arg: p.arg, targets: ['me'], pos: p.pos, avatar: p.avatar });
+    UI.toast(`🛡️ ${def.name}!`, 'admin', 1800);
+  },
+
+  _handleExclusiveTexToggles(bag, id, on) {
+    const texGroup = ['customTexAll', 'customTexObjects', 'customTexWorld', 'missingSourceTex', 'matrixRainTex', 'goldWorldTex', 'lavaWorldTex', 'cashWorldTex', 'emojiWorldTex', 'rainbowWorldTex', 'brickWorldTex'];
+    if (on && texGroup.includes(id)) for (const k of texGroup) if (k !== id) delete bag[k];
+    const skyGroup = ['nightStarMode', 'sunsetMode', 'cyberpunkMode', 'rainbowSky'];
+    if (on && skyGroup.includes(id)) for (const k of skyGroup) if (k !== id) delete bag[k];
+    const gravGroup = ['zeroGJar', 'antiGravJar', 'hyperGravJar'];
+    if (on && gravGroup.includes(id)) for (const k of gravGroup) if (k !== id) delete bag[k];
+    const sizeGroup = ['giantJar', 'tinyJar', 'wideChonkJar', 'tallSkinnyJar'];
+    if (on && sizeGroup.includes(id)) for (const k of sizeGroup) if (k !== id) delete bag[k];
+    const oScaleGroup = ['giantObjects', 'microObjects', 'pulsingObjects'];
+    if (on && oScaleGroup.includes(id)) for (const k of oScaleGroup) if (k !== id) delete bag[k];
+    const oColGroup = ['goldObjects', 'monochromeObjects', 'rainbowObjects'];
+    if (on && oColGroup.includes(id)) for (const k of oColGroup) if (k !== id) delete bag[k];
+  },
+
+  /* ---------------- Host-Side Verified Execution ---------------- */
+  _ensureHostState(host) {
+    if (!host._adm) host._adm = { toggles: {}, pMods: {}, texData: '', texScope: '' };
+    if (!host._admVerified) host._admVerified = new Set();
+    return host._adm;
+  },
+  hostSnapshot(host) {
+    const st = this._ensureHostState(host);
+    return { toggles: st.toggles, pMods: st.pMods, texData: st.texData, texScope: st.texScope };
+  },
+  isMutedOnHost(host, id) {
+    const st = host._adm;
+    return !!(st && st.pMods && st.pMods.muteTarget && (st.pMods.muteTarget['*'] || st.pMods.muteTarget[id]));
+  },
+  hostTick(host, now) {
+    const st = host._adm; if (!st) return;
+    if (st.toggles.infiniteTime && host.phase === 'guessing' && !host.paused) {
+      host.phaseEnd = now + 99000;
+    }
+  },
+  hostModifyRound(host, rd) {
+    const st = host._adm; if (!st) return;
+    if (st.toggles.alwaysOmniMix) { rd.types = OBJECTS.map(o => o.id); rd.chaos = true; }
+    if (st.toggles.frostedJarRoom) rd.frosted = true;
+  },
+  hostBotGuessOverride(host, answer) {
+    const st = host._adm; if (!st) return null;
+    if (st.toggles.aimbotBots) return answer;
+    if (st.toggles.cluelessBots) return U.randInt(1, 9);
+    return null;
+  },
+  hostCoinMult(host) {
+    const st = host._adm; if (!st) return 1;
+    if (st.toggles.coins100x) return 100;
+    if (st.toggles.coins10x) return 10;
+    return 1;
+  },
+  hostPtsMult(host) {
+    const st = host._adm; if (!st) return 1;
+    return st.toggles.doublePointsAll ? 2 : 1;
+  },
+  _resolveHostTargets(host, spec, callerId) {
+    const all = [...host.players.values()];
+    if (!spec || spec === 'me') { const me = host.players.get(callerId); return me ? [me] : []; }
+    if (spec === 'everyone') return all;
+    if (spec === 'others') return all.filter(p => p.id !== callerId);
+    if (spec === 'humans') return all.filter(p => !p.bot);
+    if (spec === 'bots') return all.filter(p => p.bot);
+    if (spec === 'random') return all.length ? [U.pick(all)] : [];
+    if (spec === 'leader') { const s = all.slice().sort((a, b) => b.score - a.score); return s.length ? [s[0]] : []; }
+    if (spec.startsWith('pid:')) { const p = host.players.get(spec.slice(4)); return p ? [p] : []; }
+    return [];
+  },
+
+  hostHandle(host, callerId, msg) {
+    if (!AdminAuth.verifyPacket(msg)) return;
+    const st = this._ensureHostState(host);
+    host._admVerified.add(callerId);
+    const p = msg.p || {}, def = this.def(p.cmd);
+    if (!def) return;
+    const targets = this._resolveHostTargets(host, p.target, callerId);
+    const tIds = targets.map(x => x.id);
+    const now = Date.now();
+
+    const rebuildJar = (patch, mode = 'instant') => {
+      if (!host.rd) host.rd = host.genRound();
+      Object.assign(host.rd, patch, { seed: U.randInt(1, 2147483646) });
+      const digits = U.digitsOf(host.rd.n);
+      host.hints = { digits, revealed: digits.map(() => false), elim: [], range: null, rangeLvl: 0, sum: null, parity: null, log: [] };
+      host.out('*', { t: 'adm_rebuild_jar', info: host.roundInfo(), hints: host.publicHints(), mode });
+    };
+
+    if (def.type === 'toggle') {
+      const on = !!p.on;
+      if (def.pMod) {
+        st.pMods[def.id] = st.pMods[def.id] || {};
+        if (p.target === 'everyone') {
+          if (on) st.pMods[def.id] = { '*': true }; else delete st.pMods[def.id];
+        } else {
+          for (const tid of tIds) { if (on) st.pMods[def.id][tid] = true; else delete st.pMods[def.id][tid]; }
+        }
+      } else {
+        this._handleExclusiveTexToggles(st.toggles, def.id, on);
+        if (on) st.toggles[def.id] = true; else delete st.toggles[def.id];
+        if ((def.id === 'customTexAll' || def.id === 'customTexObjects' || def.id === 'customTexWorld')) {
+          if (on && typeof p.tex === 'string' && p.tex.startsWith('data:image/')) {
+            st.texData = p.tex;
+            st.texScope = def.id === 'customTexObjects' ? 'objects' : def.id === 'customTexWorld' ? 'world' : 'all';
+          } else if (!st.toggles.customTexAll && !st.toggles.customTexObjects && !st.toggles.customTexWorld) {
+            st.texScope = '';
+          }
+        }
+        if (def.id === 'liveGuessSpy') {
+          host.settings.openGuesses = on;
+          host.out('*', { t: 'settings', settings: host.settings, cfg: host.clientCfg() });
+          host.broadcastPlayers();
+        }
+        if (def.id === 'pauseGame') {
+          if (on && !host.paused && host.phase !== 'lobby') {
+            host.paused = true; host.pauseLeft = Math.max(0, host.phaseEnd - now);
+            host.out('*', { t: 'pause', paused: true, left: host.pauseLeft });
+          } else if (!on && host.paused) {
+            host.paused = false; host.phaseEnd = now + host.pauseLeft;
+            host.out('*', { t: 'pause', paused: false, endsAt: host.phaseEnd });
+          }
+        }
+        if (def.id === 'infiniteTime' && !on && host.phase === 'guessing') {
+          host.phaseEnd = now + (host.cfg.guessTime || 30) * 1000;
+          host.out('*', { t: 'phase', phase: 'guessing', endsAt: host.phaseEnd, round: host.round, total: host.cfg.rounds });
+        }
+      }
+      host.out('*', { t: 'adm_state', state: this.hostSnapshot(host) });
+      if (callerId === Game.myId) UI.toast(`🛡️ ${def.name} ${on ? 'ON' : 'OFF'}`, 'admin', 1900);
+      return;
+    }
+
+    // ---- Room Execute Commands ----
+    switch (p.cmd) {
+      case 'unlockMyGuess': {
+        const me = host.players.get(callerId);
+        if (me) { me.lockT = 0; me.guess = null; host.broadcastPlayers(); host.out(callerId, { t: 'adm_priv', kind: 'unlockMe' }); }
+        break;
+      }
+      case 'spyLockedGuesses': {
+        const list = [...host.players.values()].map(x => `${x.name}: ${x.guess != null ? U.fmt(x.guess) : '(waiting)'}`);
+        host.out(callerId, { t: 'adm_priv', kind: 'spyGuesses', text: '📋 LIVE GUESSES → ' + list.join(' • ') });
+        break;
+      }
+      case 'revealAllChat':
+        if (host.rd) host.sysChat(`📢 ADMIN SPOILER: There are exactly ${U.fmt(host.rd.n)} objects in the jar!`, 'gold');
+        break;
+      case 'unlockRoomHints': {
+        if (host.hints && host.rd) {
+          const h = host.hints, a = host.rd.n;
+          if (h.digits.length > 0) h.revealed[0] = true;
+          const absent = [0,1,2,3,4,5,6,7,8,9].filter(d => !h.digits.includes(d));
+          h.elim = absent.slice(0, 3).sort((x, y) => x - y);
+          const span = Math.max(4, Math.round(a * 0.06));
+          h.range = [Math.max(1, a - Math.floor(span / 2)), a + Math.ceil(span / 2)]; h.rangeLvl = 3;
+          h.sum = h.digits.reduce((s, d) => s + d, 0);
+          h.parity = a % 2 ? 'odd' : 'even';
+          host.out('*', { t: 'hints', hints: host.publicHints() });
+          host.out('*', { t: 'adm_fx', fx: { kind: 'confettiStorm' } });
+          host.sysChat('💡 An admin unlocked EVERY hint for the room!', 'hint');
+        }
+        break;
+      }
+      case 'revealAllDigits':
+        if (host.hints) { host.hints.revealed = host.hints.digits.map(() => true); host.out('*', { t: 'hints', hints: host.publicHints() }); }
+        break;
+      case 'wipeRoomHints':
+        if (host.rd) {
+          const digits = U.digitsOf(host.rd.n);
+          host.hints = { digits, revealed: digits.map(() => false), elim: [], range: null, rangeLvl: 0, sum: null, parity: null, log: [] };
+          host.out('*', { t: 'hints', hints: host.publicHints() });
+        }
+        break;
+      case 'forceTargetGuess': {
+        const g = U.clamp(Math.round(+p.arg || 1), 1, 99999);
+        for (const tp of targets) {
+          tp.guess = g; tp.lockT = now;
+          if (!tp.bot) host.out(tp.id, { t: 'lockOk', g });
+          host.out('*', { t: 'locked', id: tp.id, g: host.cfg.openGuesses ? g : undefined, show: true });
+        }
+        host.checkAllLocked();
+        break;
+      }
+      case 'forceAllBullseye': {
+        if (host.rd) {
+          const g = host.rd.n;
+          for (const tp of host.players.values()) {
+            tp.guess = g; tp.lockT = now;
+            if (!tp.bot) host.out(tp.id, { t: 'lockOk', g });
+            host.out('*', { t: 'locked', id: tp.id, g: host.cfg.openGuesses ? g : undefined, show: true });
+          }
+          host.checkAllLocked();
+        }
+        break;
+      }
+      case 'resetAllLocks':
+        for (const tp of host.players.values()) { tp.guess = null; tp.lockT = 0; }
+        host.broadcastPlayers();
+        host.out('*', { t: 'adm_fx', fx: { kind: 'resetLocks' } });
+        break;
+      case 'fakeHintBroadcast':
+        host.out('*', { t: 'adm_fx', fx: { kind: 'fakeHint', text: String(p.arg || 'digit #1 is 9').slice(0, 90) } });
+        break;
+      case 'setExactCount':
+        rebuildJar({ n: U.clamp(Math.round(+p.arg || 777), 1, 4500) });
+        break;
+      case 'doubleJarCount':
+        if (host.rd) rebuildJar({ n: U.clamp(host.rd.n * 2, 1, 4500) });
+        break;
+      case 'halveJarCount':
+        if (host.rd) rebuildJar({ n: Math.max(1, Math.round(host.rd.n / 2)) });
+        break;
+      case 'oneSingleItem':
+        rebuildJar({ n: 1 });
+        break;
+      case 'lucky777Jar':
+        rebuildJar({ n: 777, types: ['coin'] });
+        break;
+      case 'leet1337Jar':
+        rebuildJar({ n: 1337, types: ['brick', 'dice'] });
+        break;
+      case 'megaCram3500':
+        rebuildJar({ n: 3500 });
+        break;
+      case 'forceJarObject':
+        if (OBJ_BY_ID[p.arg]) rebuildJar({ types: [p.arg], chaos: false });
+        break;
+      case 'omniMix22':
+        rebuildJar({ types: OBJECTS.map(o => o.id), chaos: true });
+        break;
+      case 'forceJarShape':
+        if (JAR_STYLES[p.arg]) rebuildJar({ jar: p.arg });
+        break;
+      case 'repourJar':
+        if (host.rd) { host.rd.fillStart = now; host.out('*', { t: 'adm_rebuild_jar', info: host.roundInfo(), hints: host.publicHints(), mode: 'pour' }); }
+        break;
+      case 'giveCoins':
+      case 'setCoins': {
+        const amt = Math.round(+p.arg || 0);
+        for (const tp of targets) {
+          if (tp.bot) continue;
+          host.out(tp.id, { t: 'adm_priv', kind: p.cmd, amount: amt });
+        }
+        break;
+      }
+      case 'addScore':
+        for (const tp of targets) tp.score = Math.max(0, tp.score + Math.round(+p.arg || 2500));
+        host.broadcastPlayers();
+        break;
+      case 'setScore':
+        for (const tp of targets) tp.score = Math.max(0, Math.round(+p.arg || 0));
+        host.broadcastPlayers();
+        break;
+      case 'resetScores':
+        for (const tp of host.players.values()) { tp.score = 0; tp.streak = 0; }
+        host.broadcastPlayers();
+        break;
+      case 'setStreak':
+        for (const tp of targets) tp.streak = U.clamp(Math.round(+p.arg || 10), 0, 999);
+        host.broadcastPlayers();
+        break;
+      case 'skipPhase':
+        if (host.paused) { host.paused = false; host.out('*', { t: 'pause', paused: false, endsAt: now }); }
+        if (host.phase === 'lobby') host.start();
+        else { host.phaseEnd = now; host.tick(now); }
+        break;
+      case 'forceNewRound':
+        host.paused = false;
+        host.startRound(now);
+        break;
+      case 'instantReveal':
+        if (host.rd) { host.paused = false; host.toReveal(now); }
+        break;
+      case 'forceFinalPodium':
+        host.paused = false; host.toFinal();
+        break;
+      case 'addTime30':
+        if (host.paused) host.pauseLeft += 30000;
+        else { host.phaseEnd += 30000; host.out('*', { t: 'phase', phase: host.phase, endsAt: host.phaseEnd, round: host.round, total: host.cfg.rounds }); }
+        break;
+      case 'panicTimer5':
+        if (host.phase !== 'guessing' && host.rd) host.toGuessing(now);
+        host.phaseEnd = now + 5200;
+        host.out('*', { t: 'phase', phase: host.phase, endsAt: host.phaseEnd, round: host.round, total: host.cfg.rounds });
+        break;
+      case 'spawnBots': {
+        const cnt = U.clamp(Math.round(+p.arg || 3), 1, 14);
+        host.addBots(cnt);
+        if (host.phase === 'guessing') {
+          for (const bp of host.players.values()) if (bp.bot && !bp.lockT && !bp.botAt) bp.botAt = now + U.rand(1200, 4500);
+        }
+        break;
+      }
+      case 'spawnCloneArmy': {
+        const av = sanitizeAvatar(p.avatar || DEFAULT_AVATAR);
+        const base = U.sanitizeName(p.name || 'Clone') || 'Clone';
+        for (let i = 0; i < 5; i++) {
+          const bid = 'bot' + (++host.botSeq);
+          const nm = host.dedupName(`${base} Jr.`, bid);
+          host.players.set(bid, { id: bid, name: nm, avatar: Object.assign({}, av), level: 99, score: 0, guess: null, lockT: 0, streak: 5, bot: true, pad: host.freePad(), joinedAt: now, coinsRoom: 0, botAt: host.phase === 'guessing' ? now + U.rand(900, 3000) : 0 });
+        }
+        host.broadcastPlayers();
+        break;
+      }
+      case 'clearBots':
+        host.removeBots(); host.broadcastPlayers();
+        break;
+      case 'botChatFrenzy': {
+        const quips = ['NO WAY THAT FITS IN THERE 🤯', 'I counted 1 by 1 trust me!!', '100% BULLSEYE INCOMING 🎯', 'WHO PUT CRAYONS IN MY SOUP', 'MY CALCULATOR BROKE 💀', 'ALL IN ON 777!!'];
+        for (const bp of host.players.values()) if (bp.bot) {
+          const m = { t: 'chat', id: bp.id, name: bp.name, text: U.pick(quips) };
+          host.chatLog.push(m); host.out('*', m);
+          host.out('*', { t: 'emote', id: bp.id, e: U.pick(EMOTES).id });
+        }
+        break;
+      }
+      case 'kickTarget':
+        for (const tp of targets) {
+          if (tp.id === callerId) continue;
+          if (tp.bot) { host.players.delete(tp.id); host.broadcastPlayers(); }
+          else { host.out(tp.id, { t: 'kicked' }); host.removePlayer(tp.id, 'kick'); if (host.onKick) host.onKick(tp.id); }
+        }
+        break;
+      case 'puppetSay': {
+        const txt = String(p.arg || 'Hello!').slice(0, 140);
+        for (const tp of targets) {
+          const m = { t: 'chat', id: tp.id, name: tp.name, text: txt };
+          host.chatLog.push(m); host.out('*', m);
+        }
+        break;
+      }
+      case 'cloneMyOutfitAll':
+      case 'royalGoldDress':
+      case 'jarHeadEveryone': {
+        let avPatch = sanitizeAvatar(p.avatar || DEFAULT_AVATAR);
+        if (p.cmd === 'royalGoldDress') avPatch = Object.assign({}, DEFAULT_AVATAR, { outfit: 'gold', hat: 'crown', acc: 'shades', shirt: '#ffd21f', pants: '#15151d', accent: '#ff3d8b' });
+        if (p.cmd === 'jarHeadEveryone') avPatch = Object.assign({}, DEFAULT_AVATAR, { hat: 'jar', face: 'starry', outfit: 'galaxy', accent: '#ffd21f' });
+        for (const tp of targets) {
+          tp.avatar = Object.assign({}, tp.avatar, avPatch);
+          if (!tp.bot) host.out(tp.id, { t: 'adm_priv', kind: 'wearAvatar', avatar: tp.avatar });
+        }
+        host.broadcastPlayers();
+        break;
+      }
+      case 'resetAllVisuals':
+        st.toggles = {}; st.pMods = {}; st.texData = ''; st.texScope = '';
+        host.out('*', { t: 'adm_state', state: this.hostSnapshot(host) });
+        host.out('*', { t: 'adm_fx', fx: { kind: 'resetAllVisuals' } });
+        break;
+      default:
+        host.out('*', { t: 'adm_fx', fx: { kind: p.cmd, arg: p.arg, targets: tIds, pos: p.pos } });
+        break;
+    }
+    if (callerId === Game.myId) UI.toast(`🛡️ ${def.name}!`, 'admin', 1900);
+  },
+
+  /* ---------------- Client-Side FX & State Sync ---------------- */
+  clientApplySnap(snap) {
+    if (!snap) return;
+    this.roomToggles = Object.assign({}, snap.toggles || {});
+    this.playerMods = JSON.parse(JSON.stringify(snap.pMods || {}));
+    if (snap.texData) this.activeTexData = snap.texData;
+    this.activeTexScope = snap.texScope || '';
+    this._applyLocalRoomState();
+    if (this.open) this.renderPanel();
+  },
+
+  clientRebuildJar(m) {
+    const s = Game.s; if (!s) return;
+    s.info = m.info; s.n = m.info.k ^ hintKey(m.info.seed); s.hints = m.hints;
+    World.buildRound(Object.assign({}, m.info, { n: s.n }), m.mode || 'instant', 0, s.fillMs || FILL_MS);
+    UI.renderHintBoard(); UI.renderHintShop(); UI.renderPhase(true);
+    this.updateSpyUI();
+  },
+
+  clientPriv(m) {
+    if (m.kind === 'unlockMe' && Game.s) {
+      Game.s.myLocked = false; Game.s.myGuess = null; Game.s.locked.delete(Game.myId);
+      UI.renderGuessBox(); UI.renderLeaderboard();
+      UI.toast('🔓 Your guess box is unlocked — enter a new guess!', 'admin');
+    } else if (m.kind === 'spyGuesses') {
+      UI.toast(m.text, 'admin', 5500);
+      UI.localChat(m.text, 'gold');
+    } else if (m.kind === 'giveCoins') {
+      Save.addCoins(m.amount); UI.updateCoins(true); Sfx.play('coins');
+      UI.toast(`🎁 Admin gifted you +${U.fmt(m.amount)} coins!`, 'gold', 3500);
+      if (World.local && World.local.pos) World.coinShower(World.local.pos.add(new BABYLON.Vector3(0, 2.2, 0)), 60);
+    } else if (m.kind === 'setCoins') {
+      Save.data.coins = Math.max(0, m.amount); Save.changed(); UI.updateCoins(true);
+      UI.toast(`💰 Coins set to ${U.fmt(m.amount)}!`, 'gold', 3000);
+    } else if (m.kind === 'wearAvatar' && m.avatar) {
+      if (World.local && World.local.av) World.local.av.setData(m.avatar);
+    }
+  },
+
+  clientFx(fx) {
+    if (!fx) return;
+    const js = World.jarState, myId = Game.active ? Game.myId : 'me';
+    const hitsMe = !fx.targets || !fx.targets.length || fx.targets.includes(myId) || fx.targets.includes('me');
+    switch (fx.kind) {
+      case 'shakeJar':
+        if (js) { js.phys.shake(2.6); World._jarWobble = 1.4; Sfx.play('shake'); }
+        break;
+      case 'megaEarthquakeJar':
+        if (js) {
+          let k = 0; const iv = setInterval(() => { if (!World.jarState || k++ > 10) { clearInterval(iv); return; } World.jarState.phys.shake(2.2); World._jarWobble = 1.6; Sfx.play('shake'); }, 300);
+        }
+        break;
+      case 'eruptVolcanoJar':
+        if (js) {
+          const p = js.phys, P = p.pos, Q = p.prev;
+          p._eruptOpen = true; p.asleep = false; p.calm = 0; p.settleT = 0;
+          for (let i = 0; i < p.pSpawned; i++) {
+            Q[i * 3 + 1] = P[i * 3 + 1] - (0.35 + Math.random() * 0.45);
+            Q[i * 3] = P[i * 3] + (Math.random() - 0.5) * 0.08;
+            Q[i * 3 + 2] = P[i * 3 + 2] + (Math.random() - 0.5) * 0.08;
+          }
+          World.confetti(World.jarTop(), 350, 1.4); Sfx.play('bullseye');
+          setTimeout(() => { if (World.jarState && World.jarState.phys === p) p._eruptOpen = false; }, 2200);
+        }
+        break;
+      case 'instantSettleJar':
+        World.settleJar(true);
+        break;
+      case 'fakeDrainJar':
+        if (js) {
+          let t = 0;
+          const iv = setInterval(() => {
+            t += 0.08;
+            const s = t < 1 ? Math.max(0.05, 1 - t) : Math.min(1, t - 1);
+            World.objRoot.scaling.set(1, s, 1);
+            if (t >= 2) { World.objRoot.scaling.set(1, 1, 1); clearInterval(iv); Sfx.play('pop'); }
+          }, 30);
+        }
+        break;
+      case 'setRingSign':
+        World.setSign(String(fx.arg || 'GUESS HOW MANY ★ MEGA JAR ★').toUpperCase() + ' ★');
+        Sfx.play('hint');
+        break;
+      case 'flingSky':
+        if (hitsMe && World.local) { World.local.vy = 28; World.local.onGround = false; Sfx.play('jump'); World.confetti(World.local.pos.clone(), 90, 0.9); }
+        for (const tid of (fx.targets || [])) { const a = World.avatars.get(tid); if (a) { a.target[1] = 16; World.confetti(a.av.root.position.clone(), 70, 0.8); } }
+        break;
+      case 'tpToMe':
+        if (hitsMe && fx.pos && World.local) {
+          World.local.pos.set(fx.pos[0] + U.rand(-1, 1), fx.pos[1] + 0.2, fx.pos[2] + U.rand(-1, 1));
+          World.local.vy = 0; World.sparkle(World.local.pos.clone(), '#ff3d8b', 60, 0.5);
+        }
+        break;
+      case 'forceEmote':
+        for (const tid of (fx.targets || [myId])) World.emote(tid, fx.arg || 'dance');
+        Sfx.play('emote');
+        break;
+      case 'coinRainAll':
+        if (World.local) World.coinShower(World.local.pos.add(new BABYLON.Vector3(0, 3, 0)), 70);
+        for (const [, a] of World.avatars) World.coinShower(a.av.root.position.add(new BABYLON.Vector3(0, 3, 0)), 50);
+        Sfx.play('coins');
+        break;
+      case 'megaAnnounce':
+        UI.announce(String(fx.arg || '🛡️ ADMIN!').slice(0, 48), '⚡ MEGA JAR ADMIN BROADCAST ⚡', '#ffd21f');
+        UI.flash(); Sfx.play('fanfare');
+        break;
+      case 'fakeHint':
+        Sfx.play('hint'); UI.flash();
+        UI.toast(`💡 Mystery Hint: ${fx.text}!`, 'hint', 4200);
+        if (Game.active) UI.localChat(`💡 Hint revealed — ${fx.text}`, 'hint');
+        break;
+      case 'resetLocks':
+        if (Game.s) { Game.s.myLocked = false; Game.s.myGuess = null; Game.s.locked.clear(); UI.renderGuessBox(); UI.renderLeaderboard(); }
+        UI.toast('🔄 All locked guesses were reset by Admin!', 'admin');
+        break;
+      case 'confettiStorm':
+        World.confetti(World.jarTop(), 650, 1.6);
+        if (World.local) World.confetti(World.local.pos.add(new BABYLON.Vector3(0, 2, 0)), 220, 1.1);
+        Sfx.play('reveal');
+        break;
+      case 'fireworksShow':
+        World.fireworks(18); World._beamParty = 8; Sfx.play('bullseye');
+        break;
+      case 'meteorShower':
+        this._spawnMeteors(28); Sfx.play('whoosh');
+        break;
+      case 'screenEarthquake':
+        this._shakeCam = 2.4; World._jarWobble = 2.0; UI.flash(); Sfx.play('shake'); Sfx.play('drumroll');
+        break;
+      case 'dancePartyAll':
+        if (World.local && World.local.av) World.local.av.emote('dance');
+        for (const [, a] of World.avatars) a.av.emote('dance');
+        World._beamParty = 6; World.confetti(World.jarTop(), 400, 1.4); Sfx.play('fanfare');
+        break;
+      case 'playSoundAll':
+        Sfx.play(fx.arg || 'bullseye');
+        break;
+      case 'resetAllVisuals':
+        this.selfToggles.xrayGlassSelf = false;
+        this.selfToggles.invertScreen = false;
+        this.selfToggles.noirFilter = false;
+        this.selfToggles.retroCrtFilter = false;
+        this._syncCanvasFilter();
+        if (World.engine) World.applyQuality();
+        this._applyLocalRoomState();
+        break;
+    }
+  },
+
+  /* ---------------- Apply Active Room/Self Visual & World States ---------------- */
+  _applyLocalRoomState() {
+    if (!World.ready || !World.scene) return;
+    const rt = this.roomToggles, sc = World.scene;
+
+    // 1) Texture & Wireframe Determination
+    let texUrl = '', scope = 'all';
+    if (rt.customTexAll) { texUrl = this.activeTexData || this.customImgData; scope = 'all'; }
+    else if (rt.customTexObjects) { texUrl = this.activeTexData || this.customImgData; scope = 'objects'; }
+    else if (rt.customTexWorld) { texUrl = this.activeTexData || this.customImgData; scope = 'world'; }
+    else if (rt.missingSourceTex) texUrl = AdminTex.presetDataUrl('missing');
+    else if (rt.matrixRainTex) texUrl = AdminTex.presetDataUrl('matrix');
+    else if (rt.goldWorldTex) texUrl = AdminTex.presetDataUrl('gold');
+    else if (rt.lavaWorldTex) texUrl = AdminTex.presetDataUrl('lava');
+    else if (rt.cashWorldTex) texUrl = AdminTex.presetDataUrl('cash');
+    else if (rt.emojiWorldTex) texUrl = AdminTex.presetDataUrl('emoji');
+    else if (rt.rainbowWorldTex) texUrl = AdminTex.presetDataUrl('rainbow');
+    else if (rt.brickWorldTex) texUrl = AdminTex.presetDataUrl('brick');
+    AdminTex.applyToScene(sc, scope, texUrl, !!rt.wireframeWorld);
+
+    // 2) Lighting, Sky & Fog Modes
+    if (rt.nightStarMode) {
+      World.hemi.intensity = 0.25; World.sun.intensity = 0.22;
+      sc.clearColor = new BABYLON.Color4(0.03, 0.03, 0.1, 1);
+      sc.fogColor = new BABYLON.Color3(0.05, 0.05, 0.16); sc.fogDensity = rt.thickFog ? 0.028 : 0.008; sc.fogEnabled = true;
+    } else if (rt.sunsetMode) {
+      World.hemi.intensity = 0.48; World.sun.intensity = 1.1; World.sun.diffuse = new BABYLON.Color3(1, 0.55, 0.28);
+      sc.clearColor = new BABYLON.Color4(0.95, 0.45, 0.35, 1);
+      sc.fogColor = new BABYLON.Color3(0.98, 0.58, 0.42); sc.fogDensity = rt.thickFog ? 0.028 : 0.007; sc.fogEnabled = true;
+    } else if (rt.cyberpunkMode) {
+      World.hemi.intensity = 0.38; World.hemi.diffuse = new BABYLON.Color3(0.3, 0.9, 1);
+      World.sun.intensity = 0.85; World.sun.diffuse = new BABYLON.Color3(1, 0.2, 0.75);
+      sc.clearColor = new BABYLON.Color4(0.08, 0.02, 0.18, 1);
+      sc.fogColor = new BABYLON.Color3(0.18, 0.04, 0.32); sc.fogDensity = rt.thickFog ? 0.028 : 0.009; sc.fogEnabled = true;
+      if (World.pipe) { World.pipe.bloomEnabled = true; World.pipe.bloomWeight = 0.42; }
+    } else if (!rt.rainbowSky) {
+      World.hemi.intensity = rt.discoRaveMode ? 0.26 : 0.55;
+      World.hemi.diffuse = new BABYLON.Color3(1, 0.98, 1);
+      World.sun.intensity = rt.discoRaveMode ? 0.25 : 0.9;
+      World.sun.diffuse = new BABYLON.Color3(1, 0.95, 0.86);
+      sc.clearColor = new BABYLON.Color4(0.5, 0.8, 1, 1);
+      sc.fogColor = new BABYLON.Color3(0.78, 0.86, 1);
+      sc.fogDensity = rt.thickFog ? 0.032 : 0.0042;
+      sc.fogEnabled = rt.thickFog || (Save.data.settings.decor >= 2);
+      if (World.pipe) World.pipe.bloomWeight = 0.14;
+    }
+
+    // 3) Disco Point Lights & Volumetric Spotlight Beams
+    if (rt.discoRaveMode && !this._discoLights) {
+      const cols = ['#ff2e88', '#29c5ff', '#3ee06f', '#ffd21f'];
+      this._discoLights = cols.map((c, i) => {
+        const l = new BABYLON.PointLight('admDisco' + i, new BABYLON.Vector3(0, 9, 0), sc);
+        l.diffuse = BABYLON.Color3.FromHexString(c); l.intensity = 1.6; l.range = 42;
+        return l;
+      });
+    } else if (!rt.discoRaveMode && this._discoLights) {
+      this._discoLights.forEach(l => l.dispose()); this._discoLights = null;
+    }
+    this._syncSpotBeams(!!(rt.spotlightBeams || rt.discoRaveMode));
+    this._syncJarAppearance();
+    this._syncObjectColors(true);
+  },
+
+  _syncSpotBeams(on) {
+    const sc = World.scene; if (!sc) return;
+    if (on && (!World._beams || !World._beams.length)) {
+      const beamTex = World._tex('admBeamTex', 64, 256, (x, w, h) => {
+        const g = x.createLinearGradient(0, 0, 0, h);
+        g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(255,255,255,0.85)');
+        x.fillStyle = g; x.fillRect(0, 0, w, h);
+      }, { alpha: true });
+      const cols = ['#ff4fd8', '#29c5ff', '#ffd21f', '#4be37a'];
+      World._beams = [];
+      for (let i = 0; i < 4; i++) {
+        const a = Math.PI / 4 + i * Math.PI / 2, R = ARENA_R + 3.5;
+        const beam = BABYLON.MeshBuilder.CreateCylinder('admBeam' + i, { height: 1, diameterTop: 0.9, diameterBottom: 4.5, tessellation: 18, cap: BABYLON.Mesh.NO_CAP }, sc);
+        const bm = new BABYLON.StandardMaterial('admBeamM' + i, sc);
+        bm.emissiveColor = BABYLON.Color3.FromHexString(cols[i]); bm.diffuseColor = BABYLON.Color3.Black();
+        bm.opacityTexture = beamTex; bm.alpha = 0.14; bm.disableLighting = true; bm.backFaceCulling = false;
+        bm.alphaMode = BABYLON.Engine.ALPHA_ADD; bm.fogEnabled = false;
+        beam.material = bm; beam.isPickable = false;
+        World._beams.push({ beam, from: new BABYLON.Vector3(Math.cos(a) * R, 14, Math.sin(a) * R), phase: i * 1.57 });
+      }
+    } else if (!on && World._beams && World._beams.length) {
+      for (const b of World._beams) { b.beam.material.dispose(); b.beam.dispose(); }
+      World._beams = [];
+    }
+  },
+
+  _syncCanvasFilter() {
+    const cv = U.$('scene'); if (!cv) return;
+    const f = [];
+    if (this.selfToggles.invertScreen) f.push('invert(1) hue-rotate(180deg)');
+    if (this.selfToggles.noirFilter) f.push('grayscale(1) contrast(1.38)');
+    if (this.selfToggles.retroCrtFilter) f.push('contrast(1.22) saturate(1.35)');
+    cv.style.filter = f.join(' ');
+    cv.style.imageRendering = this.selfToggles.retroCrtFilter ? 'pixelated' : '';
+  },
+
+  _syncJarAppearance() {
+    const js = World.jarState, rt = this.roomToggles;
+    if (!World.glassMat) return;
+    if (this.selfToggles.xrayGlassSelf) {
+      if (js) { js.jar.setEnabled(false); js.rim.setEnabled(false); }
+    } else {
+      if (js) { js.jar.setEnabled(true); js.rim.setEnabled(true); }
+      if (!rt.customTexAll) {
+        if (rt.blackoutJar) {
+          World.glassMat.alpha = 0.99;
+          World.glassMat.diffuseColor = new BABYLON.Color3(0.08, 0.03, 0.18);
+        } else if (rt.frostedJarRoom || (js && js.info && js.info.frosted)) {
+          World.glassMat.alpha = 0.62;
+          World.glassMat.diffuseColor = new BABYLON.Color3(0.92, 0.96, 1);
+        } else {
+          World.glassMat.alpha = 0.12;
+          World.glassMat.diffuseColor = new BABYLON.Color3(0.75, 0.92, 1);
+        }
+      }
+    }
+  },
+
+  _syncObjectColors(resetIfOff) {
+    const js = World.jarState, rt = this.roomToggles;
+    if (!js) return;
+    for (const b of js.buckets) {
+      for (const m of b.meshes) {
+        if (m.material) {
+          m.material.emissiveColor = rt.neonGlowObjects ? new BABYLON.Color3(0.55, 0.55, 0.65) : new BABYLON.Color3(0.05, 0.05, 0.05);
+        }
+      }
+      if (!b.cols || !b.tint) continue;
+      if (rt.goldObjects) {
+        for (let i = 0; i < b.count; i++) b.cols.set([1.0, 0.82, 0.18, 1], i * 4);
+        b.tint.thinInstanceBufferUpdated('color');
+      } else if (rt.monochromeObjects) {
+        for (let i = 0; i < b.count; i++) b.cols.set([0.96, 0.96, 0.98, 1], i * 4);
+        b.tint.thinInstanceBufferUpdated('color');
+      } else if (resetIfOff && !rt.rainbowObjects && b.origCols) {
+        b.cols.set(b.origCols);
+        b.tint.thinInstanceBufferUpdated('color');
+      }
+    }
+  },
+
+  onJarBuilt() {
+    this._applyLocalRoomState();
+    this.updateSpyUI();
+  },
+
+  onGameEvent(ev) {
+    this.updateSpyUI();
+    if (this.open) { this._fillTargetSelect(); this.renderPanel(); }
+    if (ev === 'phase' || ev === 'round' || ev === 'welcome') this._tryAutoGuess();
+  },
+
+  onLeaveRoom() {
+    this.roomToggles = {}; this.playerMods = {}; this.activeTexData = ''; this.activeTexScope = ''; this.jarPerch = false;
+    this._applyLocalRoomState();
+    this.updateSpyUI();
+  },
+
+  _tryAutoGuess() {
+    clearTimeout(this._autoGT);
+    if (!Game.active || !Game.s || Game.s.phase !== 'guessing' || Game.s.myLocked) return;
+    if (!this.selfToggles.autoBullseye && !this.selfToggles.autoStealthWin) return;
+    this._autoGT = setTimeout(() => {
+      if (!Game.active || !Game.s || Game.s.phase !== 'guessing' || Game.s.myLocked) return;
+      if (this.selfToggles.autoBullseye) this.trigger('lockBullseye');
+      else if (this.selfToggles.autoStealthWin) this.trigger('lockStealth');
+    }, 1100);
+  },
+
+  /* ---------------- Per-Frame Live Animations (World.update hook) ---------------- */
+  onFrame(dt) {
+    const t = World.time, rt = this.roomToggles, js = World.jarState, sc = World.scene;
+    if (!sc) return;
+
+    // Periodic material sync so newly spawned avatars/objects inherit active texture/wireframe
+    if ((AdminTex._texObj || rt.wireframeWorld) && Math.floor(t * 2) !== this._matSyncTick) {
+      this._matSyncTick = Math.floor(t * 2);
+      this._applyLocalRoomState();
+    }
+
+    // Jar Root Transforms
+    if (World.jarRoot) {
+      let sx = 1, sy = 1, sz = 1, py = PED_H + 0.04, rx = World.jarRoot.rotation.x, rz = World.jarRoot.rotation.z;
+      if (rt.giantJar) { sx = sy = sz = 1.55; }
+      else if (rt.tinyJar) { sx = sy = sz = 0.42; }
+      else if (rt.wideChonkJar) { sx = 1.6; sz = 1.6; sy = 0.85; }
+      else if (rt.tallSkinnyJar) { sx = 0.65; sz = 0.65; sy = 1.55; }
+      if (rt.jellySquishJar) { const sq = Math.sin(t * 7) * 0.14; sx *= (1 + sq); sz *= (1 + sq); sy *= (1 - sq * 0.85); }
+      if (rt.levitateJar) py += 2.2 + Math.sin(t * 2.4) * 1.1;
+      if (rt.upsideDownJar) { py += (js ? js.H * sy : 6) + 0.5; rz = Math.PI; }
+      else if (rt.pendulumJar) { rz = Math.sin(t * 2.8) * 0.28; }
+      if (rt.turboSpinJar) World.jarRoot.rotation.y += dt * 4.5;
+      else if (rt.reverseSpinJar) World.jarRoot.rotation.y -= dt * 1.4;
+      World.jarRoot.scaling.set(sx, sy, sz);
+      World.jarRoot.position.y = py;
+      if (rt.upsideDownJar || rt.pendulumJar) { World.jarRoot.rotation.z = rz; World.jarRoot.rotation.x = rx; }
+    }
+    if (rt.hopperDown && js) { this._wasHopperDown = true; World._hopGoal = PED_H + js.H + 1.0; }
+    else if (this._wasHopperDown) { this._wasHopperDown = false; if (!js || js.phys.spawnDone) World._hopGoal = 30; }
+
+    // Jar Physics Live Forces & Object Visual Scale
+    if (js && js.phys) {
+      const p = js.phys;
+      const needLid = !!(rt.zeroGJar || rt.antiGravJar || rt.popcornBoilJar || rt.tornadoVortexJar);
+      p._lidCap = needLid;
+      p.g = rt.zeroGJar ? 0 : rt.antiGravJar ? 16 : rt.hyperGravJar ? -95 : -19;
+      if (needLid) { p.asleep = false; p.calm = 0; p.settleT = 0; }
+      if (rt.popcornBoilJar && p.pSpawned > 0) {
+        const P = p.pos, Q = p.prev;
+        for (let k = 0; k < 12; k++) {
+          const idx = Math.floor(Math.random() * p.pSpawned);
+          if (P[idx * 3 + 1] < p.r * 4) Q[idx * 3 + 1] = P[idx * 3 + 1] - (0.18 + Math.random() * 0.22);
+        }
+      }
+      if (rt.tornadoVortexJar && p.pSpawned > 0) {
+        const P = p.pos, Q = p.prev;
+        for (let i = 0; i < p.pSpawned; i++) {
+          const i3 = i * 3, x = P[i3], z = P[i3 + 2];
+          Q[i3] += z * 0.014; Q[i3 + 2] -= x * 0.014;
+          Q[i3 + 1] -= 0.004;
+        }
+      }
+      const wantScale = rt.giantObjects ? 1.42 : rt.microObjects ? 0.45 : rt.pulsingObjects ? (0.95 + Math.sin(t * 6.5) * 0.32) : 1;
+      if (p._visScale !== wantScale) { p._visScale = wantScale; World._updateObjects(true); }
+
+      if (rt.rainbowObjects && Math.floor(t * 15) !== this._rbObjTick) {
+        this._rbObjTick = Math.floor(t * 15);
+        for (const b of js.buckets) if (b.cols && b.tint) {
+          for (let i = 0; i < b.count; i++) {
+            const c = BABYLON.Color3.FromHSV((t * 110 + i * 9) % 360, 0.85, 1);
+            b.cols[i * 4] = c.r; b.cols[i * 4 + 1] = c.g; b.cols[i * 4 + 2] = c.b;
+          }
+          b.tint.thinInstanceBufferUpdated('color');
+        }
+      }
+      if (rt.ghostObjects) {
+        const vis = Math.sin(t * 5.5) > -0.2;
+        World.objRoot.setEnabled(vis);
+      } else if (!World.objRoot.isEnabled()) World.objRoot.setEnabled(true);
+    }
+
+    // Disco Lights & Rainbow Sky
+    if (this._discoLights) {
+      this._discoLights.forEach((l, i) => {
+        const a = t * 2.4 + i * 1.57;
+        l.position.set(Math.cos(a) * 11, 7 + Math.sin(t * 4 + i) * 2.5, Math.sin(a) * 11);
+      });
+      World._beamParty = 1;
+    }
+    if (rt.rainbowSky) {
+      const c = BABYLON.Color3.FromHSV((t * 48) % 360, 0.65, 0.95);
+      sc.clearColor = new BABYLON.Color4(c.r, c.g, c.b, 1);
+      sc.fogColor = c;
+    }
+
+    // Camera Shake & Dizzy Cam
+    if (this._shakeCam > 0) {
+      this._shakeCam = Math.max(0, this._shakeCam - dt * 1.4);
+      World.camera.targetOffset = new BABYLON.Vector3((Math.random() - 0.5) * 0.7 * this._shakeCam, (Math.random() - 0.5) * 0.7 * this._shakeCam, 0);
+    } else if (World.camera.targetOffset && World.camera.targetOffset.lengthSquared() > 0) {
+      World.camera.targetOffset = BABYLON.Vector3.Zero();
+    }
+    if (this.selfToggles.drunkCam && World.camera) {
+      World.camera.fov = 0.8 + Math.sin(t * 2.6) * 0.22;
+      World.camera.alpha += Math.sin(t * 1.9) * dt * 0.35;
+    }
+
+    // Meteor Rain Loop & Falling Meteors
+    if (rt.meteorRainLoop && Math.random() < dt * 5) this._spawnMeteors(1);
+    for (let i = this._meteors.length - 1; i >= 0; i--) {
+      const m = this._meteors[i];
+      m.vy -= 26 * dt;
+      m.node.position.y += m.vy * dt;
+      m.node.rotation.x += m.rx * dt; m.node.rotation.z += m.rz * dt;
+      if (m.node.position.y <= 0.6 && !m.bounced) {
+        m.node.position.y = 0.6; m.vy = Math.abs(m.vy) * 0.42; m.bounced = true;
+        World.sparkle(m.node.position.clone(), '#ffd21f', 18, 0.4);
+      } else if (m.node.position.y < -4 || (m.age += dt) > 4.5) {
+        m.node.dispose(); this._meteors.splice(i, 1);
+      }
+    }
+
+    // Per-Player Avatar Mods (Local + Remote)
+    const allAvs = [];
+    if (World.local && World.local.av) allAvs.push([Game.active ? Game.myId : 'me', World.local.av]);
+    for (const [id, wrap] of World.avatars) allAvs.push([id, wrap.av]);
+    for (const [pid, av] of allAvs) {
+      if (!av || !av.root || !av.N) continue;
+      let s = 1;
+      if (this.isPlayerMod(pid, 'colossalAvatar')) s = 6.0;
+      else if (this.isPlayerMod(pid, 'giantAvatar')) s = 3.0;
+      else if (this.isPlayerMod(pid, 'tinyAvatar')) s = 0.26;
+      const sx = s * (this.isPlayerMod(pid, 'widePlayer') ? 2.3 : 1);
+      const sz = s * (this.isPlayerMod(pid, 'flatPaper') ? 0.09 : 1);
+      av.root.scaling.set(sx, s, sz);
+
+      const hs = this.isPlayerMod(pid, 'bobbleHead') ? 2.5 : this.isPlayerMod(pid, 'tinyPinHead') ? 0.36 : 1;
+      if (av.N.head) av.N.head.scaling.setAll(hs);
+
+      if (av.N.hips) {
+        if (this.isPlayerMod(pid, 'handstandMode')) { av.N.hips.rotation.z = Math.PI; av.N.hips.position.y = 1.45; }
+        else { av.N.hips.rotation.z = 0; av.N.hips.position.y = 0.56; }
+      }
+      if (this.isPlayerMod(pid, 'spinBeyblade')) av.root.rotation.y += dt * 16;
+      if (this.isPlayerMod(pid, 'pogoBounce') && pid !== (Game.active ? Game.myId : 'me')) {
+        av.root.position.y = Math.abs(Math.sin(t * 7.5 + pid.length)) * 1.65;
+      }
+
+      const invis = this.isPlayerMod(pid, 'invisiblePlayer');
+      for (const m of av.meshes) if (m.isEnabled() === invis) m.setEnabled(!invis);
+
+      // Ice Freeze Cube
+      const frz = this.isPlayerMod(pid, 'freezePlayer');
+      let ice = this._iceBoxes.get(pid);
+      if (frz && !ice) {
+        ice = BABYLON.MeshBuilder.CreateBox('admIce', { width: 1.35, height: 2.35, depth: 1.35 }, sc);
+        const im = new BABYLON.StandardMaterial('admIceM', sc);
+        im.diffuseColor = new BABYLON.Color3(0.45, 0.88, 1); im.emissiveColor = new BABYLON.Color3(0.15, 0.45, 0.7); im.alpha = 0.48;
+        ice.material = im; ice.parent = av.root; ice.position.y = 1.15; ice.isPickable = false;
+        this._iceBoxes.set(pid, ice);
+      } else if (!frz && ice) {
+        ice.material.dispose(); ice.dispose(); this._iceBoxes.delete(pid);
+      }
+
+      // Trails & Chameleon Outfit
+      if (this.isPlayerMod(pid, 'rainbowTrail') && Math.random() < dt * 14) {
+        World.sparkle(av.root.position.add(new BABYLON.Vector3(0, 0.35, 0)), U.pick(['#ff3d8b', '#ffd21f', '#29c5ff', '#3ee06f', '#b14dff']), 6, 0.32);
+      }
+      if (this.isPlayerMod(pid, 'coinTrail') && Math.random() < dt * 8) {
+        World.coinShower(av.root.position.add(new BABYLON.Vector3(0, 0.9, 0)), 4);
+      }
+      if (this.isPlayerMod(pid, 'discoOutfit') && av.torsoMat && Math.floor(t * 6) !== av._admDiscoTick) {
+        av._admDiscoTick = Math.floor(t * 6);
+        av.torsoMat.emissiveColor = BABYLON.Color3.FromHSV((t * 160 + pid.length * 40) % 360, 0.85, 0.65);
+      } else if (av._admDiscoTick != null && !this.isPlayerMod(pid, 'discoOutfit')) {
+        delete av._admDiscoTick;
+        if (av.torsoMat) av.torsoMat.emissiveColor = new BABYLON.Color3(0.06, 0.06, 0.08);
+      }
+    }
+  },
+
+  _spawnMeteors(count) {
+    const sc = World.scene; if (!sc) return;
+    for (let i = 0; i < count; i++) {
+      const def = U.pick(OBJECTS);
+      const built = ObjMeshes.build(sc, def.id, 1);
+      const node = new BABYLON.TransformNode('meteor', sc);
+      for (const m of [built.tint, built.fixed]) if (m) {
+        if (m === built.tint && def.pal) ObjMeshes.colorize(m, U.pick(def.pal));
+        m.parent = node; m.setEnabled(true);
+      }
+      const a = Math.random() * Math.PI * 2, R = 3 + Math.random() * (ARENA_R - 4);
+      node.position.set(Math.cos(a) * R, 22 + Math.random() * 18, Math.sin(a) * R);
+      node.scaling.setAll(0.55 + Math.random() * 0.45);
+      this._meteors.push({ node, vy: -4 - Math.random() * 6, rx: U.rand(-5, 5), rz: U.rand(-5, 5), age: 0, bounced: false });
+    }
+  },
+
+  /* ---------------- File Picker for Custom Image Texture ---------------- */
+  pickTextureFile(autoToggleId) {
+    const inp = U.$('adm-tex-file');
+    if (!inp) return;
+    this._pendingTexToggle = autoToggleId || null;
+    inp.value = '';
+    inp.click();
+  },
+
+  /* ---------------- UI Construction & Rendering ---------------- */
+  refreshButtons() {
+    const un = this.isUnlocked();
+    for (const id of ['btn-adm-title', 'btn-adm-lobby', 'btn-adm-hud']) {
+      const el = U.$(id);
+      if (el) el.classList.toggle('hidden', !un);
+    }
+  },
+
+  updateSpyUI() {
+    const pill = this._spyEl;
+    if (!pill) return;
+    const n = this.currentAnswer();
+    const showHud = this.isUnlocked() && this.selfToggles.liveSpyHud && n > 0 && (UI.screen === 'hud' || UI.screen === 'title');
+    pill.classList.toggle('hidden', !showHud);
+    if (showHud) {
+      const bd = this.currentBreakdown();
+      pill.textContent = `📡 SPY ANSWER: ${U.fmt(n)}${bd ? ' • ' + bd : ''}`;
+    }
+    if (this.open) this._renderSubbar();
+  },
+
+  togglePanel(force) {
+    if (!this.isUnlocked()) return;
+    this.open = force != null ? !!force : !this.open;
+    this._el.classList.toggle('hidden', !this.open);
+    if (this.open) {
+      Sfx.play('click');
+      this._fillTargetSelect();
+      this.renderPanel();
+    }
+  },
+
+  _pickSingleRemoteId() {
+    if (this.target.startsWith('pid:')) return this.target.slice(4);
+    if (Game.s && Game.s.players) {
+      const other = Game.s.players.find(p => p.id !== Game.myId);
+      if (other) return other.id;
+    }
+    return null;
+  },
+
+  _buildUI() {
+    // Hidden file input for custom image textures
+    const fi = document.createElement('input');
+    fi.type = 'file'; fi.id = 'adm-tex-file'; fi.accept = 'image/*'; fi.className = 'hidden';
+    document.body.appendChild(fi);
+    fi.addEventListener('change', () => {
+      const file = fi.files && fi.files[0];
+      if (!file) { this._pendingTexToggle = null; return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        AdminTex.prepareImage(reader.result, dataUrl => {
+          this.customImgData = dataUrl;
+          this.activeTexData = dataUrl;
+          UI.toast(`🖼️ Loaded image "${file.name}"!`, 'admin', 2600);
+          const pending = this._pendingTexToggle;
+          this._pendingTexToggle = null;
+          if (pending) this.trigger(pending, null, true);
+          else if (this.roomToggles.customTexAll) this.trigger('customTexAll', null, true);
+          else if (this.roomToggles.customTexObjects) this.trigger('customTexObjects', null, true);
+          else if (this.roomToggles.customTexWorld) this.trigger('customTexWorld', null, true);
+          else this.renderPanel();
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Bind floating buttons
+    for (const id of ['btn-adm-title', 'btn-adm-lobby', 'btn-adm-hud']) {
+      const b = U.$(id);
+      if (b) b.addEventListener('click', () => this.togglePanel());
+    }
+
+    // Spy HUD pill
+    const spy = this._spyEl = document.createElement('div');
+    spy.className = 'adm-spy-pill hidden';
+    U.$('ui').appendChild(spy);
+
+    // Floating Draggable Admin Panel
+    const el = this._el = document.createElement('div');
+    el.className = 'adm-panel hidden';
+    el.innerHTML = `
+      <div class="adm-head" id="adm-drag">
+        <div class="adm-title">🛡️ MEGA JAR ADMIN <span class="adm-cnt">${this.DEFS.length} CMDS</span></div>
+        <select class="adm-sel" id="adm-target" title="Target player(s)"></select>
+        <input class="adm-inp adm-search" id="adm-search" placeholder="🔎 Search ${this.DEFS.length} commands…" autocomplete="off" spellcheck="false">
+        <button class="adm-chip-btn gold" id="adm-peek" title="Peek at exact jar count">👁️ Peek</button>
+        <button class="adm-chip-btn" id="adm-min" title="Minimize">—</button>
+        <button class="adm-chip-btn" id="adm-close" title="Close (F2)">✕</button>
+      </div>
+      <div class="adm-subbar" id="adm-subbar"></div>
+      <div class="adm-active" id="adm-active"></div>
+      <div class="adm-tabs" id="adm-tabs"></div>
+      <div class="adm-body" id="adm-body"></div>
+      <div class="adm-foot" id="adm-foot"></div>`;
+    U.$('ui').appendChild(el);
+
+    // Prevent typing in panel inputs from triggering WASD / hotkeys
+    el.addEventListener('keydown', e => {
+      if (e.key === 'F2') { e.preventDefault(); this.togglePanel(false); return; }
+      e.stopPropagation();
+    });
+
+    U.$('adm-close').onclick = () => { Sfx.play('back'); this.togglePanel(false); };
+    U.$('adm-min').onclick = () => { Sfx.play('click'); this.min = !this.min; el.classList.toggle('min', this.min); };
+    U.$('adm-peek').onclick = () => { Sfx.play('pop'); this.peeked = !this.peeked; this._renderSubbar(); };
+    U.$('adm-target').onchange = e => { this.target = e.target.value; this.renderPanel(); };
+    U.$('adm-search').oninput = e => { this.q = e.target.value.trim().toLowerCase(); this._renderBody(); };
+
+    // Tabs
+    const tabsBox = U.$('adm-tabs');
+    for (const [k, label] of this.TABS) {
+      const tb = document.createElement('button');
+      tb.className = 'adm-tab'; tb.dataset.tab = k; tb.textContent = label;
+      tb.onclick = () => { Sfx.play('click'); this.tab = k; this.q = ''; U.$('adm-search').value = ''; this.renderPanel(); };
+      tabsBox.appendChild(tb);
+    }
+
+    // Dragging
+    const head = U.$('adm-drag');
+    let drag = null;
+    head.addEventListener('pointerdown', e => {
+      if (e.target.closest('button,input,select')) return;
+      const r = el.getBoundingClientRect();
+      drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+      head.setPointerCapture(e.pointerId);
+    });
+    head.addEventListener('pointermove', e => {
+      if (!drag) return;
+      el.style.left = U.clamp(e.clientX - drag.dx, 6, window.innerWidth - 140) + 'px';
+      el.style.top = U.clamp(e.clientY - drag.dy, 6, window.innerHeight - 60) + 'px';
+      el.style.right = 'auto';
+    });
+    head.addEventListener('pointerup', () => { drag = null; });
+  },
+
+  _fillTargetSelect() {
+    const sel = U.$('adm-target'); if (!sel) return;
+    const opts = this.TARGETS.map(([v, l]) => `<option value="${v}">${l}</option>`);
+    if (Game.active && Game.s && Game.s.players) {
+      for (const p of Game.s.players) {
+        opts.push(`<option value="pid:${U.esc(p.id)}">👤 ${U.esc(p.name)}${p.bot ? ' 🤖' : ''}${p.id === Game.myId ? ' (you)' : ''}</option>`);
+      }
+    }
+    sel.innerHTML = opts.join('');
+    if ([...sel.options].some(o => o.value === this.target)) sel.value = this.target;
+    else { this.target = 'me'; sel.value = 'me'; }
+  },
+
+  _renderSubbar() {
+    const box = U.$('adm-subbar'); if (!box) return;
+    const n = this.currentAnswer();
+    const modeTxt = Game.active ? `${Game.mode.toUpperCase()} (${Game.role === 'host' ? 'Authority' : 'Synced Client'}) • Phase: ${(Game.s && Game.s.phase) || '—'}` : 'TITLE MENU (Offline / Demo Jar)';
+    const ansTxt = (this.peeked || this.selfToggles.liveSpyHud)
+      ? `<span style="color:#ffd21f">🎯 Exact Jar Answer: <b>${n ? U.fmt(n) : '—'}</b> ${this.currentBreakdown() ? '(' + U.esc(this.currentBreakdown()) + ')' : ''}</span>`
+      : `<span style="opacity:.75">🔒 Jar Answer Hidden (click <b>👁️ Peek</b> or run <b>Reveal Exact Count</b>)</span>`;
+    box.innerHTML = `<span>🛰️ ${modeTxt}</span>${ansTxt}`;
+  },
+
+  _renderActiveStrip() {
+    const box = U.$('adm-active'); if (!box) return;
+    const pills = [];
+    for (const k in this.selfToggles) if (this.selfToggles[k]) {
+      const d = this.def(k); if (d) pills.push({ id: k, label: `${d.icon} ${d.name}`, fn: () => this.trigger(k, null, false) });
+    }
+    for (const k in this.roomToggles) if (this.roomToggles[k]) {
+      const d = this.def(k); if (d) pills.push({ id: k, label: `${d.icon} ${d.name}`, fn: () => this.trigger(k, null, false) });
+    }
+    for (const k in this.playerMods) {
+      const map = this.playerMods[k];
+      if (map && Object.keys(map).length) {
+        const d = this.def(k); if (d) pills.push({ id: k, label: `${d.icon} ${d.name}`, fn: () => { const prev = this.target; this.target = 'everyone'; this.trigger(k, null, false); this.target = prev; } });
+      }
+    }
+    if (!pills.length) { box.innerHTML = `<span style="opacity:.65">⚡ Active Toggles: None — flip any switch below to activate!</span>`; return; }
+    box.innerHTML = `<b style="color:#ffd21f">ACTIVE (${pills.length}):</b>` + pills.map((p, i) => `<button class="adm-pill" data-pi="${i}">${U.esc(p.label)} ✕</button>`).join('') + `<button class="adm-chip-btn" id="adm-clear-all" style="padding:2px 8px;font-size:11px">Clear All</button>`;
+    box.querySelectorAll('[data-pi]').forEach(b => b.onclick = () => { Sfx.play('click'); pills[+b.dataset.pi].fn(); });
+    const clr = U.$('adm-clear-all');
+    if (clr) clr.onclick = () => { Sfx.play('back'); for (const k in this.selfToggles) this.selfToggles[k] = false; this._syncCanvasFilter(); this.trigger('resetAllVisuals'); };
+  },
+
+  renderPanel() {
+    if (!this._el) return;
+    U.$('adm-tabs').querySelectorAll('.adm-tab').forEach(t => t.classList.toggle('on', !this.q && t.dataset.tab === this.tab));
+    this._renderSubbar();
+    this._renderActiveStrip();
+    this._renderBody();
+    this._renderFoot();
+  },
+
+  _renderBody() {
+    const body = U.$('adm-body'); if (!body) return;
+    const scroll = body.scrollTop;
+    const favs = (Save.data.admin && Save.data.admin.favorites) || [];
+    let list = this.DEFS;
+    if (this.q) list = list.filter(d => (d.name + ' ' + d.id + ' ' + d.desc + ' ' + d.tab).toLowerCase().includes(this.q));
+    else if (this.tab === 'fav') list = list.filter(d => favs.includes(d.id));
+    else list = list.filter(d => d.tab === this.tab);
+
+    let html = '';
+    if (this.tab === 'tex' && !this.q) {
+      const prevStyle = this.customImgData ? `background-image:url('${this.customImgData}')` : '';
+      const allOn = !!this.roomToggles.customTexAll;
+      html += `
+        <div class="adm-tex-studio">
+          <div class="adm-tex-row">
+            <div class="adm-tex-prev" style="${prevStyle}">${this.customImgData ? '' : '🖼️'}</div>
+            <div style="flex:1;min-width:180px">
+              <div style="font-family:var(--font-title);font-size:16px;color:#ffd21f">🖼️ CUSTOM FILE IMAGE TEXTURE OVERRIDE</div>
+              <div style="font-size:12px;opacity:.9">Upload any image file from your device and toggle it onto <b>every 3D asset in the game</b> (synced to everyone in the room)!</div>
+            </div>
+            <button class="adm-chip-btn gold" id="adm-st-upload">📁 Upload Image File…</button>
+            <div class="toggle ${allOn ? 'on' : ''}" id="adm-st-toggle" title="Toggle Custom Image Texture on Every Asset"></div>
+          </div>
+          <div class="adm-tex-row">
+            <input class="adm-inp" id="adm-st-url" placeholder="…or paste an image URL / data:image…" style="flex:1;min-width:160px">
+            <button class="adm-chip-btn" id="adm-st-loadurl">Load URL</button>
+            <button class="adm-chip-btn" id="adm-st-reset">✨ Restore Default Textures</button>
+          </div>
+        </div>`;
+    }
+
+    html += `<div class="adm-grid">` + list.map(d => {
+      const on = d.type === 'toggle' && this.isToggleOn(d);
+      const starred = favs.includes(d.id);
+      let argHtml = '';
+      if (d.arg) {
+        if (d.arg.kind === 'number') argHtml = `<input type="number" class="adm-arg" value="${d.arg.def}">`;
+        else if (d.arg.kind === 'text') argHtml = `<input type="text" class="adm-arg wide" value="${U.esc(d.arg.def)}" maxlength="120">`;
+        else if (d.arg.kind === 'select') argHtml = `<select class="adm-arg wide">${d.arg.opts.map(o => `<option value="${U.esc(o[0])}" ${o[0] === d.arg.def ? 'selected' : ''}>${U.esc(o[1])}</option>`).join('')}</select>`;
+      }
+      const ctl = d.type === 'toggle'
+        ? `${d.id.startsWith('customTex') ? `<button class="adm-chip-btn" data-pickfile="${d.id}" title="Choose image file" style="padding:4px 7px">📁</button>` : ''}<div class="toggle ${on ? 'on' : ''}" data-tog="${d.id}"></div>`
+        : `${argHtml}<button class="adm-run" data-run="${d.id}">RUN ▶</button>`;
+      return `
+        <div class="adm-cmd ${on ? 'active-on' : ''}" data-card="${d.id}">
+          <button class="adm-star ${starred ? 'on' : ''}" data-star="${d.id}" title="Pin to Favorites">★</button>
+          <span class="adm-ico">${d.icon}</span>
+          <div class="adm-info">
+            <div class="adm-cname">${U.esc(d.name)} <span class="adm-scope ${d.scope}">${d.scope === 'self' ? 'SELF' : 'ROOM'}</span></div>
+            <div class="adm-cdesc">${U.esc(d.desc)}</div>
+          </div>
+          <div class="adm-ctl">${ctl}</div>
+        </div>`;
+    }).join('') + `</div>`;
+
+    if (!list.length) html += `<div style="text-align:center;padding:30px;opacity:.75;font-weight:700">${this.tab === 'fav' ? '⭐ Click the star next to any command to pin it here!' : 'No commands match your search.'}</div>`;
+
+    body.innerHTML = html;
+    body.scrollTop = scroll;
+
+    // Bind Texture Studio controls if visible
+    const upBtn = U.$('adm-st-upload');
+    if (upBtn) upBtn.onclick = () => { Sfx.play('click'); this.pickTextureFile('customTexAll'); };
+    const stTog = U.$('adm-st-toggle');
+    if (stTog) stTog.onclick = () => { Sfx.play('click'); this.trigger('customTexAll'); };
+    const urlBtn = U.$('adm-st-loadurl');
+    if (urlBtn) urlBtn.onclick = () => {
+      const u = U.$('adm-st-url').value.trim();
+      if (!u) { UI.toast('Paste an image URL first!', 'bad'); return; }
+      AdminTex.prepareImage(u, dataUrl => {
+        this.customImgData = dataUrl; this.activeTexData = dataUrl;
+        this.trigger('customTexAll', null, true);
+      });
+    };
+    const rstBtn = U.$('adm-st-reset');
+    if (rstBtn) rstBtn.onclick = () => { Sfx.play('back'); this.trigger('resetAllVisuals'); };
+
+    // Bind Command Cards
+    body.querySelectorAll('[data-pickfile]').forEach(b => b.onclick = () => { Sfx.play('click'); this.pickTextureFile(b.dataset.pickfile); });
+    body.querySelectorAll('[data-tog]').forEach(sw => sw.onclick = () => { Sfx.play('click'); this.trigger(sw.dataset.tog); });
+    body.querySelectorAll('[data-run]').forEach(btn => btn.onclick = () => {
+      Sfx.play('click');
+      const card = btn.closest('.adm-cmd');
+      const inp = card && card.querySelector('.adm-arg');
+      card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+      this.trigger(btn.dataset.run, inp ? inp.value : undefined);
+    });
+    body.querySelectorAll('.adm-arg').forEach(inp => {
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          const runBtn = inp.closest('.adm-cmd').querySelector('[data-run]');
+          if (runBtn) runBtn.click();
+        }
+      });
+    });
+    body.querySelectorAll('[data-star]').forEach(st => st.onclick = () => {
+      Sfx.play('pop');
+      const f = Save.data.admin.favorites || (Save.data.admin.favorites = []);
+      const i = f.indexOf(st.dataset.star);
+      if (i >= 0) f.splice(i, 1); else f.push(st.dataset.star);
+      Save.save(); this._renderBody();
+    });
+  },
+
+  _renderFoot() {
+    const foot = U.$('adm-foot'); if (!foot) return;
+    const hist = ((Save.data.admin && Save.data.admin.history) || []).slice(0, 6);
+    const chips = hist.map(id => {
+      const d = this.def(id);
+      return d ? `<span class="adm-hchip" data-h="${d.id}">${d.icon} ${U.esc(d.name)}</span>` : '';
+    }).join('');
+    foot.innerHTML = `<div>🕘 Recent: ${chips || '<span style="opacity:.6">None yet</span>'}</div><div style="opacity:.8">Hotkey: <kbd>F2</kbd> or chat <b>/admin</b></div>`;
+    foot.querySelectorAll('[data-h]').forEach(c => c.onclick = () => { Sfx.play('click'); this.trigger(c.dataset.h); });
+  },
+};
+window.Admin = Admin;
+
+</script>
 <script>/* ---- js/main.js ---- */
 /* =====================================================================
    GUESS HOW MANY — bootstrap
@@ -4974,6 +7120,7 @@ const Screens = {
   catch (e) { console.error(e); setLoad(100, '⚠️ WebGL failed to start: ' + e.message); return; }
   setLoad(85, 'Waking up the contestants…');
   Screens.init();
+  Admin.init();
   UI.updateCoins();
   U.$('fps').style.display = Save.data.settings.showFps ? '' : 'none';
   if (!Net.available()) console.warn('PeerJS not available — multiplayer disabled, practice still works.');
@@ -4985,8 +7132,14 @@ const Screens = {
 
   /* ---------------- keyboard ---------------- */
   window.addEventListener('keydown', e => {
+    if (e.key === 'F2' && window.Admin && Admin.isUnlocked()) { e.preventDefault(); Admin.togglePanel(); return; }
     const a = document.activeElement, typing = a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT');
-    if (e.key === 'Escape') { if (UI.modalOpen()) UI.closeModal(); if (typing) a.blur(); return; }
+    if (e.key === 'Escape') {
+      if (UI.modalOpen()) UI.closeModal();
+      else if (window.Admin && Admin.open) Admin.togglePanel(false);
+      if (typing) a.blur();
+      return;
+    }
     if (typing || UI.modalOpen()) return;
     const inRoom = Game.active && (UI.screen === 'hud' || UI.screen === 'lobby');
     if (e.code === 'KeyM') { Save.data.settings.muted = !Save.data.settings.muted; Save.changed(); Sfx.applyVolumes(); UI.toast(Save.data.settings.muted ? '🔇 Muted' : '🔊 Sound on'); return; }
