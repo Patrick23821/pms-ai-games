@@ -1050,7 +1050,9 @@ const CFG = {
      • set it in info.json (or here) on the matching  file  key
      • missing / empty / broken link  ⇒  auto neon plate with the FIRST LETTER of the title
    ========================================================================== */
-const GAMES = [];
+const GAMES = [
+  /* { file: "fishing.html", title: "…", tagline: "…", tags: ["arcade"], thumb: "data:image/…" }, */
+];
 
 /* [MK-b6h3s1] CARD ART ENGINE — colours/plates are generated, nothing to edit below */
 const ARCADE = (() => {
@@ -1421,9 +1423,13 @@ const ARCADE = (() => {
       setStatus("scanning repository…");
       const repoInfo = await loadRepoInfo();
       let found = await scanRepo(forceScan);
-      /* offline fallback: baked-in GAMES list still counts as “present” */
-      if (S.source === "LOCAL LIST") {
-        found = [...new Set([...found, ...GAMES.map(g => g.file).filter(isHtml)])];
+      /* offline / API rate-limit fallback: info.json entries + baked-in GAMES list count as “present” */
+      if (S.source === "LOCAL LIST" || !found.length) {
+        found = [...new Set([
+          ...found,
+          ...repoInfo.map(g => g.file).filter(isHtml),
+          ...GAMES.map(g => g.file).filter(isHtml),
+        ])];
       }
       const infoMap = new Map(repoInfo.map(g => [key(g.file), g]));
       const gamesMap = new Map(GAMES.map(g => [key(g.file), g]));
@@ -2320,6 +2326,8 @@ const ARCADE = (() => {
     try {
       localStorage.removeItem(OFFLINE_COPY_KEY);
       sessionStorage.removeItem(OFFLINE_COPY_KEY);
+      localStorage.removeItem("omega_arcade_cached_html");
+      localStorage.removeItem("omega_arcade_cached_at");
     } catch {}
   }
   function openHostedGameTab(file) {
@@ -2924,22 +2932,74 @@ const ARCADE = (() => {
     }
   }
 
-  /* Download → index.html bootstrap: fetch latest raw arcade.html, cache localStorage, embedded fallback.
-     Cache keys: omega_arcade_cached_html, omega_arcade_cached_at. Hosted arcade.html unchanged. */
+  /* Download → index.html bootstrap: fetch latest raw index.html / arcade.html from GitHub, cache localStorage, embedded fallback.
+     Cache keys: omega_arcade_cached_html_v3, omega_arcade_cached_at_v3. Hosted arcade.html unchanged. */
   async function downloadArcade() {
     const pageUrl = location.href.replace(/[#?].*$/, "");
+    const rawIndex = rawURL("index.html");
+    const pagesIndex = fileURL("index.html");
+    const rawArcade = rawURL("arcade.html");
+    const pagesArcade = fileURL("arcade.html");
+    const rawSources = [rawIndex, pagesIndex, rawArcade, pagesArcade];
+    const rawBase = rawIndex.replace(/index\.html.*$/i, "");
+    const isValidArcadeSource = txt =>
+      typeof txt === "string" &&
+      txt.length > 20000 &&
+      txt.includes("MK-k4m1z8") &&
+      txt.includes("const ARCADE") &&
+      txt.includes("CABINET OS");
+
     let snap = "";
-    try {
-      const r = await fetch(pageUrl, { cache: "no-store" });
-      if (r.ok) snap = await r.text();
-    } catch { /* file:// — clone below */ }
+    const fetchCandidates = location.protocol.startsWith("file")
+      ? rawSources
+      : [pageUrl, ...rawSources];
+    for (const u of fetchCandidates) {
+      try {
+        const bust = u + (u.includes("?") ? "&" : "?") + "t=" + Date.now();
+        const r = await fetch(bust, { cache: "no-store" });
+        if (!r.ok) continue;
+        const txt = await r.text();
+        if (isValidArcadeSource(txt)) {
+          snap = stripDownloadBtnFromHtml(txt);
+          break;
+        }
+      } catch { /* try next */ }
+    }
     if (!snap) {
       const root = document.documentElement.cloneNode(true);
+      root.classList.remove("booted");
+      const body = root.querySelector("body");
+      if (body) {
+        body.classList.remove("modal-open");
+        body.style.overflow = "";
+      }
+      for (const sel of ["#rack", "#tags", "#ticker", "#ann-stack", "#gameinfo-content", "#bootlog"]) {
+        const el = root.querySelector(sel);
+        if (el) el.innerHTML = "";
+      }
+      for (const sel of ["#hud-games", "#hud-favs", "#hud-plays"]) {
+        const el = root.querySelector(sel);
+        if (el) { el.textContent = "00"; el.removeAttribute("data-v"); }
+      }
+      const hs = root.querySelector("#hud-src");
+      if (hs) hs.textContent = "LINKING…";
+      for (const sel of ["#shell", "#settingsshell", "#helpshell", "#gameinfoshell"]) {
+        root.querySelector(sel)?.classList.remove("open", "ptrlock", "maximized");
+      }
       root.querySelector("#btn-download")?.remove();
       snap = "<!DOCTYPE html>\n" + root.outerHTML;
-    } else snap = stripDownloadBtnFromHtml(snap);
+    }
+
     const embed = btoa(unescape(encodeURIComponent(snap)));
-    const raw = rawURL("arcade.html");
+    const builtAt = Date.now();
+    const seedInfo = readRepoInfoCache() || S.games.map(g => ({
+      file: g.file, title: g.title, tagline: g.tagline, bio: g.bio,
+      tags: g.tags, models: g.models, thumb: g.thumb, hot: g.hot, hidden: g.hidden,
+    }));
+    const seedFiles = (readRepoCache(true)?.files) || S.games.map(g => g.file);
+    const infoCacheK = repoInfoCacheKey();
+    const filesCacheK = repoCacheKey();
+
     const loader = `<!DOCTYPE html>
 <!--DVT-PREV-ACS-->
 <html lang="en">
@@ -2958,13 +3018,33 @@ body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;
 <p class="msg" id="boot">Loading Omega Arcade…</p>
 <script>
 (function(){
-  var RAW=${JSON.stringify(raw)};
-  var K_HTML="omega_arcade_cached_html";
-  var K_AT="omega_arcade_cached_at";
+  var RAW=${JSON.stringify(rawIndex)};
+  var RAW_SOURCES=${JSON.stringify(rawSources)};
+  var RAW_BASE=${JSON.stringify(rawBase)};
+  var BUILT_AT=${JSON.stringify(builtAt)};
+  var K_HTML="omega_arcade_cached_html_v3";
+  var K_AT="omega_arcade_cached_at_v3";
+  var INFO_K=${JSON.stringify(infoCacheK)};
+  var FILES_K=${JSON.stringify(filesCacheK)};
+  var SEED_INFO=${JSON.stringify(seedInfo)};
+  var SEED_FILES=${JSON.stringify(seedFiles)};
   var EMBED=${JSON.stringify(embed)};
+  try{
+    localStorage.removeItem("omega_arcade_cached_html");
+    localStorage.removeItem("omega_arcade_cached_at");
+    if(SEED_INFO&&SEED_INFO.length&&!localStorage.getItem(INFO_K)){
+      localStorage.setItem(INFO_K,JSON.stringify({at:BUILT_AT,entries:SEED_INFO}));
+    }
+    if(SEED_FILES&&SEED_FILES.length&&!localStorage.getItem(FILES_K)){
+      localStorage.setItem(FILES_K,JSON.stringify({at:BUILT_AT,files:SEED_FILES,source:"CACHE"}));
+    }
+  }catch(e){}
+  function isValidArcade(txt){
+    return typeof txt==="string"&&txt.length>20000&&txt.indexOf("MK-k4m1z8")!==-1&&txt.indexOf("const ARCADE")!==-1&&txt.indexOf("CABINET OS")!==-1;
+  }
   var MAX_CSS=${JSON.stringify(`#shell.maximized{padding:0;background:#000;align-items:stretch}#shell.maximized .cab{width:100%;height:100%;max-height:none;background:#000}#shell.maximized .edge{padding:0;background:transparent;height:100%;display:flex;flex-direction:column}#shell.maximized .edge>.edge-in{height:100%;background:#000;clip-path:none}#shell.maximized .notch,#shell.maximized .notch-s{clip-path:none}#shell.maximized #m-bar{order:2;justify-content:flex-end;gap:6px;padding:4px 8px;border-bottom:0;border-top:1px solid rgba(47,243,208,.22);background:rgba(6,10,18,.94)}#shell.maximized #m-bar>.m-chrome,#shell.maximized #m-bar>*:not(#m-actions){display:none!important}#shell.maximized #m-actions{display:flex!important}#shell.maximized #m-actions .ico-btn{width:26px;height:26px}#shell.maximized .screen{order:1;flex:1;min-height:0}#shell.ptrlock #m-bar{display:none!important}`)};
   var MAX_JS=${JSON.stringify(`(function(){
-    var RAW=${JSON.stringify(raw)};
+    var RAW_BASE=${JSON.stringify(rawBase)};
     function sync(){
       var shell=document.getElementById("shell");
       var fr=document.getElementById("m-frame");
@@ -2976,7 +3056,7 @@ body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;
     function rawOf(page){
       try{
         var file=String(page).split("/").pop().split("?")[0].split("#")[0];
-        return RAW.replace(/arcade\\.html.*$/,"")+file;
+        return RAW_BASE+file;
       }catch(e){ return page; }
     }
     function withBase(html, pageUrl){
@@ -3098,28 +3178,39 @@ body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;
   function cacheSave(h){
     try{localStorage.setItem(K_HTML,h);localStorage.setItem(K_AT,String(Date.now()));}catch(e){}
   }
-  function run(h){
-    h=prepareInjectedArcade(h);
-    cacheSave(h);
+  function run(h,saveToCache){
+    var prepared=prepareInjectedArcade(h);
+    if(saveToCache!==false)cacheSave(h);
     document.open();
-    document.write(h);
+    document.write(prepared);
     document.close();
   }
   function noArcade(msg){
     document.body.innerHTML='<div class="msg"><h1>Omega Arcade — offline</h1><p>'+msg+'</p></div>';
   }
   async function boot(){
-    try{
-      var u=RAW+(RAW.indexOf("?")>=0?"&":"?")+"t="+Date.now();
-      var r=await fetch(u,{cache:"no-store"});
-      if(r.ok){run(await r.text());return;}
-    }catch(e){}
+    for(var i=0;i<RAW_SOURCES.length;i++){
+      try{
+        var base=RAW_SOURCES[i];
+        var u=base+(base.indexOf("?")>=0?"&":"?")+"t="+Date.now();
+        var r=await fetch(u,{cache:"no-store"});
+        if(r.ok){
+          var txt=await r.text();
+          if(isValidArcade(txt)){run(txt,true);return;}
+        }
+      }catch(e){}
+    }
     try{
       var c=localStorage.getItem(K_HTML);
-      if(c){run(c);return;}
+      var at=Number(localStorage.getItem(K_AT)||0);
+      if(c&&at>=BUILT_AT&&isValidArcade(c)){run(c,false);return;}
     }catch(e){}
     if(EMBED){
-      try{run(decodeURIComponent(escape(atob(EMBED))));return;}catch(e){}
+      try{
+        var emb=decodeURIComponent(escape(atob(EMBED)));
+        run(emb,true);
+        return;
+      }catch(e){}
     }
     noArcade("Could not reach GitHub and no saved copy was found. Connect once, or open the hosted arcade.");
   }
@@ -3162,7 +3253,18 @@ body{margin:0;font-family:system-ui,sans-serif;background:#070c16;color:#c8e8ff;
 })();
 
 
-document.addEventListener("DOMContentLoaded", () => { ARCADE.wire(); ARCADE.stars(); ARCADE.boot(); });
+const __startOmegaArcade = () => {
+  if (window.__omegaArcadeBooted) return;
+  window.__omegaArcadeBooted = true;
+  ARCADE.wire();
+  ARCADE.stars();
+  ARCADE.boot();
+};
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", __startOmegaArcade, { once: true });
+} else {
+  __startOmegaArcade();
+}
 </script>
 <script>
 /* ==========================================================================
